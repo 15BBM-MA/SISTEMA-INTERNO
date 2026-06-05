@@ -811,9 +811,46 @@ tbody td {
   .mod-header > div:last-child .btn,
   .mod-header .btn { flex: 1; justify-content: center; }
 
-  /* Tabelas: rolagem horizontal em vez de espremer */
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .table-wrap table { min-width: 640px; }
+  /* Tabelas viram CARTÕES empilhados (cabem na tela, sem zoom/rolagem lateral) */
+  .table-wrap { overflow-x: hidden; }
+  .table-wrap table, .table-wrap thead, .table-wrap tbody,
+  .table-wrap tr, .table-wrap td { display: block; width: auto; }
+  .table-wrap table { min-width: 0; }
+  .table-wrap thead { display: none; }                 /* cabeçalho some; usamos rótulos por célula */
+  .table-wrap tbody tr {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 10px 12px;
+    padding: 4px 0;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .table-wrap tbody tr:hover { background: var(--surface); }
+  .table-wrap td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 14px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-size: .88rem;
+  }
+  .table-wrap tbody tr td:last-child { border-bottom: none; }
+  .table-wrap td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-light);
+    font-size: .76rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .table-wrap td:empty { display: none; }
+  /* células de ações/controles alinham à direita sem o espaço extra */
+  .table-wrap td[data-label=""]::before { content: none; }
 
   /* Hero / página */
   .page-hero { flex-direction: column; gap: 14px; }

@@ -24,6 +24,30 @@
   }
 })();
 
+// --- Rótulos das tabelas no mobile (cada célula mostra o nome da coluna) ---
+function bbmRotularTabelas(root) {
+  (root || document).querySelectorAll('.table-wrap table').forEach(t => {
+    const ths = [...t.querySelectorAll('thead th')].map(th => th.textContent.trim());
+    if (!ths.length) return;
+    t.querySelectorAll('tbody tr').forEach(tr => {
+      const cells = [...tr.children];
+      cells.forEach((td, i) => {
+        if (td.colSpan > 1 || cells.length === 1) { td.setAttribute('data-label', ''); return; }
+        td.setAttribute('data-label', ths[i] || '');
+      });
+    });
+  });
+}
+(function () {
+  let agendado = false;
+  const run = () => { agendado = false; bbmRotularTabelas(); };
+  const obs = new MutationObserver(() => { if (!agendado) { agendado = true; requestAnimationFrame(run); } });
+  document.addEventListener('DOMContentLoaded', () => {
+    bbmRotularTabelas();
+    obs.observe(document.body, { childList: true, subtree: true });
+  });
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // --- DATA/HORA ---
