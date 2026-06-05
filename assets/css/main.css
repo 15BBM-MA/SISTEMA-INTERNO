@@ -852,6 +852,13 @@ tbody td {
   /* células de ações/controles alinham à direita sem o espaço extra */
   .table-wrap td[data-label=""]::before { content: none; }
 
+  /* Barra de busca + filtros + botões: empilham e ocupam a largura toda */
+  .table-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .table-toolbar .search-input { width: 100%; }
+  .table-toolbar > * { width: 100%; }
+  .table-toolbar .btn { justify-content: center; }
+  .table-toolbar select.form-control { width: 100% !important; }
+
   /* Hero / página */
   .page-hero { flex-direction: column; gap: 14px; }
   .hero-date { text-align: left; }
