@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>Definir Senha — Sistema 15º BBM</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; min-height:100dvh;
+      background: linear-gradient(135deg, var(--navy), var(--navy-mid)); padding:20px; }
+    .card { background:var(--surface); border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+      width:100%; max-width:420px; overflow:hidden; }
+    .card-head { text-align:center; padding:30px 30px 20px; border-bottom:1px solid var(--border); }
+    .card-head img { width:70px; height:70px; object-fit:contain; margin-bottom:12px; }
+    .card-head h1 { font-family:'Rajdhani',sans-serif; font-size:1.3rem; color:var(--navy); }
+    .card-head p { font-size:.82rem; color:var(--text-mid); margin-top:6px; line-height:1.5; }
+    .card-body { padding:24px 30px 30px; display:flex; flex-direction:column; gap:15px; }
+    .card-body .btn-primary { width:100%; justify-content:center; padding:12px; margin-top:4px; }
+    .msg { font-size:.82rem; padding:10px 14px; border-radius:8px; display:none; }
+    .msg.err { background:#fce4e8; color:var(--red); }
+    .req { font-size:.74rem; color:var(--text-light); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-head">
+      <img src="assets/img/logo.png" alt="15º BBM"/>
+      <h1>Defina sua nova senha</h1>
+      <p id="saudacao">Primeiro acesso — crie uma senha pessoal para sua conta.</p>
+    </div>
+    <div class="card-body">
+      <div class="msg err" id="msg"></div>
+      <div class="form-group">
+        <label class="form-label">Nova senha</label>
+        <input class="form-control" id="s1" type="password" placeholder="mínimo 4 caracteres" autocomplete="new-password"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar nova senha</label>
+        <input class="form-control" id="s2" type="password" placeholder="repita a senha" autocomplete="new-password"/>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:.82rem;color:var(--text-mid);cursor:pointer">
+        <input type="checkbox" id="ver" onchange="verSenha(this.checked)"/> Mostrar senha
+      </label>
+      <button class="btn btn-primary" onclick="salvar()">Salvar e entrar</button>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const sess = BBM.session();
+    if (!sess) location.href = 'login.html';
+    else document.getElementById('saudacao').innerHTML = 'Olá, <strong>'+sess.nome+'</strong>! Crie uma senha pessoal para proteger sua conta.';
+
+    function verSenha(v){ ['s1','s2'].forEach(id=>document.getElementById(id).type=v?'text':'password'); }
+    function salvar(){
+      const a = document.getElementById('s1').value, b = document.getElementById('s2').value;
+      const m = document.getElementById('msg');
+      m.style.display='none';
+      if (a.length < 4) { m.textContent='A senha deve ter pelo menos 4 caracteres.'; m.style.display='block'; return; }
+      if (a !== b)     { m.textContent='As senhas não coincidem.'; m.style.display='block'; return; }
+      BBM.trocarSenha(sess.id, a);
+      BBM.toast('Senha definida com sucesso.');
+      setTimeout(()=>location.href='index.html', 500);
+    }
+    document.getElementById('s2').addEventListener('keydown', e=>{ if(e.key==='Enter') salvar(); });
+  </script>
+</body>
+</html>

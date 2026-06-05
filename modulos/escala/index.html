@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escala de Serviço — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema de Gestão</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Escala de Serviço</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:var(--blue-light);color:var(--blue)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Escala de Serviço</div>
+            <div class="mod-subtitle">Gestão de plantões, folgas e efetivo</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="BBM.openModal('modalMilitar')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Cadastrar Militar
+          </button>
+          <button class="btn btn-primary" onclick="BBM.openModal('modalEscala')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Lançar Escala
+          </button>
+        </div>
+      </div>
+
+      <div class="status-grid" style="margin-bottom:28px">
+        <div class="status-card"><div class="status-value" id="totMilitares">0</div><div class="status-label">Militares</div></div>
+        <div class="status-card"><div class="status-value" id="totServico">0</div><div class="status-label">Em Serviço Hoje</div></div>
+        <div class="status-card"><div class="status-value" id="totFolga">0</div><div class="status-label">De Folga</div></div>
+        <div class="status-card"><div class="status-value" id="totEscalas">0</div><div class="status-label">Escalas Registradas</div></div>
+      </div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px">
+        <button class="tab-btn active" onclick="showTab('tabEscalas',this)">Escalas</button>
+        <button class="tab-btn" onclick="showTab('tabMilitares',this)">Militares</button>
+      </div>
+
+      <div id="tabEscalas">
+        <div class="section-label">Registros de Escala</div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <div class="search-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="searchEscala" type="text" placeholder="Pesquisar militar…"/>
+            </div>
+            <select class="form-control" id="filterTurno" style="width:auto;padding:7px 12px">
+              <option value="">Todos os turnos</option>
+              <option>Diurno</option><option>Noturno</option><option>24h</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Militar</th><th>Posto/Grad.</th><th>Turno</th><th>Função</th><th>Viatura</th><th>Situação</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tabelaEscalas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tabMilitares" style="display:none">
+        <div class="section-label">Efetivo Cadastrado</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Nome</th><th>Posto/Graduação</th><th>Matrícula</th><th>Setor</th><th>Situação</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tabelaMilitares"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL MILITAR -->
+  <div class="modal-overlay" id="modalMilitar">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modalMilitarTitle">Cadastrar Militar</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalMilitar')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="militarId"/>
+        <div class="form-group"><label class="form-label">Nome Completo *</label><input class="form-control" id="mNome" placeholder="Nome do militar"/></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Posto/Graduação *</label>
+            <select class="form-control" id="mPosto">
+              <option>Sd BM</option><option>Cb BM</option><option>3º Sgt BM</option><option>2º Sgt BM</option>
+              <option>1º Sgt BM</option><option>Sub Ten BM</option><option>2º Ten BM</option>
+              <option>1º Ten BM</option><option>Cap BM</option><option>Maj BM</option>
+              <option>Ten Cel BM</option><option>Cel BM</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Matrícula</label><input class="form-control" id="mMatricula" placeholder="000000"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Setor</label><input class="form-control" id="mSetor" placeholder="Ex: Operacional"/></div>
+          <div class="form-group"><label class="form-label">Situação</label>
+            <select class="form-control" id="mSituacao"><option>Ativo</option><option>Licença</option><option>Afastado</option><option>Férias</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalMilitar')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarMilitar()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ESCALA -->
+  <div class="modal-overlay" id="modalEscala">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modalEscalaTitle">Lançar Escala</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalEscala')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="escalaId"/>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Data *</label><input class="form-control" id="eData" type="date"/></div>
+          <div class="form-group"><label class="form-label">Turno</label>
+            <select class="form-control" id="eTurno"><option>Diurno</option><option>Noturno</option><option>24h</option></select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Militar *</label>
+          <select class="form-control" id="eMilitar"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Função</label>
+            <select class="form-control" id="eFuncao">
+              <option>Comandante de Guarnição</option><option>Motorista</option>
+              <option>Combatente</option><option>Plantonista</option><option>Auxiliar Administrativo</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Viatura</label><input class="form-control" id="eViatura" placeholder="Ex: AB-01"/></div>
+        </div>
+        <div class="form-group"><label class="form-label">Situação</label>
+          <select class="form-control" id="eSituacao"><option>Em Serviço</option><option>De Folga</option><option>Licença</option><option>Férias</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="eObs" rows="2"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalEscala')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEscala()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
+    .tab-btn.active { color:var(--blue);border-bottom-color:var(--blue); }
+    .tab-btn:hover { color:var(--text); }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    let militares = BBM.load('escala_militares');
+    let escalas   = BBM.load('escala_registros');
+
+    function showTab(id, btn) {
+      ['tabEscalas','tabMilitares'].forEach(t => document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).style.display='block';
+      btn.classList.add('active');
+      if (id === 'tabMilitares') renderMilitares();
+    }
+
+    const today = new Date().toISOString().slice(0,10);
+
+    function renderEscalas(lista = escalas) {
+      const tbody = document.getElementById('tabelaEscalas');
+      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><p>Nenhuma escala lançada.</p></div></td></tr>`; return; }
+      const sorted = [...lista].sort((a,b)=>b.data.localeCompare(a.data));
+      tbody.innerHTML = sorted.map(e => `<tr>
+        <td>${BBM.formatDate(e.data)}</td>
+        <td><strong>${e.militarNome}</strong></td>
+        <td>${e.posto}</td>
+        <td>${e.turno}</td>
+        <td>${e.funcao}</td>
+        <td>${e.viatura||'—'}</td>
+        <td><span class="badge ${sitClass(e.situacao)}">${e.situacao}</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="action-btn" onclick="editarEscala('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="action-btn" onclick="excluirEscala('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </td>
+      </tr>`).join('');
+      atualizarCards();
+    }
+
+    function sitClass(s) {
+      if (s==='Em Serviço') return 'badge-ok';
+      if (s==='De Folga')   return 'badge-neutral';
+      if (s==='Licença')    return 'badge-warn';
+      return 'badge-info';
+    }
+
+    function renderMilitares() {
+      const tbody = document.getElementById('tabelaMilitares');
+      if (!militares.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhum militar cadastrado.</p></div></td></tr>`; return; }
+      tbody.innerHTML = militares.map(m => `<tr>
+        <td><strong>${m.nome}</strong></td>
+        <td>${m.posto}</td>
+        <td>${m.matricula||'—'}</td>
+        <td>${m.setor||'—'}</td>
+        <td><span class="badge ${m.situacao==='Ativo'?'badge-ok':'badge-warn'}">${m.situacao}</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="action-btn" onclick="editarMilitar('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="action-btn" onclick="excluirMilitar('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </td>
+      </tr>`).join('');
+    }
+
+    function atualizarCards() {
+      document.getElementById('totMilitares').textContent = militares.length;
+      const hoje = escalas.filter(e=>e.data===today);
+      document.getElementById('totServico').textContent = hoje.filter(e=>e.situacao==='Em Serviço').length;
+      document.getElementById('totFolga').textContent   = hoje.filter(e=>e.situacao==='De Folga').length;
+      document.getElementById('totEscalas').textContent = escalas.length;
+    }
+
+    function populaSelectMilitares() {
+      const sel = document.getElementById('eMilitar');
+      sel.innerHTML = militares.length
+        ? militares.filter(m=>m.situacao==='Ativo').map(m=>`<option value="${m.id}">${m.posto} ${m.nome}</option>`).join('')
+        : '<option>Nenhum militar cadastrado</option>';
+    }
+
+    function salvarMilitar() {
+      const id   = document.getElementById('militarId').value;
+      const nome = document.getElementById('mNome').value.trim();
+      if (!nome) { BBM.toast('Informe o nome.','error'); return; }
+      const obj = {
+        id: id || BBM.generateId(),
+        nome, posto: document.getElementById('mPosto').value,
+        matricula: document.getElementById('mMatricula').value,
+        setor:     document.getElementById('mSetor').value,
+        situacao:  document.getElementById('mSituacao').value,
+      };
+      if (id) { militares[militares.findIndex(m=>m.id===id)]=obj; }
+      else militares.push(obj);
+      BBM.save('escala_militares', militares);
+      BBM.closeModal('modalMilitar');
+      BBM.toast('Militar salvo.');
+      renderMilitares();
+      atualizarCards();
+      document.getElementById('militarId').value='';
+      document.getElementById('mNome').value='';
+    }
+
+    function editarMilitar(id) {
+      const m = militares.find(x=>x.id===id); if(!m) return;
+      document.getElementById('militarId').value   = m.id;
+      document.getElementById('mNome').value       = m.nome;
+      document.getElementById('mPosto').value      = m.posto;
+      document.getElementById('mMatricula').value  = m.matricula;
+      document.getElementById('mSetor').value      = m.setor;
+      document.getElementById('mSituacao').value   = m.situacao;
+      document.getElementById('modalMilitarTitle').textContent = 'Editar Militar';
+      BBM.openModal('modalMilitar');
+    }
+
+    function excluirMilitar(id) {
+      if (!confirm('Excluir militar?')) return;
+      militares = militares.filter(m=>m.id!==id);
+      BBM.save('escala_militares', militares);
+      BBM.toast('Removido.','error');
+      renderMilitares();
+      atualizarCards();
+    }
+
+    function salvarEscala() {
+      const id  = document.getElementById('escalaId').value;
+      const mId = document.getElementById('eMilitar').value;
+      const data= document.getElementById('eData').value;
+      if (!mId||!data) { BBM.toast('Preencha data e militar.','error'); return; }
+      const mil = militares.find(m=>m.id===mId);
+      const obj = {
+        id: id || BBM.generateId(),
+        data, militarId: mId,
+        militarNome: mil?.nome||'—',
+        posto: mil?.posto||'—',
+        turno:    document.getElementById('eTurno').value,
+        funcao:   document.getElementById('eFuncao').value,
+        viatura:  document.getElementById('eViatura').value,
+        situacao: document.getElementById('eSituacao').value,
+        obs:      document.getElementById('eObs').value,
+      };
+      if (id) { escalas[escalas.findIndex(e=>e.id===id)]=obj; }
+      else escalas.push(obj);
+      BBM.save('escala_registros', escalas);
+      BBM.closeModal('modalEscala');
+      BBM.toast('Escala salva.');
+      renderEscalas();
+    }
+
+    function editarEscala(id) {
+      const e = escalas.find(x=>x.id===id); if(!e) return;
+      populaSelectMilitares();
+      document.getElementById('escalaId').value   = e.id;
+      document.getElementById('eData').value      = e.data;
+      document.getElementById('eTurno').value     = e.turno;
+      document.getElementById('eMilitar').value   = e.militarId;
+      document.getElementById('eFuncao').value    = e.funcao;
+      document.getElementById('eViatura').value   = e.viatura;
+      document.getElementById('eSituacao').value  = e.situacao;
+      document.getElementById('eObs').value       = e.obs;
+      document.getElementById('modalEscalaTitle').textContent = 'Editar Escala';
+      BBM.openModal('modalEscala');
+    }
+
+    function excluirEscala(id) {
+      if (!confirm('Excluir este registro de escala?')) return;
+      escalas = escalas.filter(e=>e.id!==id);
+      BBM.save('escala_registros', escalas);
+      BBM.toast('Removido.','error');
+      renderEscalas();
+    }
+
+    document.getElementById('searchEscala').addEventListener('input', () => {
+      const q = document.getElementById('searchEscala').value.toLowerCase();
+      const t = document.getElementById('filterTurno').value;
+      renderEscalas(escalas.filter(e=>e.militarNome.toLowerCase().includes(q)&&(!t||e.turno===t)));
+    });
+    document.getElementById('filterTurno').addEventListener('change', () => {
+      document.getElementById('searchEscala').dispatchEvent(new Event('input'));
+    });
+
+    document.querySelector('[onclick="BBM.openModal(\'modalEscala\')"]')?.addEventListener('click', ()=>{
+      populaSelectMilitares();
+      document.getElementById('eData').value = today;
+    });
+
+    renderEscalas();
+    atualizarCards();
+  </script>
+</body>
+</html>

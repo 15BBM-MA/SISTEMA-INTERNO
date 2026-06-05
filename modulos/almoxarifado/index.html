@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Almoxarifado — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema de Gestão</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Almoxarifado</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:var(--orange-light);color:var(--orange)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Almoxarifado</div>
+            <div class="mod-subtitle">Controle de estoque, EPIs e materiais operacionais</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="populaSelectItens();BBM.openModal('modalMovimento')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            Movimentação
+          </button>
+          <button class="btn btn-primary" onclick="BBM.openModal('modalItem')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Item
+          </button>
+        </div>
+      </div>
+
+      <div class="status-grid" style="margin-bottom:28px">
+        <div class="status-card"><div class="status-value" id="totItens">0</div><div class="status-label">Itens Cadastrados</div></div>
+        <div class="status-card"><div class="status-value" id="totBaixo">0</div><div class="status-label">Estoque Baixo</div></div>
+        <div class="status-card"><div class="status-value" id="totZero">0</div><div class="status-label">Sem Estoque</div></div>
+        <div class="status-card"><div class="status-value" id="totMov">0</div><div class="status-label">Movimentações</div></div>
+      </div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px">
+        <button class="tab-btn active" onclick="showTab('tabEstoque',this)">Estoque</button>
+        <button class="tab-btn" onclick="showTab('tabMovimentos',this)">Histórico de Movimentos</button>
+      </div>
+
+      <div id="tabEstoque">
+        <div class="section-label">Inventário</div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <div class="search-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="searchItem" type="text" placeholder="Pesquisar item…"/>
+            </div>
+            <select class="form-control" id="filterCat" style="width:auto;padding:7px 12px">
+              <option value="">Todas as categorias</option>
+              <option>EPI</option><option>Ferramenta</option><option>Material de Escritório</option>
+              <option>Equipamento</option><option>Combustível</option><option>Outros</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th><th>Categoria</th><th>Unidade</th>
+                <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Situação</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaItens"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tabMovimentos" style="display:none">
+        <div class="section-label">Movimentações</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Item</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Observação</th></tr>
+            </thead>
+            <tbody id="tabelaMovimentos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL ITEM -->
+  <div class="modal-overlay" id="modalItem">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modalItemTitle">Novo Item</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalItem')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="itemId"/>
+        <div class="form-group"><label class="form-label">Nome do Item *</label><input class="form-control" id="iNome" placeholder="Ex: Capacete de incêndio"/></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-control" id="iCategoria">
+              <option>EPI</option><option>Ferramenta</option><option>Material de Escritório</option>
+              <option>Equipamento</option><option>Combustível</option><option>Outros</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Unidade</label>
+            <select class="form-control" id="iUnidade"><option>unidade</option><option>par</option><option>litro</option><option>kg</option><option>metro</option><option>caixa</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Qtd. Atual</label><input class="form-control" id="iQtd" type="number" placeholder="0" min="0"/></div>
+          <div class="form-group"><label class="form-label">Qtd. Mínima</label><input class="form-control" id="iMin" type="number" placeholder="0" min="0"/></div>
+        </div>
+        <div class="form-group"><label class="form-label">Localização</label><input class="form-control" id="iLocal" placeholder="Ex: Prateleira A2"/></div>
+        <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="iObs" rows="2"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalItem')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarItem()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MOVIMENTO -->
+  <div class="modal-overlay" id="modalMovimento">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Registrar Movimentação</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalMovimento')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Item *</label>
+          <select class="form-control" id="mItem"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tipo *</label>
+            <select class="form-control" id="mTipo"><option value="Entrada">Entrada</option><option value="Saída">Saída</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Quantidade *</label><input class="form-control" id="mQtd" type="number" min="1" placeholder="0"/></div>
+        </div>
+        <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="mResp" placeholder="Nome do militar"/></div>
+        <div class="form-group"><label class="form-label">Observação</label><input class="form-control" id="mObs" placeholder="Finalidade ou destino…"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalMovimento')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarMovimento()">Registrar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
+    .tab-btn.active { color:var(--red);border-bottom-color:var(--red); }
+    .tab-btn:hover { color:var(--text); }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const KEY_I = 'almoxarifado_itens';
+    const KEY_M = 'almoxarifado_movimentos';
+    let itens = BBM.load(KEY_I);
+    let movimentos = BBM.load(KEY_M);
+
+    function showTab(id, btn) {
+      ['tabEstoque','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).style.display='block';
+      btn.classList.add('active');
+      if (id === 'tabMovimentos') renderMovimentos();
+    }
+
+    function situacao(item) {
+      if (item.qtd <= 0) return ['Sem Estoque','badge-danger'];
+      if (item.qtd <= item.min) return ['Estoque Baixo','badge-warn'];
+      return ['Regular','badge-ok'];
+    }
+
+    function renderItens(lista = itens) {
+      const tbody = document.getElementById('tabelaItens');
+      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><p>Nenhum item cadastrado.</p></div></td></tr>`; return; }
+      tbody.innerHTML = lista.map(i => {
+        const [sit,cls] = situacao(i);
+        return `<tr>
+          <td><strong>${i.nome}</strong></td>
+          <td>${i.categoria}</td>
+          <td>${i.unidade}</td>
+          <td>${i.qtd}</td>
+          <td>${i.min}</td>
+          <td>${i.local || '—'}</td>
+          <td><span class="badge ${cls}">${sit}</span></td>
+          <td style="display:flex;gap:6px">
+            <button class="action-btn" onclick="editarItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="action-btn" onclick="excluirItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          </td>
+        </tr>`;
+      }).join('');
+      atualizarCards();
+    }
+
+    function renderMovimentos() {
+      const tbody = document.getElementById('tabelaMovimentos');
+      if (!movimentos.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhuma movimentação registrada.</p></div></td></tr>`; return; }
+      tbody.innerHTML = [...movimentos].reverse().map(m => `
+        <tr>
+          <td>${m.data}</td>
+          <td>${m.itemNome}</td>
+          <td><span class="badge ${m.tipo==='Entrada'?'badge-ok':'badge-info'}">${m.tipo}</span></td>
+          <td>${m.qtd}</td>
+          <td>${m.resp || '—'}</td>
+          <td>${m.obs || '—'}</td>
+        </tr>`).join('');
+    }
+
+    function atualizarCards() {
+      document.getElementById('totItens').textContent = itens.length;
+      document.getElementById('totBaixo').textContent = itens.filter(i=>i.qtd>0&&i.qtd<=i.min).length;
+      document.getElementById('totZero').textContent  = itens.filter(i=>i.qtd<=0).length;
+      document.getElementById('totMov').textContent   = movimentos.length;
+    }
+
+    function populaSelectItens() {
+      const sel = document.getElementById('mItem');
+      sel.innerHTML = itens.length
+        ? itens.map(i=>`<option value="${i.id}">${i.nome} (${i.qtd} ${i.unidade})</option>`).join('')
+        : '<option>Nenhum item cadastrado</option>';
+    }
+
+    function salvarItem() {
+      const id   = document.getElementById('itemId').value;
+      const nome = document.getElementById('iNome').value.trim();
+      if (!nome) { BBM.toast('Informe o nome do item.','error'); return; }
+      const obj = {
+        id: id || BBM.generateId(),
+        nome, categoria: document.getElementById('iCategoria').value,
+        unidade: document.getElementById('iUnidade').value,
+        qtd: Number(document.getElementById('iQtd').value) || 0,
+        min: Number(document.getElementById('iMin').value) || 0,
+        local: document.getElementById('iLocal').value,
+        obs:   document.getElementById('iObs').value,
+      };
+      if (id) { const idx = itens.findIndex(i=>i.id===id); itens[idx]=obj; }
+      else itens.push(obj);
+      BBM.save(KEY_I, itens);
+      BBM.closeModal('modalItem');
+      BBM.toast(id ? 'Item atualizado.' : 'Item cadastrado.');
+      renderItens();
+      document.getElementById('itemId').value='';
+      document.getElementById('iNome').value='';
+    }
+
+    function editarItem(id) {
+      const i = itens.find(x=>x.id===id); if(!i) return;
+      document.getElementById('itemId').value     = i.id;
+      document.getElementById('iNome').value      = i.nome;
+      document.getElementById('iCategoria').value = i.categoria;
+      document.getElementById('iUnidade').value   = i.unidade;
+      document.getElementById('iQtd').value       = i.qtd;
+      document.getElementById('iMin').value       = i.min;
+      document.getElementById('iLocal').value     = i.local;
+      document.getElementById('iObs').value       = i.obs;
+      document.getElementById('modalItemTitle').textContent = 'Editar Item';
+      BBM.openModal('modalItem');
+    }
+
+    function excluirItem(id) {
+      if (!confirm('Excluir este item?')) return;
+      itens = itens.filter(i=>i.id!==id);
+      BBM.save(KEY_I, itens);
+      BBM.toast('Item removido.','error');
+      renderItens();
+    }
+
+    function salvarMovimento() {
+      const itemId = document.getElementById('mItem').value;
+      const qtd    = Number(document.getElementById('mQtd').value);
+      const tipo   = document.getElementById('mTipo').value;
+      if (!itemId || qtd <= 0) { BBM.toast('Selecione o item e informe a quantidade.','error'); return; }
+      const item = itens.find(i=>i.id===itemId);
+      if (!item) return;
+      if (tipo==='Saída' && qtd > item.qtd) { BBM.toast('Quantidade insuficiente em estoque.','error'); return; }
+      item.qtd += tipo==='Entrada' ? qtd : -qtd;
+      const mov = {
+        id: BBM.generateId(),
+        data: new Date().toLocaleString('pt-BR'),
+        itemNome: item.nome, itemId,
+        tipo, qtd,
+        resp: document.getElementById('mResp').value,
+        obs:  document.getElementById('mObs').value,
+      };
+      movimentos.push(mov);
+      BBM.save(KEY_I, itens);
+      BBM.save(KEY_M, movimentos);
+      BBM.closeModal('modalMovimento');
+      BBM.toast('Movimentação registrada.');
+      renderItens();
+    }
+
+    document.getElementById('searchItem').addEventListener('input', () => {
+      const q = document.getElementById('searchItem').value.toLowerCase();
+      const c = document.getElementById('filterCat').value;
+      renderItens(itens.filter(i => i.nome.toLowerCase().includes(q) && (!c || i.categoria===c)));
+    });
+    document.getElementById('filterCat').addEventListener('change', () => {
+      document.getElementById('searchItem').dispatchEvent(new Event('input'));
+    });
+
+    document.getElementById('modalMovimento').addEventListener('click', e => {
+      if (e.target === document.getElementById('modalMovimento')) return;
+    });
+
+    const origOpenModal = BBM.openModal.bind(BBM);
+    document.querySelector('[onclick="BBM.openModal(\'modalMovimento\')"]')
+      ?.addEventListener('click', () => { populaSelectItens(); });
+
+    renderItens();
+    atualizarCards();
+  </script>
+</body>
+</html>

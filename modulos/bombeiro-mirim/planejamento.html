@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>Planejamento — Bombeiro Mirim — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="index.html"                   class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema</a>
+          <span class="breadcrumb-sep">›</span>
+          <a href="index.html">Bombeiro Mirim</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Planejamento</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:var(--green-light);color:var(--green)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11H3v10h6V11z"/><path d="M21 3h-6v18h6V3z"/><path d="M15 7H9v14h6V7z"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Planejamento do Curso</div>
+            <div class="mod-subtitle">Cronograma anual, plano do dia, ementa e sugestões de atividades</div>
+          </div>
+        </div>
+        <a class="btn btn-ghost" href="index.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Voltar
+        </a>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs-scroll">
+        <button class="tab-btn active" onclick="showTab('tabCronograma',this)">Cronograma Anual</button>
+        <button class="tab-btn" onclick="showTab('tabEmenta',this)">Ementa do Curso</button>
+        <button class="tab-btn" onclick="showTab('tabSugestoes',this)">Banco de Atividades</button>
+      </div>
+
+      <!-- ===================== CRONOGRAMA ===================== -->
+      <div id="tabCronograma">
+        <div class="toolbar-flex">
+          <div class="rotina-chip">
+            <strong>Rotina padrão:</strong> 08h Apresentação • 09h30 Intervalo/Lanche • ~11h Liberação
+          </div>
+          <button class="btn btn-primary" onclick="novoEncontro()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Encontro
+          </button>
+        </div>
+        <div id="listaEncontros" class="encontros-list"></div>
+      </div>
+
+      <!-- ===================== EMENTA ===================== -->
+      <div id="tabEmenta" style="display:none">
+        <p class="ementa-intro">A ementa abaixo reúne <strong>todo o conteúdo</strong> que os bombeiros mirins precisam ver ao longo do ano, organizado por módulo. Toque em cada módulo para expandir.</p>
+        <div id="listaEmenta" class="ementa-list"></div>
+      </div>
+
+      <!-- ===================== SUGESTOES ===================== -->
+      <div id="tabSugestoes" style="display:none">
+        <p class="ementa-intro">Sugestões de atividades práticas e dinâmicas por módulo, para aplicar nos dias de aula.</p>
+        <div id="listaSugestoes" class="ementa-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL ENCONTRO -->
+  <div class="modal-overlay" id="modalEncontro">
+    <div class="modal" style="max-width:640px">
+      <div class="modal-header">
+        <span class="modal-title" id="encTitulo">Encontro</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalEncontro')" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+        <input type="hidden" id="encId"/>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Data (sábado)</label><input class="form-control" id="encData" type="date"/></div>
+          <div class="form-group"><label class="form-label">Módulo / Tema</label>
+            <select class="form-control" id="encModulo"></select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Atividade / Tema do dia *</label><input class="form-control" id="encTema" placeholder="Ex: APH — RCP e OVACE"/></div>
+        <div class="form-group"><label class="form-label">Observações (feriado, evento, data especial)</label><input class="form-control" id="encObs" placeholder="Opcional"/></div>
+
+        <div class="plano-dia-header">
+          <span class="form-label" style="margin:0">Plano do Dia (cronograma)</span>
+          <button class="btn-mini" onclick="gerarPlanoDia()" title="Gerar sugestão automática">↻ Sugerir automaticamente</button>
+        </div>
+        <div id="planoDiaEditor" class="plano-editor"></div>
+        <button class="btn-mini add" onclick="addBloco()">+ Adicionar bloco de horário</button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalEncontro')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEncontro()">Salvar Encontro</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tabs-scroll { display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch; }
+    .tab-btn { background:none;border:none;padding:12px 18px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap; }
+    .tab-btn.active { color:var(--green);border-bottom-color:var(--green); }
+
+    .toolbar-flex { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap; }
+    .rotina-chip { background:var(--blue-light);border:1px solid #cfe6fb;color:var(--blue);padding:8px 14px;border-radius:8px;font-size:.8rem; }
+
+    .encontros-list { display:flex;flex-direction:column;gap:12px; }
+    .enc-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden; }
+    .enc-head { display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer; }
+    .enc-num { width:42px;height:42px;flex-shrink:0;border-radius:10px;background:var(--green-light);color:var(--green);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;display:flex;align-items:center;justify-content:center; }
+    .enc-num.especial { background:#fce4e8;color:var(--red); }
+    .enc-num.descanso { background:var(--slate-light);color:var(--slate); }
+    .enc-num.recreativa { background:var(--yellow-light);color:#a87b00; }
+    .pt-row.ludica .pt-hora { color:var(--gold); }
+    .pt-row.ludica .pt-tit { color:#a87b00; }
+    .enc-info { flex:1;min-width:0; }
+    .enc-tema { font-weight:700;color:var(--navy);font-size:.95rem;line-height:1.3; }
+    .enc-meta { font-size:.78rem;color:var(--text-light);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center; }
+    .enc-toggle { color:var(--text-light);transition:transform .2s;flex-shrink:0; }
+    .enc-card.open .enc-toggle { transform:rotate(90deg); }
+    .enc-body { display:none;padding:0 18px 18px;border-top:1px solid var(--border); }
+    .enc-card.open .enc-body { display:block; }
+    .enc-obs { background:var(--yellow-light);color:#7a5d00;padding:6px 12px;border-radius:7px;font-size:.8rem;margin:14px 0; }
+
+    .plano-timeline { margin-top:14px;display:flex;flex-direction:column;gap:0; }
+    .pt-row { display:flex;gap:14px;padding:10px 0;border-bottom:1px dashed var(--border); }
+    .pt-row:last-child { border-bottom:none; }
+    .pt-hora { font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--green);min-width:54px;font-size:.95rem; }
+    .pt-row.intervalo .pt-hora { color:var(--orange); }
+    .pt-txt { flex:1; }
+    .pt-tit { font-weight:600;color:var(--text);font-size:.86rem; }
+    .pt-det { font-size:.8rem;color:var(--text-mid);margin-top:2px;line-height:1.5; }
+    .doador-inline { display:inline-flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green);font-size:.74rem;font-weight:600;padding:2px 9px;border-radius:99px;margin-top:4px; }
+
+    .enc-actions { display:flex;gap:8px;margin-top:16px;flex-wrap:wrap; }
+
+    .ementa-intro { color:var(--text-mid);font-size:.88rem;margin-bottom:18px;line-height:1.6;max-width:760px; }
+    .ementa-list { display:flex;flex-direction:column;gap:10px; }
+    .acc { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden; }
+    .acc-head { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;cursor:pointer;font-weight:700;color:var(--navy);font-size:.92rem; }
+    .acc-head:hover { background:#fafbfd; }
+    .acc-count { font-size:.74rem;font-weight:600;color:var(--green);background:var(--green-light);padding:2px 10px;border-radius:99px; }
+    .acc-body { display:none;padding:4px 18px 16px; }
+    .acc.open .acc-body { display:block; }
+    .acc.open .acc-chev { transform:rotate(90deg); }
+    .acc-chev { transition:transform .2s;color:var(--text-light); }
+    .topico { display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.84rem;color:var(--text-mid);line-height:1.5; }
+    .topico:last-child { border-bottom:none; }
+    .topico .dot { color:var(--green);font-weight:700;flex-shrink:0; }
+    .tipo-tag { display:inline-block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:5px;background:var(--blue-light);color:var(--blue);margin-right:8px;flex-shrink:0; }
+
+    .plano-dia-header { display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px;gap:10px;flex-wrap:wrap; }
+    .btn-mini { background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:.78rem;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all .15s; }
+    .btn-mini:hover { background:var(--green);color:#fff;border-color:var(--green); }
+    .btn-mini.add { margin-top:10px;width:100%; }
+    .plano-editor { display:flex;flex-direction:column;gap:8px; }
+    .bloco-row { display:flex;gap:8px;align-items:center; }
+    .bloco-row input.hora { width:80px;flex-shrink:0; }
+    .bloco-row .rm { width:32px;height:36px;border:none;background:#fce4e8;color:var(--red);border-radius:7px;cursor:pointer;flex-shrink:0;font-size:1.1rem; }
+
+    @media(max-width:768px){
+      .enc-num{width:36px;height:36px;font-size:1rem}
+      .toolbar-flex .btn{width:100%}
+    }
+  </style>
+
+  <script src="../../assets/js/dados-planejamento.js"></script>
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const KEY = 'mirim_planejamento';
+    let encontros = BBM.load(KEY);
+    let colaboradores = BBM.load('mirim_colaboradores');
+    let doacoes = BBM.load('mirim_doacoes');
+
+    function addDias(d, dias) {
+      const dt = new Date(d + 'T00:00:00');
+      dt.setDate(dt.getDate() + dias);
+      return dt.toISOString().slice(0,10);
+    }
+    function proximoSabado(fromDate) {
+      let dt = new Date(fromDate + 'T00:00:00');
+      // se hoje não é sábado, avança até o próximo sábado (6 = sábado)
+      while (dt.getDay() !== 6) dt.setDate(dt.getDate() + 1);
+      return dt.toISOString().slice(0,10);
+    }
+
+    // ====== CURRÍCULO 2026 (ordem unida já ministrada) — sequência teoria→prática por módulo ======
+    const CURRICULO = [
+      { tema:'APH — Segurança da cena e avaliação da vítima (XABCDE)', modulo:'APH — Atendimento Pré-Hospitalar I' },
+      { tema:'APH — OVACE e RCP (Reanimação Cardiopulmonar)',          modulo:'APH — Atendimento Pré-Hospitalar I' },
+      { tema:'APH — Hemorragias, fraturas e imobilizações',            modulo:'APH — Atendimento Pré-Hospitalar II' },
+      { tema:'APH — Emergências clínicas: desmaios, convulsões e choque elétrico', modulo:'APH — Atendimento Pré-Hospitalar II' },
+      { tema:'APH — Simulado integrado (segurança da cena → RCP → imobilização)', modulo:'APH — Atendimento Pré-Hospitalar II', obs:'Aula prática / simulado' },
+      { tema:'Salvamento Terrestre — Nós e amarrações',               modulo:'Salvamento Terrestre e em Altura' },
+      { tema:'Salvamento Terrestre — Transporte de acidentados e içamento', modulo:'Salvamento Terrestre e em Altura' },
+      { tema:'Salvamento em Altura — Rapel (prática)',                 modulo:'Salvamento Terrestre e em Altura', obs:'Atividade prática' },
+      { tema:'Salvamento Aquático — Graus de afogamento e prevenção',  modulo:'Salvamento Aquático' },
+      { tema:'Salvamento Aquático — Adaptação ao meio líquido e técnicas de nado', modulo:'Salvamento Aquático' },
+      { tema:'Salvamento Aquático — Tirolesa e treinamento externo',   modulo:'Salvamento Aquático', obs:'Atividade externa' },
+      { tema:'TMI — Fogo e incêndio: tetraedro do fogo e transferência de calor', modulo:'TMI — Combate a Incêndio' },
+      { tema:'TMI — Métodos de extinção e agentes extintores',         modulo:'TMI — Combate a Incêndio' },
+      { tema:'TMI — Extintores, classes de incêndio e demonstração do ABT', modulo:'TMI — Combate a Incêndio', obs:'Demonstração prática' },
+      { tema:'Incêndio Florestal — Prevenção e combate ao fogo no mato', modulo:'TMI — Combate a Incêndio' },
+      { tema:'Prevenção de Acidentes Domésticos — Riscos da casa, cozinha e elétrica', modulo:'Prevenção de Acidentes Domésticos' },
+      { tema:'Prevenção de Acidentes Domésticos — GLP, produtos tóxicos e queimaduras', modulo:'Prevenção de Acidentes Domésticos', obs:'Demonstração de vazamento de GLP' },
+      { tema:'TFM — Treinamento físico, desportos e recreação',        modulo:'TFM — Treinamento Físico Militar' },
+      { tema:'Proteção e Defesa Civil — Desastres, prevenção e autoproteção', modulo:'Proteção e Defesa Civil' },
+      { tema:'Saúde e Meio Ambiente — Meio ambiente, saúde e cidadania', modulo:'Saúde e Meio Ambiente' },
+      { tema:'Competência para a Vida — Ética, cidadania e os 4 pilares', modulo:'Competência para a Vida — Ética e Cidadania' },
+      { tema:'Educação no Trânsito — Sinalização e segurança no trânsito', modulo:'Educação no Trânsito' },
+      { tema:'Revisão geral e simulado integrado de todos os módulos', modulo:'—', obs:'Revisão' },
+    ];
+
+    // ====== DATAS ESPECIAIS 2026 (recreativas / comemorativas) ======
+    // soRecreativo = dia dedicado (não consome conteúdo do currículo)
+    const ESPECIAIS = {
+      '2026-06-20': { nome:'São João — Arraiá do Bombeiro Mirim', soRecreativo:true,
+        recreativa:'Arraiá: quadrilha, brincadeiras juninas (pescaria, argola, corrida do saco), comidas típicas. Integração com famílias e doadores.' },
+      '2026-08-08': { nome:'Dia dos Pais', soRecreativo:false,
+        recreativa:'Homenagem aos pais: convidar responsáveis, gincana família + mirim, demonstração do que aprenderam.' },
+      '2026-09-05': { nome:'Semana da Pátria — Civismo e treino de desfile', soRecreativo:true,
+        recreativa:'Treino de ordem unida e desfile cívico para o 7 de Setembro: perfilamento, marcha e canto do hino.' },
+      '2026-10-10': { nome:'Dia das Crianças', soRecreativo:true,
+        recreativa:'Dia 100% recreativo: circuito de brincadeiras, gincana, pintura facial, premiações e lanche especial. Possível passeio/parque.' },
+      '2026-11-21': { nome:'Consciência Negra', soRecreativo:false,
+        recreativa:'Roda de conversa sobre respeito e diversidade + atividade cultural (música, dança ou arte).' },
+    };
+    function dataEspecial(d){ return ESPECIAIS[d] || null; }
+
+    // ====== ATIVIDADE LÚDICA por tipo de instrução (encerra a aula brincando) ======
+    const LUDICAS = {
+      'APH — Atendimento Pré-Hospitalar I':  'Gincana do socorrista: estações cronometradas de avaliação da vítima e posição de recuperação; quiz "o que fazer?".',
+      'APH — Atendimento Pré-Hospitalar II': 'Circuito de socorro em equipe: imobilização e transporte em maca com obstáculos; jogo de mímica de sintomas.',
+      'Salvamento Terrestre e em Altura':    'Desafio dos nós: competição cronometrada de amarrações + corrida de revezamento com cabos.',
+      'Salvamento Aquático':                 'Brincadeiras na água: "resgate do boneco", caça ao objeto submerso e estafeta de flutuação (com segurança).',
+      'TMI — Combate a Incêndio':            'Corrida do extintor (estafeta) e jogo de cartas das classes de incêndio (A, B, C…); alvo com esguicho/mangueira.',
+      'Prevenção de Acidentes Domésticos':   'Caça aos perigos: cenário/figura de uma casa onde os alunos encontram e corrigem os riscos.',
+      'TFM — Treinamento Físico Militar':    'Gincana esportiva: queimada, revezamento e mini-circuito funcional.',
+      'Proteção e Defesa Civil':             'Simulação lúdica de evacuação e construção do "mapa de riscos" do bairro/escola.',
+      'Saúde e Meio Ambiente':               'Jogo da coleta seletiva, oficina de reciclagem ou plantio de mudas.',
+      'Competência para a Vida — Ética e Cidadania': 'Dinâmica cooperativa dos 4 pilares: teatro curto e roda de conversa com desafios em equipe.',
+      'Educação no Trânsito':                'Circuito de trânsito: minicidade com placas e semáforo, percorrido de bicicleta/a pé.',
+      '—':                                   'Gincana geral de revisão: estações com tudo que foi aprendido no curso, valendo pontos por equipe.',
+    };
+    function atividadeLudica(modulo){ return LUDICAS[modulo] || 'Atividade lúdica/recreativa relacionada ao tema, em equipes.'; }
+
+    // ====== SEED do NOVO planejamento 2026 (a partir do próximo sábado) ======
+    if (!localStorage.getItem('bbm_plan_2026_v1')) {
+      const inicio = proximoSabado(new Date().toISOString().slice(0,10));
+      const novos = [];
+      let sab = inicio, ci = 0, ord = 1;
+      while (ci < CURRICULO.length) {
+        const esp = dataEspecial(sab);
+        if (esp && esp.soRecreativo) {
+          novos.push({ id:BBM.generateId(), ord, data:sab, tema:esp.nome, modulo:'Recreativo / Datas especiais',
+                       obs:esp.nome, recreativo:true, planoDia:[] });
+        } else {
+          const c = CURRICULO[ci++];
+          novos.push({ id:BBM.generateId(), ord, data:sab, tema:c.tema, modulo:c.modulo,
+                       obs: esp ? esp.nome : (c.obs||''), recreativo:false, planoDia:[] });
+        }
+        ord++; sab = addDias(sab, 7);
+      }
+      // encerramento do curso
+      novos.push({ id:BBM.generateId(), ord, data:sab, tema:'Encerramento do curso — Formatura e entrega de certificados',
+                   modulo:'Recreativo / Datas especiais', obs:'Encerramento', recreativo:true, planoDia:[] });
+      encontros = novos;
+      BBM.save(KEY, encontros);
+      localStorage.setItem('bbm_plan_2026_v1', '1');
+      localStorage.setItem('bbm_plan_seed_v1', '1'); // evita seed antigo
+    }
+
+    const MODULOS = (window.PLAN_DATA?.ementa || []).map(e => e.modulo);
+
+    function detectarModulo(t) {
+      t = (t||'').toLowerCase();
+      if (/aph/.test(t)) return 'APH — Atendimento Pré-Hospitalar I';
+      if (/aqu|tirolesa|repouso|bote|nataç/.test(t)) return 'Salvamento Aquático';
+      if (/terrestre|nós|nos|rapel|pranch|iça|march|altura/.test(t)) return 'Salvamento Terrestre e em Altura';
+      if (/tmi|incend|extin|propag|abt|fogo/.test(t) && /flor|mato/.test(t)) return 'Incêndio Florestal';
+      if (/tmi|incend|extin|propag|abt|fogo/.test(t)) return 'TMI — Combate a Incêndio';
+      if (/veicul/.test(t)) return 'Salvamento Terrestre e em Altura';
+      if (/detram|trans/.test(t)) return 'Educação no Trânsito';
+      if (/ordem unida|desfile|formatura/.test(t)) return 'Ordem Unida / Civismo';
+      if (/mães|mae|recreat|parque|psicó|psico/.test(t)) return 'Competência para a Vida — Ética e Cidadania';
+      if (/feriado|férias|ferias|encerr/.test(t)) return '—';
+      return '—';
+    }
+
+    function diaSemana(d) {
+      if (!d) return '';
+      const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+      const dt = new Date(d+'T00:00:00');
+      return dias[dt.getDay()];
+    }
+
+    function tipoEncontro(tema) {
+      const t = (tema||'').toLowerCase();
+      if (/feriado/.test(t)) return 'feriado';
+      if (/férias|ferias/.test(t)) return 'ferias';
+      if (/sem aula|elei/.test(t)) return 'semaula';
+      return 'aula';
+    }
+
+    // ---------- DOADOR DA SEMANA ----------
+    function doadorDoDia(data) {
+      const d = doacoes.find(x => x.data === data);
+      if (!d) return null;
+      return d;
+    }
+
+    // ---------- PLANO DO DIA (gerador) ----------
+    function sugerirPratica(modulo, tema) {
+      const grupo = (window.PLAN_DATA?.sugestoes || []).find(s => s.modulo === modulo);
+      const t = (tema||'').toLowerCase();
+      // tenta casar por palavra-chave dentro do módulo
+      if (grupo) {
+        const match = grupo.itens.find(i => {
+          const a = i.atividade.toLowerCase();
+          return t.split(/[ \-\/]+/).some(p => p.length>3 && a.includes(p));
+        });
+        if (match) return match.atividade;
+        const pratica = grupo.itens.find(i => /prát|prat|extra|trein/.test(i.tipo||''));
+        if (pratica) return pratica.atividade;
+        if (grupo.itens[0]) return grupo.itens[0].atividade;
+      }
+      if (/ordem unida|desfile/.test(t)) return 'Treinamento de ordem unida, perfilamento e marcha.';
+      if (/mães|recreat|parque/.test(t)) return 'Atividade recreativa e de integração com os alunos.';
+      return 'Atividade prática relacionada ao tema do dia.';
+    }
+    function sugerirTeoria(modulo, tema) {
+      const e = (window.PLAN_DATA?.ementa || []).find(x => x.modulo === modulo);
+      if (e && e.topicos.length) return 'Conteúdo teórico: ' + e.topicos.slice(0,2).join(' / ');
+      return 'Exposição teórica do tema, com linguagem adequada à faixa etária.';
+    }
+
+    // Aceita o objeto encontro { modulo, tema, data, obs, recreativo }
+    function planoSugerido(enc) {
+      enc = enc || {};
+      const modulo = enc.modulo, tema = enc.tema;
+      const tipo = tipoEncontro(tema);
+      const esp = dataEspecial(enc.data);
+
+      if (tipo === 'feriado' || tipo === 'ferias' || tipo === 'semaula') {
+        return [{hora:'—', titulo: tipo==='feriado'?'Feriado — sem atividade':(tipo==='ferias'?'Período de férias':'Sem aula'), detalhe: tema}];
+      }
+
+      // Dia recreativo / data especial dedicada
+      if (enc.recreativo || (esp && esp.soRecreativo)) {
+        return [
+          {hora:'08:00', titulo:'Abertura e formatura', detalhe:'Recepção dos alunos, chamada e apresentação da programação especial do dia.'},
+          {hora:'08:30', titulo:(esp?esp.nome:'Atividade recreativa'), detalhe:(esp?esp.recreativa:'Atividade recreativa e de integração.')},
+          {hora:'09:30', titulo:'Intervalo e lanche', detalhe:'Pausa para descanso e lanche. Conferir o Doador da Semana (Colaboradores).', intervalo:true},
+          {hora:'10:00', titulo:'Gincana / continuação recreativa', detalhe:'Continuação das brincadeiras e dinâmicas em equipe, com premiação simbólica.'},
+          {hora:'10:50', titulo:'Encerramento', detalhe:'Roda final, recados aos responsáveis e liberação (~11h).'},
+        ];
+      }
+
+      // Aula de instrução normal — termina com atividade lúdica do módulo
+      const plano = [
+        {hora:'08:00', titulo:'Apresentação e formatura', detalhe:'Ordem unida, hasteamento da bandeira, chamada e avisos do dia.'},
+        {hora:'08:20', titulo:'Teoria — '+(tema||'tema do dia'), detalhe: sugerirTeoria(modulo,tema)},
+        {hora:'09:30', titulo:'Intervalo e lanche', detalhe:'Pausa para descanso e lanche. Conferir o Doador da Semana (Colaboradores).', intervalo:true},
+        {hora:'10:00', titulo:'Atividade prática', detalhe: sugerirPratica(modulo,tema)},
+        {hora:'10:40', titulo:'🎲 Atividade lúdica', detalhe: atividadeLudica(modulo), ludica:true},
+        {hora:'10:55', titulo:'Encerramento', detalhe:'Revisão do que foi aprendido, recados aos responsáveis e liberação (~11h).'},
+      ];
+      // Data comemorativa não-exclusiva: acrescenta bloco recreativo extra
+      if (esp && !esp.soRecreativo) {
+        plano.splice(plano.length-1, 0, {hora:'➕', titulo:'🎉 '+esp.nome, detalhe: esp.recreativa, ludica:true});
+      }
+      return plano;
+    }
+
+    // ---------- RENDER CRONOGRAMA ----------
+    function showTab(id, btn) {
+      ['tabCronograma','tabEmenta','tabSugestoes'].forEach(t=>document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).style.display='block';
+      btn.classList.add('active');
+      if (id==='tabEmenta') renderEmenta();
+      if (id==='tabSugestoes') renderSugestoes();
+    }
+
+    function renderEncontros() {
+      const cont = document.getElementById('listaEncontros');
+      if (!encontros.length) { cont.innerHTML = `<div class="empty-state"><p>Nenhum encontro no cronograma.</p></div>`; return; }
+      const ord = [...encontros].sort((a,b)=> (a.data||'').localeCompare(b.data||'') || a.ord-b.ord);
+      cont.innerHTML = ord.map(e => {
+        const tipo = tipoEncontro(e.tema);
+        const plano = (e.planoDia && e.planoDia.length) ? e.planoDia : planoSugerido(e);
+        const numCls = e.recreativo?'recreativa':(tipo==='feriado'?'especial':(tipo==='ferias'||tipo==='semaula'?'descanso':''));
+        const doador = doadorDoDia(e.data);
+        return `<div class="enc-card" id="enc_${e.id}">
+          <div class="enc-head" onclick="toggleEnc('${e.id}')">
+            <div class="enc-num ${numCls}">${e.ord||'•'}</div>
+            <div class="enc-info">
+              <div class="enc-tema">${e.tema||'(sem tema)'}</div>
+              <div class="enc-meta">
+                <span>📅 ${e.data?BBM.formatDate(e.data):'—'} ${e.data?'· '+diaSemana(e.data):''}</span>
+                ${e.modulo && e.modulo!=='—'?`<span>📚 ${e.modulo}</span>`:''}
+                ${doador?`<span class="doador-inline">🥪 ${doador.empresa}</span>`:''}
+              </div>
+            </div>
+            <span class="enc-toggle">▶</span>
+          </div>
+          <div class="enc-body">
+            ${e.obs?`<div class="enc-obs">⚠ ${e.obs}</div>`:''}
+            <div class="plano-timeline">
+              ${plano.map(p=>`<div class="pt-row ${p.intervalo?'intervalo':''} ${p.ludica?'ludica':''}">
+                <div class="pt-hora">${p.hora}</div>
+                <div class="pt-txt">
+                  <div class="pt-tit">${p.titulo}</div>
+                  <div class="pt-det">${p.detalhe||''}</div>
+                  ${p.intervalo && doador?`<span class="doador-inline">🥪 Doador da semana: ${doador.empresa}</span>`:''}
+                  ${p.intervalo && !doador?`<span class="doador-inline" style="background:var(--yellow-light);color:#7a5d00">🥪 Doador não definido — ver Colaboradores</span>`:''}
+                </div>
+              </div>`).join('')}
+            </div>
+            <div class="enc-actions">
+              <button class="btn btn-ghost" onclick="editarEncontro('${e.id}')">✏ Editar / Plano do dia</button>
+              <button class="btn btn-ghost" onclick="excluirEncontro('${e.id}')">🗑 Excluir</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleEnc(id){ document.getElementById('enc_'+id)?.classList.toggle('open'); }
+
+    function renderEmenta() {
+      const cont = document.getElementById('listaEmenta');
+      const ementa = window.PLAN_DATA?.ementa || [];
+      cont.innerHTML = ementa.map((m,i)=>`
+        <div class="acc" id="acc_e${i}">
+          <div class="acc-head" onclick="document.getElementById('acc_e${i}').classList.toggle('open')">
+            <span><span class="acc-chev" style="display:inline-block">▶</span> &nbsp;${m.modulo}</span>
+            <span class="acc-count">${m.topicos.length} tópicos</span>
+          </div>
+          <div class="acc-body">
+            ${m.topicos.map(t=>`<div class="topico"><span class="dot">›</span><span>${t}</span></div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+
+    function renderSugestoes() {
+      const cont = document.getElementById('listaSugestoes');
+      const sug = window.PLAN_DATA?.sugestoes || [];
+      cont.innerHTML = sug.map((m,i)=>`
+        <div class="acc open" id="acc_s${i}">
+          <div class="acc-head" onclick="document.getElementById('acc_s${i}').classList.toggle('open')">
+            <span><span class="acc-chev" style="display:inline-block">▶</span> &nbsp;${m.modulo}</span>
+            <span class="acc-count">${m.itens.length} sugestões</span>
+          </div>
+          <div class="acc-body">
+            ${m.itens.map(t=>`<div class="topico"><span>${t.tipo?`<span class="tipo-tag">${t.tipo}</span>`:''}${t.atividade}</span></div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+
+    // ---------- EDITOR DE ENCONTRO ----------
+    let blocosTmp = [];
+
+    function popularModulos() {
+      const sel = document.getElementById('encModulo');
+      const opts = ['—','Ordem Unida / Civismo','Recreativo / Datas especiais', ...MODULOS].filter((v,i,a)=>a.indexOf(v)===i);
+      sel.innerHTML = opts.map(m=>`<option value="${m}">${m}</option>`).join('');
+    }
+
+    function renderBlocos() {
+      const cont = document.getElementById('planoDiaEditor');
+      cont.innerHTML = blocosTmp.map((b,i)=>`
+        <div class="bloco-row">
+          <input class="form-control hora" value="${(b.hora||'').replace(/"/g,'&quot;')}" placeholder="08:00" oninput="blocosTmp[${i}].hora=this.value"/>
+          <input class="form-control" value="${(b.titulo||'').replace(/"/g,'&quot;')}" placeholder="Atividade" oninput="blocosTmp[${i}].titulo=this.value"/>
+          <button class="rm" onclick="blocosTmp.splice(${i},1);renderBlocos()" title="Remover">×</button>
+        </div>`).join('');
+    }
+    function addBloco(){ blocosTmp.push({hora:'',titulo:'',detalhe:''}); renderBlocos(); }
+
+    function gerarPlanoDia() {
+      const enc = {
+        modulo: document.getElementById('encModulo').value,
+        tema:   document.getElementById('encTema').value,
+        data:   document.getElementById('encData').value,
+      };
+      blocosTmp = planoSugerido(enc).map(p=>({hora:p.hora,titulo:p.titulo,detalhe:p.detalhe,intervalo:p.intervalo}));
+      renderBlocos();
+    }
+
+    function novoEncontro() {
+      popularModulos();
+      document.getElementById('encId').value='';
+      document.getElementById('encData').value='';
+      document.getElementById('encTema').value='';
+      document.getElementById('encObs').value='';
+      document.getElementById('encModulo').value='—';
+      blocosTmp = [];
+      renderBlocos();
+      document.getElementById('encTitulo').textContent='Novo Encontro';
+      BBM.openModal('modalEncontro');
+    }
+
+    function editarEncontro(id) {
+      const e = encontros.find(x=>x.id===id); if(!e) return;
+      popularModulos();
+      document.getElementById('encId').value   = e.id;
+      document.getElementById('encData').value = e.data||'';
+      document.getElementById('encTema').value = e.tema||'';
+      document.getElementById('encObs').value  = e.obs||'';
+      document.getElementById('encModulo').value = MODULOS.includes(e.modulo)||['—','Ordem Unida / Civismo','Recreativo / Datas especiais'].includes(e.modulo) ? e.modulo : '—';
+      blocosTmp = (e.planoDia && e.planoDia.length) ? JSON.parse(JSON.stringify(e.planoDia)) : planoSugerido(e).map(p=>({hora:p.hora,titulo:p.titulo,detalhe:p.detalhe,intervalo:p.intervalo}));
+      renderBlocos();
+      document.getElementById('encTitulo').textContent='Editar Encontro';
+      BBM.openModal('modalEncontro');
+    }
+
+    function salvarEncontro() {
+      const id = document.getElementById('encId').value;
+      const tema = document.getElementById('encTema').value.trim();
+      if (!tema) { BBM.toast('Informe a atividade/tema do dia.','error'); return; }
+      const obj = {
+        id: id||BBM.generateId(),
+        ord: id ? (encontros.find(e=>e.id===id)?.ord) : (encontros.length+1),
+        data: document.getElementById('encData').value,
+        tema,
+        modulo: document.getElementById('encModulo').value,
+        obs: document.getElementById('encObs').value,
+        planoDia: blocosTmp.filter(b=>b.hora||b.titulo),
+      };
+      if (id) { encontros[encontros.findIndex(e=>e.id===id)]=obj; }
+      else encontros.push(obj);
+      BBM.save(KEY, encontros);
+      BBM.closeModal('modalEncontro');
+      BBM.toast('Encontro salvo.');
+      renderEncontros();
+    }
+
+    function excluirEncontro(id) {
+      if (!confirm('Excluir este encontro do cronograma?')) return;
+      encontros = encontros.filter(e=>e.id!==id);
+      BBM.save(KEY, encontros);
+      BBM.toast('Encontro removido.','error');
+      renderEncontros();
+    }
+
+    renderEncontros();
+  </script>
+</body>
+</html>

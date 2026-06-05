@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>Colaboradores — Bombeiro Mirim — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="index.html"                   class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema</a>
+          <span class="breadcrumb-sep">›</span>
+          <a href="index.html">Bombeiro Mirim</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Colaboradores</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:var(--green-light);color:var(--green)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Colaboradores / Doadores</div>
+            <div class="mod-subtitle">Empresas parceiras que doam o lanche — com rodízio semanal</div>
+          </div>
+        </div>
+        <a class="btn btn-ghost" href="index.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Voltar
+        </a>
+      </div>
+
+      <!-- DOADOR DA SEMANA (destaque) -->
+      <div class="doador-semana" id="doadorSemana"></div>
+
+      <div class="status-grid" style="margin:24px 0 28px">
+        <div class="status-card"><div class="status-value" id="totEmpresas">0</div><div class="status-label">Empresas Parceiras</div></div>
+        <div class="status-card"><div class="status-value" id="totAtivas">0</div><div class="status-label">Ativas no Rodízio</div></div>
+        <div class="status-card"><div class="status-value" id="totRealizadas">0</div><div class="status-label">Doações Realizadas</div></div>
+        <div class="status-card"><div class="status-value" id="totAgendadas">0</div><div class="status-label">Agendadas</div></div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs-scroll">
+        <button class="tab-btn active" onclick="showTab('tabRodizio',this)">Rodízio de Doações</button>
+        <button class="tab-btn" onclick="showTab('tabEmpresas',this)">Empresas Parceiras</button>
+      </div>
+
+      <!-- ===================== RODÍZIO ===================== -->
+      <div id="tabRodizio">
+        <div class="toolbar-flex">
+          <p class="info-text">O rodízio distribui os doadores de forma justa: sempre sugere quem está há <strong>mais tempo sem doar</strong>, evitando sobrecarregar a mesma empresa.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="gerarRodizio()">↻ Gerar rodízio nas próximas aulas</button>
+            <button class="btn btn-primary" onclick="abrirAgendar()">+ Agendar Doação</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data da Aula</th><th>Empresa Doadora</th><th>Tipo de Doação</th><th>Contato</th><th>Situação</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tabelaDoacoes"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===================== EMPRESAS ===================== -->
+      <div id="tabEmpresas" style="display:none">
+        <div class="toolbar-flex">
+          <div class="search-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="searchEmpresa" type="text" placeholder="Pesquisar empresa…"/>
+          </div>
+          <button class="btn btn-primary" onclick="abrirEmpresa()">+ Nova Empresa</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Empresa</th><th>Responsável</th><th>Contato</th><th>Tipo de Doação</th><th>Últ. Doação</th><th>Total</th><th>Rodízio</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tabelaEmpresas"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL EMPRESA -->
+  <div class="modal-overlay" id="modalEmpresa">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="empTitulo">Nova Empresa</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalEmpresa')" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="empId"/>
+        <div class="form-group"><label class="form-label">Nome da Empresa *</label><input class="form-control" id="empNome" placeholder="Ex: Padaria Pão Quente"/></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Responsável / Contato</label><input class="form-control" id="empResp" placeholder="Nome da pessoa"/></div>
+          <div class="form-group"><label class="form-label">Telefone</label><input class="form-control" id="empTel" placeholder="(99) 99999-9999"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tipo de Doação</label><input class="form-control" id="empTipo" placeholder="Ex: Lanche, suco, bolo"/></div>
+          <div class="form-group"><label class="form-label">No rodízio?</label>
+            <select class="form-control" id="empAtivo"><option value="sim">Sim — participa do rodízio</option><option value="nao">Não</option></select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="empObs" rows="2" placeholder="Endereço, preferências, restrições…"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalEmpresa')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEmpresa()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL AGENDAR -->
+  <div class="modal-overlay" id="modalAgendar">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="agTitulo">Agendar Doação</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAgendar')" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="agId"/>
+        <div class="form-group"><label class="form-label">Data da Aula (sábado) *</label><input class="form-control" id="agData" type="date"/></div>
+        <div class="form-group">
+          <label class="form-label">Empresa Doadora *</label>
+          <select class="form-control" id="agEmpresa"></select>
+          <small id="agSugestao" class="sugestao-hint"></small>
+        </div>
+        <div class="form-group"><label class="form-label">Situação</label>
+          <select class="form-control" id="agStatus"><option>Agendado</option><option>Confirmado</option><option>Realizado</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Observação</label><input class="form-control" id="agObs" placeholder="Opcional"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAgendar')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarAgendamento()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tabs-scroll { display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto; }
+    .tab-btn { background:none;border:none;padding:12px 18px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap; }
+    .tab-btn.active { color:var(--green);border-bottom-color:var(--green); }
+    .toolbar-flex { display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap; }
+    .info-text { color:var(--text-mid);font-size:.84rem;line-height:1.6;max-width:520px; }
+    .sugestao-hint { font-size:.78rem;color:var(--green);margin-top:4px;display:block; }
+
+    .doador-semana { background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:var(--radius-lg);padding:22px 26px;color:#fff;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow-md);border-left:4px solid var(--gold); }
+    .ds-icon { width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.8rem; }
+    .ds-info { flex:1;min-width:0; }
+    .ds-label { font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:700; }
+    .ds-empresa { font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;line-height:1.1;margin:2px 0; }
+    .ds-meta { font-size:.82rem;color:rgba(255,255,255,.7); }
+    .ds-empty { font-size:.9rem;color:rgba(255,255,255,.75); }
+
+    .rod-badge { display:inline-block;font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:99px; }
+    .rod-on { background:var(--green-light);color:var(--green); }
+    .rod-off { background:var(--slate-light);color:var(--slate); }
+
+    @media(max-width:768px){
+      .doador-semana{flex-direction:row}
+      .ds-empresa{font-size:1.2rem}
+      .toolbar-flex .btn{flex:1}
+    }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    let empresas = BBM.load('mirim_colaboradores');
+    let doacoes  = BBM.load('mirim_doacoes');
+    let plan     = BBM.load('mirim_planejamento');
+
+    function showTab(id, btn) {
+      ['tabRodizio','tabEmpresas'].forEach(t=>document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).style.display='block';
+      btn.classList.add('active');
+      if (id==='tabEmpresas') renderEmpresas();
+    }
+
+    const hojeStr = new Date().toISOString().slice(0,10);
+
+    function ultimaDoacao(empId) {
+      const ds = doacoes.filter(d=>d.empresaId===empId && d.data).map(d=>d.data).sort();
+      return ds.length ? ds[ds.length-1] : '';
+    }
+    function totalDoacoes(empId){ return doacoes.filter(d=>d.empresaId===empId).length; }
+
+    // Doador menos recentemente usado (entre ativos)
+    function proximoDoadorSugerido(excluirDatas=[]) {
+      const ativas = empresas.filter(e=>e.ativo);
+      if (!ativas.length) return null;
+      const score = ativas.map(e=>{
+        const u = ultimaDoacao(e.id);
+        return { e, t: u?new Date(u).getTime():0, n: totalDoacoes(e.id) };
+      });
+      score.sort((a,b)=> a.t-b.t || a.n-b.n);
+      return score[0].e;
+    }
+
+    // Próximas datas de aula (do planejamento, futuras, sem doação ainda)
+    function proximasAulas() {
+      return plan
+        .filter(e => e.data && e.data >= hojeStr)
+        .filter(e => !/feriado|férias|ferias|sem aula|encerr/i.test(e.tema||''))
+        .sort((a,b)=>a.data.localeCompare(b.data));
+    }
+
+    // ---------- DOADOR DA SEMANA ----------
+    function renderDoadorSemana() {
+      const box = document.getElementById('doadorSemana');
+      // próxima aula futura
+      const prox = proximasAulas()[0];
+      let doacao = prox ? doacoes.find(d=>d.data===prox.data) : null;
+      if (!prox) {
+        // sem planejamento futuro: mostra próxima doação agendada
+        const ag = doacoes.filter(d=>d.data>=hojeStr).sort((a,b)=>a.data.localeCompare(b.data))[0];
+        if (ag) {
+          box.innerHTML = doadorCard(ag.empresa, ag.data, ag.tipo, ag.status);
+        } else {
+          const sug = proximoDoadorSugerido();
+          box.innerHTML = `<div class="ds-icon">🥪</div><div class="ds-info">
+            <div class="ds-label">Doador da Semana</div>
+            <div class="ds-empty">${sug?('Sugestão de rodízio: <strong style="color:#fff">'+sug.empresa+'</strong> (há mais tempo sem doar).'):'Cadastre empresas parceiras para iniciar o rodízio.'}</div>
+          </div>`;
+        }
+        return;
+      }
+      if (doacao) {
+        box.innerHTML = doadorCard(doacao.empresa, doacao.data, doacao.tipo, doacao.status);
+      } else {
+        const sug = proximoDoadorSugerido();
+        box.innerHTML = `<div class="ds-icon">🥪</div><div class="ds-info">
+          <div class="ds-label">Próxima aula • ${BBM.formatDate(prox.data)}</div>
+          <div class="ds-empresa">Doador a definir</div>
+          <div class="ds-meta">${sug?('Sugestão do rodízio: <strong style="color:var(--gold-light)">'+sug.empresa+'</strong>'):'Nenhuma empresa ativa cadastrada'}</div>
+        </div>
+        ${sug?`<button class="btn btn-primary" onclick="agendarRapido('${prox.data}','${sug.id}')">Confirmar ${sug.empresa.split(' ')[0]}</button>`:''}`;
+      }
+    }
+    function doadorCard(empresa,data,tipo,status){
+      return `<div class="ds-icon">🥪</div><div class="ds-info">
+        <div class="ds-label">Doador da Semana • ${BBM.formatDate(data)}</div>
+        <div class="ds-empresa">${empresa}</div>
+        <div class="ds-meta">${tipo||'Lanche'} • ${status||'Agendado'}</div>
+      </div>`;
+    }
+
+    function agendarRapido(data, empId) {
+      const e = empresas.find(x=>x.id===empId); if(!e) return;
+      doacoes.push({ id:BBM.generateId(), data, empresaId:empId, empresa:e.nome, tipo:e.tipo||'Lanche', status:'Confirmado', obs:'' });
+      BBM.save('mirim_doacoes', doacoes);
+      BBM.toast('Doação confirmada para '+e.nome+'.');
+      refreshAll();
+    }
+
+    // ---------- RODÍZIO AUTOMÁTICO ----------
+    function gerarRodizio() {
+      const ativas = empresas.filter(e=>e.ativo);
+      if (!ativas.length) { BBM.toast('Cadastre empresas ativas no rodízio primeiro.','error'); return; }
+      const aulas = proximasAulas().filter(a => !doacoes.some(d=>d.data===a.data));
+      if (!aulas.length) { BBM.toast('Não há aulas futuras sem doador no planejamento.','error'); return; }
+      // ordena ativas por menos recente uso e vai distribuindo ciclicamente
+      let fila = ativas.map(e=>({ e, t: (ultimaDoacao(e.id)?new Date(ultimaDoacao(e.id)).getTime():0), n: totalDoacoes(e.id) }))
+                       .sort((a,b)=>a.t-b.t||a.n-b.n).map(x=>x.e);
+      let i = 0;
+      aulas.forEach(a => {
+        const emp = fila[i % fila.length];
+        doacoes.push({ id:BBM.generateId(), data:a.data, empresaId:emp.id, empresa:emp.nome, tipo:emp.tipo||'Lanche', status:'Agendado', obs:'Rodízio automático' });
+        i++;
+      });
+      BBM.save('mirim_doacoes', doacoes);
+      BBM.toast(`Rodízio gerado para ${aulas.length} aula(s).`);
+      refreshAll();
+    }
+
+    // ---------- TABELA DOAÇÕES ----------
+    function statusBadge(s){
+      if(s==='Realizado') return 'badge-ok';
+      if(s==='Confirmado') return 'badge-info';
+      return 'badge-warn';
+    }
+    function renderDoacoes() {
+      const tbody = document.getElementById('tabelaDoacoes');
+      if (!doacoes.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhuma doação agendada. Use “Gerar rodízio” ou “Agendar Doação”.</p></div></td></tr>`; return; }
+      const ord = [...doacoes].sort((a,b)=>b.data.localeCompare(a.data));
+      tbody.innerHTML = ord.map(d => {
+        const emp = empresas.find(e=>e.id===d.empresaId);
+        return `<tr>
+          <td><strong>${BBM.formatDate(d.data)}</strong></td>
+          <td>${d.empresa}</td>
+          <td>${d.tipo||'—'}</td>
+          <td>${emp?(emp.tel||emp.resp||'—'):'—'}</td>
+          <td><span class="badge ${statusBadge(d.status)}">${d.status}</span></td>
+          <td style="display:flex;gap:6px">
+            <button class="action-btn" title="Avançar situação" onclick="avancarStatus('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></button>
+            <button class="action-btn" title="Editar" onclick="editarAgendamento('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="action-btn" title="Excluir" onclick="excluirDoacao('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+    function avancarStatus(id){
+      const d = doacoes.find(x=>x.id===id); if(!d) return;
+      const seq = ['Agendado','Confirmado','Realizado'];
+      d.status = seq[(seq.indexOf(d.status)+1)%seq.length];
+      BBM.save('mirim_doacoes', doacoes);
+      refreshAll();
+    }
+
+    // ---------- TABELA EMPRESAS ----------
+    function renderEmpresas(lista=empresas) {
+      const tbody = document.getElementById('tabelaEmpresas');
+      if (!empresas.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><p>Nenhuma empresa parceira cadastrada.</p></div></td></tr>`; return; }
+      tbody.innerHTML = lista.map(e => `<tr>
+        <td><strong>${e.nome}</strong></td>
+        <td>${e.resp||'—'}</td>
+        <td>${e.tel||'—'}</td>
+        <td>${e.tipo||'—'}</td>
+        <td>${ultimaDoacao(e.id)?BBM.formatDate(ultimaDoacao(e.id)):'—'}</td>
+        <td>${totalDoacoes(e.id)}</td>
+        <td><span class="rod-badge ${e.ativo?'rod-on':'rod-off'}">${e.ativo?'No rodízio':'Fora'}</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="action-btn" onclick="editarEmpresa('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="action-btn" onclick="excluirEmpresa('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ---------- CARDS ----------
+    function atualizarCards() {
+      document.getElementById('totEmpresas').textContent   = empresas.length;
+      document.getElementById('totAtivas').textContent     = empresas.filter(e=>e.ativo).length;
+      document.getElementById('totRealizadas').textContent = doacoes.filter(d=>d.status==='Realizado').length;
+      document.getElementById('totAgendadas').textContent  = doacoes.filter(d=>d.status!=='Realizado').length;
+    }
+
+    // ---------- EMPRESA CRUD ----------
+    function abrirEmpresa() {
+      ['empId','empNome','empResp','empTel','empTipo','empObs'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('empAtivo').value='sim';
+      document.getElementById('empTitulo').textContent='Nova Empresa';
+      BBM.openModal('modalEmpresa');
+    }
+    function salvarEmpresa() {
+      const id = document.getElementById('empId').value;
+      const nome = document.getElementById('empNome').value.trim();
+      if (!nome) { BBM.toast('Informe o nome da empresa.','error'); return; }
+      const obj = {
+        id: id||BBM.generateId(),
+        nome: BBM.padronizarNome(nome),
+        resp: document.getElementById('empResp').value,
+        tel:  document.getElementById('empTel').value,
+        tipo: document.getElementById('empTipo').value,
+        ativo: document.getElementById('empAtivo').value==='sim',
+        obs:  document.getElementById('empObs').value,
+      };
+      if (id) { empresas[empresas.findIndex(e=>e.id===id)]=obj; }
+      else empresas.push(obj);
+      BBM.save('mirim_colaboradores', empresas);
+      BBM.closeModal('modalEmpresa');
+      BBM.toast('Empresa salva.');
+      refreshAll();
+    }
+    function editarEmpresa(id) {
+      const e = empresas.find(x=>x.id===id); if(!e) return;
+      document.getElementById('empId').value   = e.id;
+      document.getElementById('empNome').value = e.nome;
+      document.getElementById('empResp').value = e.resp||'';
+      document.getElementById('empTel').value  = e.tel||'';
+      document.getElementById('empTipo').value = e.tipo||'';
+      document.getElementById('empAtivo').value= e.ativo?'sim':'nao';
+      document.getElementById('empObs').value  = e.obs||'';
+      document.getElementById('empTitulo').textContent='Editar Empresa';
+      BBM.openModal('modalEmpresa');
+    }
+    function excluirEmpresa(id) {
+      if (!confirm('Excluir esta empresa?')) return;
+      empresas = empresas.filter(e=>e.id!==id);
+      BBM.save('mirim_colaboradores', empresas);
+      BBM.toast('Empresa removida.','error');
+      refreshAll();
+    }
+
+    // ---------- AGENDAMENTO ----------
+    function popularEmpresasSelect(selId) {
+      const sel = document.getElementById('agEmpresa');
+      sel.innerHTML = empresas.length
+        ? empresas.map(e=>`<option value="${e.id}" ${e.id===selId?'selected':''}>${e.nome}${e.ativo?'':' (fora do rodízio)'}</option>`).join('')
+        : '<option value="">Nenhuma empresa cadastrada</option>';
+    }
+    function abrirAgendar() {
+      document.getElementById('agId').value='';
+      const prox = proximasAulas()[0];
+      document.getElementById('agData').value = prox?prox.data:'';
+      const sug = proximoDoadorSugerido();
+      popularEmpresasSelect(sug?sug.id:'');
+      document.getElementById('agSugestao').textContent = sug?`💡 Sugestão do rodízio: ${sug.nome} (há mais tempo sem doar).`:'';
+      document.getElementById('agStatus').value='Agendado';
+      document.getElementById('agObs').value='';
+      document.getElementById('agTitulo').textContent='Agendar Doação';
+      BBM.openModal('modalAgendar');
+    }
+    function editarAgendamento(id) {
+      const d = doacoes.find(x=>x.id===id); if(!d) return;
+      document.getElementById('agId').value=d.id;
+      document.getElementById('agData').value=d.data;
+      popularEmpresasSelect(d.empresaId);
+      document.getElementById('agSugestao').textContent='';
+      document.getElementById('agStatus').value=d.status;
+      document.getElementById('agObs').value=d.obs||'';
+      document.getElementById('agTitulo').textContent='Editar Doação';
+      BBM.openModal('modalAgendar');
+    }
+    function salvarAgendamento() {
+      const id = document.getElementById('agId').value;
+      const data = document.getElementById('agData').value;
+      const empId = document.getElementById('agEmpresa').value;
+      if (!data || !empId) { BBM.toast('Informe a data e a empresa.','error'); return; }
+      const e = empresas.find(x=>x.id===empId);
+      const obj = {
+        id: id||BBM.generateId(), data, empresaId:empId, empresa:e?e.nome:'—',
+        tipo: e?e.tipo||'Lanche':'Lanche',
+        status: document.getElementById('agStatus').value,
+        obs: document.getElementById('agObs').value,
+      };
+      if (id) { doacoes[doacoes.findIndex(d=>d.id===id)]=obj; }
+      else doacoes.push(obj);
+      BBM.save('mirim_doacoes', doacoes);
+      BBM.closeModal('modalAgendar');
+      BBM.toast('Doação salva.');
+      refreshAll();
+    }
+    function excluirDoacao(id) {
+      if (!confirm('Excluir este agendamento?')) return;
+      doacoes = doacoes.filter(d=>d.id!==id);
+      BBM.save('mirim_doacoes', doacoes);
+      BBM.toast('Removido.','error');
+      refreshAll();
+    }
+
+    document.getElementById('searchEmpresa').addEventListener('input', () => {
+      const q = document.getElementById('searchEmpresa').value.toLowerCase();
+      renderEmpresas(empresas.filter(e=>e.nome.toLowerCase().includes(q)));
+    });
+
+    function refreshAll() {
+      renderDoadorSemana();
+      renderDoacoes();
+      atualizarCards();
+      if (document.getElementById('tabEmpresas').style.display!=='none') renderEmpresas();
+    }
+
+    refreshAll();
+  </script>
+</body>
+</html>

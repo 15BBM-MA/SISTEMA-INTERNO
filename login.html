@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>Entrar — Sistema 15º BBM</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; min-height:100dvh;
+      background: linear-gradient(135deg, var(--navy), var(--navy-mid)); padding:20px; }
+    .login-card { background:var(--surface); border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+      width:100%; max-width:400px; overflow:hidden; }
+    .login-head { text-align:center; padding:34px 30px 22px; border-bottom:1px solid var(--border); }
+    .login-logo { width:84px; height:84px; object-fit:contain; margin-bottom:14px; }
+    .login-head h1 { font-family:'Rajdhani',sans-serif; font-size:1.4rem; color:var(--navy); letter-spacing:.02em; }
+    .login-head p { font-size:.82rem; color:var(--text-mid); margin-top:4px; }
+    .login-body { padding:26px 30px 30px; display:flex; flex-direction:column; gap:16px; }
+    .login-body .btn-primary { width:100%; justify-content:center; padding:12px; font-size:.92rem; margin-top:4px; }
+    .login-err { background:#fce4e8; color:var(--red); font-size:.82rem; padding:10px 14px; border-radius:8px; display:none; }
+    .login-foot { text-align:center; font-size:.74rem; color:var(--text-light); padding:0 30px 22px; }
+    .pw-wrap { position:relative; }
+    .pw-toggle { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-light); font-size:.78rem; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-head">
+      <img src="assets/img/logo.png" alt="15º BBM" class="login-logo"/>
+      <h1>Sistema 15º BBM</h1>
+      <p>Acesso restrito — Corpo de Bombeiros Militar</p>
+    </div>
+    <div class="login-body">
+      <div class="login-err" id="loginErr"></div>
+      <div class="form-group">
+        <label class="form-label">Login</label>
+        <input class="form-control" id="inLogin" placeholder="seu.login" autocomplete="username" autocapitalize="none"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <div class="pw-wrap">
+          <input class="form-control" id="inSenha" type="password" placeholder="••••••" autocomplete="current-password"/>
+          <button class="pw-toggle" type="button" onclick="togglePw()">mostrar</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="entrar()">Entrar</button>
+    </div>
+    <div class="login-foot">CBMMA — Chapadinha/MA · Em caso de dúvida, procure o administrador.</div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    // se já logado, vai pro painel
+    if (BBM.session()) location.href = 'index.html';
+
+    function togglePw(){
+      const i = document.getElementById('inSenha');
+      i.type = i.type === 'password' ? 'text' : 'password';
+    }
+    function entrar(){
+      const login = document.getElementById('inLogin').value;
+      const senha = document.getElementById('inSenha').value;
+      const err = document.getElementById('loginErr');
+      const s = BBM.login(login, senha);
+      if (!s) { err.textContent = 'Login ou senha incorretos.'; err.style.display='block'; return; }
+      location.href = s.precisaTrocar ? 'trocar-senha.html' : 'index.html';
+    }
+    document.getElementById('inSenha').addEventListener('keydown', e => { if(e.key==='Enter') entrar(); });
+    document.getElementById('inLogin').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('inSenha').focus(); });
+  </script>
+</body>
+</html>

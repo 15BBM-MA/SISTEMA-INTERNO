@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Viaturas — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title">
+        <span class="sidebar-title-main">15º BBM</span>
+        <span class="sidebar-title-sub">Chapadinha — MA</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item active" data-mod="viaturas">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>
+        <span class="nav-text">Viaturas</span><span class="nav-arrow">›</span>
+      </a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema de Gestão</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Viaturas</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:#fce4e8;color:var(--red)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Viaturas</div>
+            <div class="mod-subtitle">Controle de frota e disponibilidade operacional</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="BBM.openModal('modalViatura')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova Viatura
+        </button>
+      </div>
+
+      <!-- CARDS RESUMO -->
+      <div class="status-grid" style="margin-bottom:28px">
+        <div class="status-card"><div class="status-value" id="totDisp">0</div><div class="status-label">Disponíveis</div></div>
+        <div class="status-card"><div class="status-value" id="totMaint">0</div><div class="status-label">Em Manutenção</div></div>
+        <div class="status-card"><div class="status-value" id="totOper">0</div><div class="status-label">Em Operação</div></div>
+        <div class="status-card"><div class="status-value" id="totTotal">0</div><div class="status-label">Total da Frota</div></div>
+      </div>
+
+      <div class="section-label">Frota Cadastrada</div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="search-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="searchViatura" type="text" placeholder="Pesquisar viatura…"/>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="form-control" id="filterStatus" style="width:auto;padding:7px 12px">
+              <option value="">Todos os status</option>
+              <option value="Disponível">Disponível</option>
+              <option value="Em Operação">Em Operação</option>
+              <option value="Manutenção">Manutenção</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Denominação</th>
+              <th>Placa</th>
+              <th>Tipo</th>
+              <th>Ano</th>
+              <th>KM Atual</th>
+              <th>Última Revisão</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaViaturas"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalViatura">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modalViaturaTitle">Nova Viatura</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalViatura')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="viaturaId"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Denominação *</label>
+            <input class="form-control" id="vDenominacao" placeholder="Ex: AB-01"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Placa *</label>
+            <input class="form-control" id="vPlaca" placeholder="AAA-0000"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-control" id="vTipo">
+              <option>Auto Bomba</option>
+              <option>Auto Escada</option>
+              <option>Ambulância</option>
+              <option>Caminhão Pipa</option>
+              <option>Viatura de Resgate</option>
+              <option>Viatura Administrativa</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ano de Fabricação</label>
+            <input class="form-control" id="vAno" type="number" placeholder="2020"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">KM Atual</label>
+            <input class="form-control" id="vKm" type="number" placeholder="0"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Última Revisão</label>
+            <input class="form-control" id="vRevisao" type="date"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="vStatus">
+            <option>Disponível</option>
+            <option>Em Operação</option>
+            <option>Manutenção</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-control" id="vObs" rows="2" placeholder="Informações adicionais…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalViatura')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarViatura()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const KEY = 'viaturas';
+    let dados = BBM.load(KEY);
+
+    function renderizar(lista = dados) {
+      const tbody = document.getElementById('tabelaViaturas');
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+          <p>Nenhuma viatura cadastrada.</p></div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = lista.map(v => `
+        <tr>
+          <td><strong>${v.denominacao}</strong></td>
+          <td>${v.placa}</td>
+          <td>${v.tipo}</td>
+          <td>${v.ano || '—'}</td>
+          <td>${v.km ? Number(v.km).toLocaleString('pt-BR') + ' km' : '—'}</td>
+          <td>${BBM.formatDate(v.revisao)}</td>
+          <td><span class="badge ${badgeClass(v.status)}">${v.status}</span></td>
+          <td style="display:flex;gap:6px">
+            <button class="action-btn" title="Editar" onclick="editarViatura('${v.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="action-btn" title="Excluir" onclick="excluirViatura('${v.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            </button>
+          </td>
+        </tr>`).join('');
+
+      atualizarCards(lista);
+    }
+
+    function badgeClass(s) {
+      if (s === 'Disponível') return 'badge-ok';
+      if (s === 'Em Operação') return 'badge-info';
+      return 'badge-danger';
+    }
+
+    function atualizarCards(lista) {
+      document.getElementById('totDisp').textContent  = lista.filter(v=>v.status==='Disponível').length;
+      document.getElementById('totMaint').textContent = lista.filter(v=>v.status==='Manutenção').length;
+      document.getElementById('totOper').textContent  = lista.filter(v=>v.status==='Em Operação').length;
+      document.getElementById('totTotal').textContent = lista.length;
+    }
+
+    function salvarViatura() {
+      const id = document.getElementById('viaturaId').value;
+      const den = document.getElementById('vDenominacao').value.trim();
+      const pla = document.getElementById('vPlaca').value.trim();
+      if (!den || !pla) { BBM.toast('Preencha denominação e placa.', 'error'); return; }
+
+      const obj = {
+        id: id || BBM.generateId(),
+        denominacao: den,
+        placa: pla,
+        tipo: document.getElementById('vTipo').value,
+        ano:  document.getElementById('vAno').value,
+        km:   document.getElementById('vKm').value,
+        revisao: document.getElementById('vRevisao').value,
+        status: document.getElementById('vStatus').value,
+        obs:  document.getElementById('vObs').value,
+      };
+
+      if (id) {
+        const idx = dados.findIndex(v => v.id === id);
+        dados[idx] = obj;
+      } else {
+        dados.push(obj);
+      }
+
+      BBM.save(KEY, dados);
+      BBM.closeModal('modalViatura');
+      BBM.toast(id ? 'Viatura atualizada.' : 'Viatura cadastrada.');
+      renderizar();
+      resetForm();
+    }
+
+    function editarViatura(id) {
+      const v = dados.find(x => x.id === id);
+      if (!v) return;
+      document.getElementById('viaturaId').value      = v.id;
+      document.getElementById('vDenominacao').value   = v.denominacao;
+      document.getElementById('vPlaca').value         = v.placa;
+      document.getElementById('vTipo').value          = v.tipo;
+      document.getElementById('vAno').value           = v.ano;
+      document.getElementById('vKm').value            = v.km;
+      document.getElementById('vRevisao').value       = v.revisao;
+      document.getElementById('vStatus').value        = v.status;
+      document.getElementById('vObs').value           = v.obs;
+      document.getElementById('modalViaturaTitle').textContent = 'Editar Viatura';
+      BBM.openModal('modalViatura');
+    }
+
+    function excluirViatura(id) {
+      if (!confirm('Confirmar exclusão desta viatura?')) return;
+      dados = dados.filter(v => v.id !== id);
+      BBM.save(KEY, dados);
+      BBM.toast('Viatura removida.', 'error');
+      renderizar();
+    }
+
+    function resetForm() {
+      ['viaturaId','vDenominacao','vPlaca','vAno','vKm','vRevisao','vObs'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('vTipo').value   = 'Auto Bomba';
+      document.getElementById('vStatus').value = 'Disponível';
+      document.getElementById('modalViaturaTitle').textContent = 'Nova Viatura';
+    }
+
+    // Search & filter
+    const doFilter = () => {
+      const q = document.getElementById('searchViatura').value.toLowerCase();
+      const s = document.getElementById('filterStatus').value;
+      const lista = dados.filter(v =>
+        (v.denominacao.toLowerCase().includes(q) || v.placa.toLowerCase().includes(q)) &&
+        (!s || v.status === s)
+      );
+      renderizar(lista);
+    };
+
+    document.getElementById('searchViatura').addEventListener('input', doFilter);
+    document.getElementById('filterStatus').addEventListener('change', doFilter);
+
+    renderizar();
+  </script>
+</body>
+</html>

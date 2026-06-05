@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>Controle de Acessos — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+      <div class="nav-label" style="margin-top:14px">Administração</div>
+      <a href="index.html" class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><span class="nav-text">Controle de Acessos</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Controle de Acessos</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:#fce4e8;color:var(--red)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Controle de Acessos</div>
+            <div class="mod-subtitle">Usuários, credenciais e níveis de permissão</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn btn-ghost" id="btnSenhas" onclick="toggleSenhas()">👁 Mostrar senhas</button>
+          <button class="btn btn-primary" onclick="abrirUsuario()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Usuário
+          </button>
+        </div>
+      </div>
+
+      <div class="aviso-admin" id="avisoAdmin"></div>
+
+      <div class="status-grid" style="margin-bottom:28px">
+        <div class="status-card"><div class="status-value" id="totUsuarios">0</div><div class="status-label">Usuários</div></div>
+        <div class="status-card"><div class="status-value" id="totOficiais">0</div><div class="status-label">Oficiais</div></div>
+        <div class="status-card"><div class="status-value" id="totPracas">0</div><div class="status-label">Praças / BC</div></div>
+        <div class="status-card"><div class="status-value" id="totAdmins">0</div><div class="status-label">Administradores</div></div>
+      </div>
+
+      <div class="section-label">Oficiais</div>
+      <div class="table-wrap" style="margin-bottom:26px">
+        <table>
+          <thead><tr><th>Nome</th><th>Posto</th><th>Login</th><th>Senha</th><th>Perfil</th><th>Permissões</th><th>Ações</th></tr></thead>
+          <tbody id="tabelaOficiais"></tbody>
+        </table>
+      </div>
+
+      <div class="section-label">Praças e Bombeiros Civis</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Posto/Grad.</th><th>Login</th><th>Senha</th><th>Perfil</th><th>Permissões</th><th>Ações</th></tr></thead>
+          <tbody id="tabelaPracas"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL USUÁRIO -->
+  <div class="modal-overlay" id="modalUsuario">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="userTitulo">Novo Usuário</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalUsuario')" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="uId"/>
+        <div class="form-group"><label class="form-label">Nome / Identificação *</label><input class="form-control" id="uNome" placeholder="Ex: 3º Sgt Silva"/></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Posto / Graduação</label><input class="form-control" id="uPosto" placeholder="Ex: 3º Sgt BM"/></div>
+          <div class="form-group"><label class="form-label">Categoria</label>
+            <select class="form-control" id="uCategoria"><option>Oficial</option><option>Praça/BC</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Login *</label>
+            <div style="display:flex;gap:6px">
+              <input class="form-control" id="uLogin" placeholder="login"/>
+              <button class="btn-mini" type="button" onclick="gerarLogin()">gerar</button>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Senha *</label>
+            <div style="display:flex;gap:6px">
+              <input class="form-control" id="uSenha" placeholder="senha"/>
+              <button class="btn-mini" type="button" onclick="document.getElementById('uSenha').value=senhaFacil()">gerar</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Perfil de acesso</label>
+          <select class="form-control" id="uRole">
+            <option value="usuario">Usuário (acesso limitado)</option>
+            <option value="admin">Administrador (acesso total + gestão de usuários)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalUsuario')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PERMISSÕES -->
+  <div class="modal-overlay" id="modalPerm">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <span class="modal-title">Permissões — <span id="permNome"></span></span>
+        <button class="modal-close" onclick="BBM.closeModal('modalPerm')" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="permUserId"/>
+        <div id="permAdminAviso" class="aviso-admin" style="display:none">Este usuário é <strong>Administrador</strong> e tem acesso total a todos os módulos.</div>
+        <div class="perm-quick">
+          <span>Definir tudo:</span>
+          <button class="btn-mini" onclick="setAll('edicao')">Edição</button>
+          <button class="btn-mini" onclick="setAll('visualizacao')">Visualização</button>
+          <button class="btn-mini" onclick="setAll('nenhum')">Sem acesso</button>
+        </div>
+        <div id="permGrid" class="perm-grid"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalPerm')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarPerm()">Salvar Permissões</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .aviso-admin { background:var(--yellow-light); border:1px solid #f0dca0; color:#7a5d00; padding:11px 16px; border-radius:10px; font-size:.84rem; margin-bottom:20px; }
+    .cred { font-family:'Rajdhani',monospace,sans-serif; font-weight:600; letter-spacing:.02em; }
+    .senha-cell { display:flex; align-items:center; gap:8px; }
+    .senha-val { font-family:'Rajdhani',monospace,sans-serif; font-weight:600; }
+    .copy-btn { background:var(--bg); border:none; border-radius:6px; width:28px; height:28px; cursor:pointer; color:var(--text-mid); font-size:.8rem; }
+    .copy-btn:hover { background:var(--navy); color:#fff; }
+    .perfil-badge { font-size:.72rem; font-weight:700; padding:2px 9px; border-radius:99px; }
+    .perfil-admin { background:#fce4e8; color:var(--red); }
+    .perfil-user { background:var(--slate-light); color:var(--slate); }
+    .tag-1acesso { font-size:.64rem; font-weight:700; background:var(--yellow-light); color:#a87b00; padding:1px 7px; border-radius:99px; vertical-align:middle; }
+    .perm-btn { font-size:.78rem; font-weight:600; padding:5px 12px; border:1px solid var(--border); border-radius:7px; background:var(--surface); cursor:pointer; color:var(--text-mid); }
+    .perm-btn:hover { border-color:var(--red); color:var(--red); }
+    .btn-mini { background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:8px 12px; font-size:.78rem; font-weight:600; color:var(--text-mid); cursor:pointer; white-space:nowrap; }
+    .btn-mini:hover { background:var(--navy); color:#fff; }
+    .perm-quick { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; font-size:.82rem; color:var(--text-mid); }
+    .perm-grid { display:flex; flex-direction:column; gap:10px; }
+    .perm-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .perm-row:last-child { border-bottom:none; }
+    .perm-row .pm-label { font-weight:600; font-size:.88rem; color:var(--text); }
+    .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .seg button { border:none; background:var(--surface); padding:7px 12px; font-size:.78rem; font-weight:600; cursor:pointer; color:var(--text-mid); }
+    .seg button.on-ed { background:var(--green); color:#fff; }
+    .seg button.on-vi { background:var(--blue); color:#fff; }
+    .seg button.on-no { background:var(--red); color:#fff; }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    // ===== Garante usuários cadastrados (seed central no main.js) =====
+    BBM.seedUsuarios();
+
+    let usuarios = BBM.load('usuarios');
+    let mostrarSenhas = false;
+    const sess = BBM.session();
+
+    // Aviso de admin / contexto
+    (function(){
+      const av = document.getElementById('avisoAdmin');
+      if (!sess) {
+        av.innerHTML = '🔓 Nenhuma sessão ativa (modo administrador). Faça login como <strong>felipe / admin15</strong> para ativar o controle de acesso real.';
+      } else if (sess.role==='admin') {
+        av.innerHTML = '✅ Você está como <strong>'+sess.nome+'</strong> (Administrador). Acesso total às credenciais e permissões.';
+      }
+    })();
+
+    function senhaFacil(){
+      const base = ['bombeiro','fenix','resgate','chama','brasa','salvar','heroi','coragem'];
+      return base[Math.floor(Math.random()*base.length)] + Math.floor(10+Math.random()*89);
+    }
+    function gerarLogin(){
+      const nome = document.getElementById('uNome').value.trim().toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const toks = nome.replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+      const sobrenome = toks[toks.length-1] || 'usuario';
+      const cat = document.getElementById('uCategoria').value;
+      document.getElementById('uLogin').value = (cat==='Praça/BC'?'praca.':'')+sobrenome;
+    }
+
+    function mascarar(s){ return '•'.repeat(Math.min((s||'').length,8)); }
+
+    function linhaUsuario(u){
+      return `<tr>
+        <td><strong>${u.nome}</strong>${u.precisaTrocar?' <span class="tag-1acesso" title="Ainda usa a senha padrão">1º acesso</span>':''}</td>
+        <td>${u.posto||'—'}</td>
+        <td><span class="cred">${u.login}</span> <button class="copy-btn" title="Copiar login" onclick="copiar('${u.login}')">⧉</button></td>
+        <td><div class="senha-cell"><span class="senha-val" data-senha="${encodeURIComponent(u.senha)}">${mostrarSenhas?u.senha:mascarar(u.senha)}</span>
+          <button class="copy-btn" title="Copiar senha" onclick="copiar(decodeURIComponent('${encodeURIComponent(u.senha)}'))">⧉</button></div></td>
+        <td><span class="perfil-badge ${u.role==='admin'?'perfil-admin':'perfil-user'}">${u.role==='admin'?'ADMIN':'Usuário'}</span></td>
+        <td><button class="perm-btn" onclick="abrirPerm('${u.id}')">${u.role==='admin'?'Acesso total':'Configurar'}</button></td>
+        <td style="display:flex;gap:6px">
+          <button class="action-btn" title="Editar" onclick="editarUsuario('${u.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="action-btn" title="Excluir" onclick="excluirUsuario('${u.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </td>
+      </tr>`;
+    }
+
+    function render(){
+      const ofi = usuarios.filter(u=>u.categoria==='Oficial');
+      const pra = usuarios.filter(u=>u.categoria!=='Oficial');
+      document.getElementById('tabelaOficiais').innerHTML = ofi.length?ofi.map(linhaUsuario).join(''):`<tr><td colspan="7"><div class="empty-state"><p>Nenhum oficial.</p></div></td></tr>`;
+      document.getElementById('tabelaPracas').innerHTML   = pra.length?pra.map(linhaUsuario).join(''):`<tr><td colspan="7"><div class="empty-state"><p>Nenhum praça.</p></div></td></tr>`;
+      document.getElementById('totUsuarios').textContent = usuarios.length;
+      document.getElementById('totOficiais').textContent = ofi.length;
+      document.getElementById('totPracas').textContent   = pra.length;
+      document.getElementById('totAdmins').textContent   = usuarios.filter(u=>u.role==='admin').length;
+    }
+
+    function toggleSenhas(){
+      mostrarSenhas = !mostrarSenhas;
+      document.getElementById('btnSenhas').innerHTML = mostrarSenhas?'🙈 Ocultar senhas':'👁 Mostrar senhas';
+      render();
+    }
+
+    function copiar(txt){
+      navigator.clipboard?.writeText(txt).then(()=>BBM.toast('Copiado.')).catch(()=>BBM.toast('Copiado.'));
+    }
+
+    // ---- CRUD usuário ----
+    function abrirUsuario(){
+      ['uId','uNome','uPosto','uLogin','uSenha'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('uCategoria').value='Praça/BC';
+      document.getElementById('uRole').value='usuario';
+      document.getElementById('uSenha').value=senhaFacil();
+      document.getElementById('userTitulo').textContent='Novo Usuário';
+      BBM.openModal('modalUsuario');
+    }
+    function salvarUsuario(){
+      const id = document.getElementById('uId').value;
+      const nome = document.getElementById('uNome').value.trim();
+      const login = document.getElementById('uLogin').value.trim().toLowerCase();
+      const senha = document.getElementById('uSenha').value.trim();
+      if (!nome||!login||!senha){ BBM.toast('Preencha nome, login e senha.','error'); return; }
+      if (usuarios.some(u=>u.login.toLowerCase()===login && u.id!==id)){ BBM.toast('Esse login já existe.','error'); return; }
+      const role = document.getElementById('uRole').value;
+      let perm;
+      if (id){ perm = usuarios.find(u=>u.id===id).permissoes; }
+      else { perm = {}; BBM.MODULOS_SIS.forEach(m=>perm[m.key]= (document.getElementById('uCategoria').value==='Oficial'?'edicao':'visualizacao')); }
+      const obj = {
+        id: id||BBM.generateId(), nome, posto:document.getElementById('uPosto').value.trim(),
+        categoria:document.getElementById('uCategoria').value, login, senha, role, permissoes:perm,
+      };
+      if (id){ usuarios[usuarios.findIndex(u=>u.id===id)]=obj; } else usuarios.push(obj);
+      BBM.save('usuarios', usuarios);
+      BBM.closeModal('modalUsuario');
+      BBM.toast('Usuário salvo.');
+      render();
+    }
+    function editarUsuario(id){
+      const u = usuarios.find(x=>x.id===id); if(!u) return;
+      document.getElementById('uId').value=u.id;
+      document.getElementById('uNome').value=u.nome;
+      document.getElementById('uPosto').value=u.posto||'';
+      document.getElementById('uCategoria').value=u.categoria==='Oficial'?'Oficial':'Praça/BC';
+      document.getElementById('uLogin').value=u.login;
+      document.getElementById('uSenha').value=u.senha;
+      document.getElementById('uRole').value=u.role;
+      document.getElementById('userTitulo').textContent='Editar Usuário';
+      BBM.openModal('modalUsuario');
+    }
+    function excluirUsuario(id){
+      const u = usuarios.find(x=>x.id===id);
+      if (u && u.login==='felipe'){ BBM.toast('O administrador principal não pode ser excluído.','error'); return; }
+      if (!confirm('Excluir este usuário?')) return;
+      usuarios = usuarios.filter(x=>x.id!==id);
+      BBM.save('usuarios', usuarios);
+      BBM.toast('Usuário removido.','error');
+      render();
+    }
+
+    // ---- Permissões ----
+    let permTmp = {};
+    function abrirPerm(id){
+      const u = usuarios.find(x=>x.id===id); if(!u) return;
+      document.getElementById('permUserId').value=id;
+      document.getElementById('permNome').textContent=u.nome;
+      permTmp = Object.assign({}, u.permissoes);
+      document.getElementById('permAdminAviso').style.display = u.role==='admin'?'block':'none';
+      renderPermGrid(u.role==='admin');
+      BBM.openModal('modalPerm');
+    }
+    function renderPermGrid(isAdmin){
+      const grid = document.getElementById('permGrid');
+      grid.innerHTML = BBM.MODULOS_SIS.map(m=>{
+        const v = isAdmin?'edicao':(permTmp[m.key]||'nenhum');
+        return `<div class="perm-row">
+          <span class="pm-label">${m.label}</span>
+          <div class="seg" data-mod="${m.key}">
+            <button class="${v==='edicao'?'on-ed':''}" onclick="setPerm('${m.key}','edicao')" ${isAdmin?'disabled':''}>Edição</button>
+            <button class="${v==='visualizacao'?'on-vi':''}" onclick="setPerm('${m.key}','visualizacao')" ${isAdmin?'disabled':''}>Visualizar</button>
+            <button class="${v==='nenhum'?'on-no':''}" onclick="setPerm('${m.key}','nenhum')" ${isAdmin?'disabled':''}>Sem acesso</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    function setPerm(mod,nivel){ permTmp[mod]=nivel; renderPermGrid(false); }
+    function setAll(nivel){ BBM.MODULOS_SIS.forEach(m=>permTmp[m.key]=nivel); renderPermGrid(false); }
+    function salvarPerm(){
+      const id = document.getElementById('permUserId').value;
+      const u = usuarios.find(x=>x.id===id); if(!u) return;
+      u.permissoes = Object.assign({}, permTmp);
+      BBM.save('usuarios', usuarios);
+      BBM.closeModal('modalPerm');
+      BBM.toast('Permissões atualizadas.');
+      render();
+    }
+
+    document.getElementById('uNome').addEventListener('blur', ()=>{ if(!document.getElementById('uLogin').value) gerarLogin(); });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Sistemas operacionais
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+
+# Servidor de preview local (não é necessário no GitHub Pages)
+.serve.ps1
+.claude/
+
+# Logs/temporários
+*.log

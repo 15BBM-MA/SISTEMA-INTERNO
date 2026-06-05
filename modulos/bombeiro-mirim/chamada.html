@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>Chamada — Bombeiro Mirim — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="index.html"                   class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema de Gestão</a>
+          <span class="breadcrumb-sep">›</span>
+          <a href="index.html">Bombeiro Mirim</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Chamada</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:var(--green-light);color:var(--green)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Chamada / Frequência</div>
+            <div class="mod-subtitle">Registro de presença dos bombeiros mirins por dia de aula</div>
+          </div>
+        </div>
+        <a class="btn btn-ghost" href="index.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Voltar
+        </a>
+      </div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px">
+        <button class="tab-btn active" onclick="showTab('tabNova',this)">Nova Chamada</button>
+        <button class="tab-btn" onclick="showTab('tabHistorico',this)">Histórico</button>
+      </div>
+
+      <!-- ===================== NOVA CHAMADA ===================== -->
+      <div id="tabNova">
+        <div class="chamada-controls">
+          <div class="form-group">
+            <label class="form-label">Data da Aula</label>
+            <input class="form-control" id="chamadaData" type="date"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Turma</label>
+            <select class="form-control" id="chamadaTurma"><option value="">Todas as turmas</option></select>
+          </div>
+          <div class="form-group" style="justify-content:flex-end">
+            <label class="form-label" style="visibility:hidden">.</label>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" onclick="marcarTodos('Presente')">Todos presentes</button>
+              <button class="btn btn-ghost" onclick="marcarTodos('Falta')">Todos faltaram</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="avisoExistente" class="aviso-existente" style="display:none"></div>
+
+        <!-- Resumo ao vivo -->
+        <div class="resumo-bar">
+          <div class="resumo-item"><span class="resumo-num" id="rTotal">0</span><span class="resumo-lbl">Total</span></div>
+          <div class="resumo-item ok"><span class="resumo-num" id="rPresentes">0</span><span class="resumo-lbl">Presentes</span></div>
+          <div class="resumo-item falta"><span class="resumo-num" id="rFaltas">0</span><span class="resumo-lbl">Faltas</span></div>
+          <div class="resumo-item"><span class="resumo-num" id="rPerc">0%</span><span class="resumo-lbl">Frequência</span></div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <div class="search-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="searchAluno" type="text" placeholder="Pesquisar aluno…"/>
+            </div>
+            <button class="btn btn-primary" onclick="salvarChamada()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Salvar Chamada
+            </button>
+          </div>
+          <table>
+            <thead>
+              <tr><th style="width:36px">#</th><th>Aluno</th><th>Escola</th><th style="width:200px">Presença</th><th>Justificativa (se faltou)</th></tr>
+            </thead>
+            <tbody id="tabelaChamada"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===================== HISTÓRICO ===================== -->
+      <div id="tabHistorico" style="display:none">
+        <div class="section-label">Chamadas Registradas</div>
+        <div id="listaHistorico" class="historico-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DETALHE -->
+  <div class="modal-overlay" id="modalDetalhe">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-header">
+        <span class="modal-title" id="detalheTitulo">Detalhe da Chamada</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalDetalhe')">×</button>
+      </div>
+      <div class="modal-body" id="detalheBody" style="max-height:60vh;overflow-y:auto"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalDetalhe')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
+    .tab-btn.active { color:var(--green);border-bottom-color:var(--green); }
+
+    .chamada-controls { display:grid;grid-template-columns:200px 1fr auto;gap:16px;align-items:end;margin-bottom:18px; }
+    .chamada-controls .form-group { display:flex;flex-direction:column;gap:5px; }
+
+    .aviso-existente { background:var(--blue-light);border:1px solid #AED6F1;color:var(--blue);padding:10px 16px;border-radius:8px;font-size:.84rem;margin-bottom:16px;display:flex;align-items:center;gap:8px; }
+
+    .resumo-bar { display:flex;gap:14px;margin-bottom:18px; }
+    .resumo-item { flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px; }
+    .resumo-item.ok { border-top:3px solid var(--green); }
+    .resumo-item.falta { border-top:3px solid var(--red); }
+    .resumo-num { font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:var(--navy);line-height:1; }
+    .resumo-item.ok .resumo-num { color:var(--green); }
+    .resumo-item.falta .resumo-num { color:var(--red); }
+    .resumo-lbl { font-size:.76rem;color:var(--text-mid);font-weight:500; }
+
+    .pres-toggle { display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden; }
+    .pres-toggle button { border:none;background:var(--surface);padding:7px 16px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text-mid);transition:all .15s; }
+    .pres-toggle button.sel-p { background:var(--green);color:#fff; }
+    .pres-toggle button.sel-f { background:var(--red);color:#fff; }
+    .pres-toggle button:not(.sel-p):not(.sel-f):hover { background:var(--bg); }
+    .just-input { width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:.82rem;font-family:inherit;color:var(--text);outline:none; }
+    .just-input:focus { border-color:var(--red); }
+    .just-input:disabled { background:var(--bg);color:var(--text-light); }
+    tr.row-falta { background:#fff8f9; }
+
+    .historico-list { display:flex;flex-direction:column;gap:12px; }
+    .hist-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:16px; }
+    .hist-info { display:flex;flex-direction:column;gap:4px; }
+    .hist-data { font-weight:700;color:var(--navy);font-size:.95rem;display:flex;align-items:center;gap:8px; }
+    .hist-meta { font-size:.78rem;color:var(--text-light); }
+    .hist-stats { display:flex;gap:18px;align-items:center; }
+    .hist-stat { text-align:center; }
+    .hist-stat-num { font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;line-height:1; }
+    .hist-stat-lbl { font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em; }
+    .detalhe-row { display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem; }
+    .detalhe-row:last-child { border-bottom:none; }
+
+    @media(max-width:768px){ .chamada-controls{grid-template-columns:1fr} .resumo-bar{flex-wrap:wrap} }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const KEY_CH = 'mirim_chamadas';
+    let alunos   = BBM.load('mirim_alunos');
+    let turmas   = BBM.load('mirim_turmas');
+    let chamadas = BBM.load(KEY_CH);
+    let estado   = {};   // alunoId -> { status, justificativa }
+    let editandoId = null;
+
+    const today = new Date().toISOString().slice(0,10);
+
+    function showTab(id, btn) {
+      ['tabNova','tabHistorico'].forEach(t=>document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).style.display='block';
+      btn.classList.add('active');
+      if (id==='tabHistorico') renderHistorico();
+    }
+
+    function alunosFiltrados() {
+      const turmaId = document.getElementById('chamadaTurma').value;
+      const q = (document.getElementById('searchAluno').value||'').toLowerCase();
+      return alunos
+        .filter(a => a.situacao === 'Ativo')
+        .filter(a => !turmaId || a.turmaId === turmaId)
+        .filter(a => a.nome.toLowerCase().includes(q))
+        .sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    }
+
+    function nomeTurma(id){ const t = turmas.find(x=>x.id===id); return t?t.nome:'—'; }
+
+    function renderLista() {
+      const tbody = document.getElementById('tabelaChamada');
+      const lista = alunosFiltrados();
+      if (!alunos.filter(a=>a.situacao==='Ativo').length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p>Nenhum aluno ativo cadastrado. Cadastre alunos no módulo Bombeiro Mirim.</p></div></td></tr>`;
+        atualizarResumo(); return;
+      }
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p>Nenhum aluno encontrado com os filtros atuais.</p></div></td></tr>`;
+        atualizarResumo(); return;
+      }
+      tbody.innerHTML = lista.map((a,i) => {
+        const st = estado[a.id] || { status:'Presente', justificativa:'' };
+        estado[a.id] = st;
+        const faltou = st.status === 'Falta';
+        return `<tr class="${faltou?'row-falta':''}" data-id="${a.id}">
+          <td>${i+1}</td>
+          <td><strong>${a.nome}</strong></td>
+          <td><span style="font-size:.82rem;color:var(--text-mid)">${a.escola||'—'}</span></td>
+          <td>
+            <div class="pres-toggle">
+              <button class="${st.status==='Presente'?'sel-p':''}" onclick="setStatus('${a.id}','Presente')">Presente</button>
+              <button class="${st.status==='Falta'?'sel-f':''}" onclick="setStatus('${a.id}','Falta')">Falta</button>
+            </div>
+          </td>
+          <td>
+            <input class="just-input" placeholder="${faltou?'Motivo da falta…':'—'}" ${faltou?'':'disabled'}
+                   value="${(st.justificativa||'').replace(/"/g,'&quot;')}"
+                   oninput="setJust('${a.id}', this.value)"/>
+          </td>
+        </tr>`;
+      }).join('');
+      atualizarResumo();
+    }
+
+    function setStatus(id, status) {
+      estado[id] = estado[id] || { status:'Presente', justificativa:'' };
+      estado[id].status = status;
+      if (status === 'Presente') estado[id].justificativa = '';
+      renderLista();
+    }
+
+    function setJust(id, val) {
+      if (estado[id]) estado[id].justificativa = val;
+      atualizarResumo();
+    }
+
+    function marcarTodos(status) {
+      alunosFiltrados().forEach(a => {
+        estado[a.id] = estado[a.id] || { status:'Presente', justificativa:'' };
+        estado[a.id].status = status;
+        if (status==='Presente') estado[a.id].justificativa='';
+      });
+      renderLista();
+    }
+
+    function atualizarResumo() {
+      const lista = alunosFiltrados();
+      const total = lista.length;
+      let presentes = 0, faltas = 0;
+      lista.forEach(a => {
+        const s = estado[a.id]?.status || 'Presente';
+        if (s==='Falta') faltas++; else presentes++;
+      });
+      document.getElementById('rTotal').textContent     = total;
+      document.getElementById('rPresentes').textContent = presentes;
+      document.getElementById('rFaltas').textContent    = faltas;
+      document.getElementById('rPerc').textContent      = total ? Math.round(presentes/total*100)+'%' : '0%';
+    }
+
+    // Carrega chamada existente para a data/turma selecionada (se houver) para edição
+    function verificarExistente() {
+      const data = document.getElementById('chamadaData').value;
+      const turmaId = document.getElementById('chamadaTurma').value;
+      const aviso = document.getElementById('avisoExistente');
+      const existente = chamadas.find(c => c.data===data && (c.turmaId||'')===(turmaId||''));
+      estado = {};
+      editandoId = null;
+      if (existente) {
+        editandoId = existente.id;
+        existente.registros.forEach(r => { estado[r.alunoId] = { status:r.status, justificativa:r.justificativa||'' }; });
+        aviso.style.display = 'flex';
+        aviso.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          Já existe uma chamada registrada para <strong>${BBM.formatDate(data)}</strong>${turmaId?(' — '+nomeTurma(turmaId)):''}. Os dados foram carregados; ao salvar você atualiza o registro.`;
+      } else {
+        aviso.style.display = 'none';
+      }
+      renderLista();
+    }
+
+    function salvarChamada() {
+      const data = document.getElementById('chamadaData').value;
+      if (!data) { BBM.toast('Selecione a data da aula.','error'); return; }
+      const turmaId = document.getElementById('chamadaTurma').value;
+      const lista = alunos.filter(a => a.situacao==='Ativo').filter(a => !turmaId || a.turmaId===turmaId);
+      if (!lista.length) { BBM.toast('Não há alunos para registrar.','error'); return; }
+
+      // valida justificativas? Não obrigatório, mas avisa
+      const registros = lista.map(a => {
+        const s = estado[a.id] || { status:'Presente', justificativa:'' };
+        return { alunoId:a.id, nome:a.nome, status:s.status, justificativa:(s.status==='Falta'?(s.justificativa||''):'') };
+      });
+      const presentes = registros.filter(r=>r.status==='Presente').length;
+      const faltas    = registros.filter(r=>r.status==='Falta').length;
+
+      const obj = {
+        id: editandoId || BBM.generateId(),
+        data, turmaId,
+        registros, total: registros.length, presentes, faltas,
+        criadoEm: new Date().toLocaleString('pt-BR'),
+      };
+      if (editandoId) { chamadas[chamadas.findIndex(c=>c.id===editandoId)] = obj; }
+      else chamadas.push(obj);
+      BBM.save(KEY_CH, chamadas);
+      editandoId = obj.id;
+      BBM.toast(`Chamada salva — ${presentes} presente(s), ${faltas} falta(s).`);
+      verificarExistente();
+    }
+
+    // ---------- HISTÓRICO ----------
+    function renderHistorico() {
+      const cont = document.getElementById('listaHistorico');
+      if (!chamadas.length) { cont.innerHTML = `<div class="empty-state"><p>Nenhuma chamada registrada ainda.</p></div>`; return; }
+      const ord = [...chamadas].sort((a,b)=> b.data.localeCompare(a.data) || b.criadoEm.localeCompare(a.criadoEm));
+      cont.innerHTML = ord.map(c => {
+        const perc = c.total ? Math.round(c.presentes/c.total*100) : 0;
+        return `<div class="hist-card">
+          <div class="hist-info">
+            <div class="hist-data">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              ${BBM.formatDate(c.data)}
+            </div>
+            <div class="hist-meta">${c.turmaId?nomeTurma(c.turmaId):'Todas as turmas'} • Registrada em ${c.criadoEm}</div>
+          </div>
+          <div class="hist-stats">
+            <div class="hist-stat"><div class="hist-stat-num" style="color:var(--green)">${c.presentes}</div><div class="hist-stat-lbl">Presentes</div></div>
+            <div class="hist-stat"><div class="hist-stat-num" style="color:var(--red)">${c.faltas}</div><div class="hist-stat-lbl">Faltas</div></div>
+            <div class="hist-stat"><div class="hist-stat-num" style="color:var(--navy)">${perc}%</div><div class="hist-stat-lbl">Frequência</div></div>
+            <button class="action-btn" title="Ver detalhes" onclick="verDetalhe('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button class="action-btn" title="Editar" onclick="editarChamada('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="action-btn" title="Excluir" onclick="excluirChamada('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function verDetalhe(id) {
+      const c = chamadas.find(x=>x.id===id); if(!c) return;
+      document.getElementById('detalheTitulo').textContent = `Chamada — ${BBM.formatDate(c.data)}`;
+      const ord = [...c.registros].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+      document.getElementById('detalheBody').innerHTML = ord.map(r => `
+        <div class="detalhe-row">
+          <span class="badge ${r.status==='Presente'?'badge-ok':'badge-danger'}" style="min-width:74px;justify-content:center">${r.status}</span>
+          <div style="flex:1">
+            <strong>${r.nome}</strong>
+            ${r.status==='Falta' && r.justificativa ? `<div style="color:var(--text-mid);font-size:.8rem;margin-top:2px">↳ ${r.justificativa}</div>` :
+              (r.status==='Falta' ? `<div style="color:var(--text-light);font-size:.8rem;margin-top:2px">↳ Sem justificativa</div>`:'')}
+          </div>
+        </div>`).join('');
+      BBM.openModal('modalDetalhe');
+    }
+
+    function editarChamada(id) {
+      const c = chamadas.find(x=>x.id===id); if(!c) return;
+      document.querySelector('.tab-btn').click(); // volta para aba Nova
+      document.getElementById('chamadaData').value  = c.data;
+      document.getElementById('chamadaTurma').value = c.turmaId || '';
+      verificarExistente();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function excluirChamada(id) {
+      if (!confirm('Excluir esta chamada?')) return;
+      chamadas = chamadas.filter(c=>c.id!==id);
+      BBM.save(KEY_CH, chamadas);
+      BBM.toast('Chamada removida.','error');
+      renderHistorico();
+    }
+
+    // ---------- INIT ----------
+    function popularTurmas() {
+      const sel = document.getElementById('chamadaTurma');
+      sel.innerHTML = '<option value="">Todas as turmas</option>' +
+        turmas.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
+    }
+
+    document.getElementById('chamadaData').value = today;
+    document.getElementById('chamadaData').addEventListener('change', verificarExistente);
+    document.getElementById('chamadaTurma').addEventListener('change', verificarExistente);
+    document.getElementById('searchAluno').addEventListener('input', renderLista);
+
+    popularTurmas();
+    verificarExistente();
+  </script>
+</body>
+</html>
