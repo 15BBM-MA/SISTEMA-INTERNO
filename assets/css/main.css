@@ -179,6 +179,7 @@ a { text-decoration: none; color: inherit; }
 .main {
   margin-left: var(--sidebar-w);
   flex: 1;
+  min-width: 0;            /* permite encolher abaixo da largura do conteúdo (evita overflow) */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -509,6 +510,8 @@ a { text-decoration: none; color: inherit; }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
+  overflow-x: auto;                      /* tabela rola na horizontal sem estourar a página */
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-toolbar {
@@ -792,9 +795,16 @@ tbody td {
   .status-grid { grid-template-columns: 1fr 1fr; }
   .content { padding: 18px 16px calc(28px + env(safe-area-inset-bottom)); }
 
-  .topbar { padding: 0 16px; }
+  .topbar { padding: 0 12px; gap: 8px; }
   .topbar-date { display: none; }            /* economiza espaço na top bar */
-  .topbar-breadcrumb { font-size: .8rem; }
+  .topbar-badge { display: none; }           /* badge "Sistema Ativo" some no celular */
+  .topbar-left { min-width: 0; flex: 1; gap: 10px; }
+  .topbar-right { gap: 10px; flex-shrink: 0; }
+  .topbar-breadcrumb { font-size: .78rem; min-width: 0; }
+  /* mostra só a página atual no caminho, para não estourar */
+  .topbar-breadcrumb > *:not(.breadcrumb-current) { display: none; }
+  .topbar-breadcrumb .breadcrumb-current { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acct-name { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* Cabeçalhos de módulo empilham */
   .mod-header { flex-direction: column; align-items: stretch; gap: 14px; }
