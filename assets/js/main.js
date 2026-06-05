@@ -2,6 +2,15 @@
 // SISTEMA 15º BBM — JS PRINCIPAL
 // ============================================================
 
+// Esconde o conteúdo até confirmar o login (evita "piscar" dados protegidos).
+// Páginas de login/troca de senha não são ocultadas. Fallback revela em 6s.
+(function () {
+  if (!/(login|trocar-senha)\.html/.test(location.pathname)) {
+    document.documentElement.style.visibility = 'hidden';
+    setTimeout(() => { document.documentElement.style.visibility = ''; }, 6000);
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // --- DATA/HORA ---
@@ -165,76 +174,76 @@ window.BBM = {
     { key:'manutencao',     label:'Manutenção' },
   ],
 
-  // Cria os usuários da corporação (roda em qualquer página, garante login disponível)
-  seedUsuarios() {
-    const jaTem = this.load('usuarios');
-    if (localStorage.getItem('bbm_usuarios_seed_v1') && jaTem.length) return jaTem;
-    const permTodos = (nivel) => { const o = {}; this.MODULOS_SIS.forEach(m => o[m.key]=nivel); return o; };
-    const oficiais = [
-      { nome:'Major Martins',          posto:'Maj BM',     login:'martins',   senha:'martins15', admin:false },
-      { nome:'Capitão Oliveira',       posto:'Cap BM',     login:'oliveira',  senha:'oliveira22',admin:false },
-      { nome:'Capitão Daniel',         posto:'Cap BM',     login:'daniel',    senha:'daniel31',  admin:false },
-      { nome:'1º Ten Araújo',          posto:'1º Ten BM',  login:'araujo',    senha:'araujo47',  admin:false },
-      { nome:'1º Ten Paulo José',      posto:'1º Ten BM',  login:'paulojose', senha:'paulo58',   admin:false },
-      { nome:'Aspirante Felipe Souza', posto:'Asp Of BM',  login:'felipe',    senha:'admin15',   admin:true  },
-    ];
-    const pracasRaw = [
-      ['monteiro','1º Sgt P Monteiro','1º Sgt BM'], ['dene','2º Sgt Dene','2º Sgt BM'],
-      ['costabarros','2º Sgt Costa Barros','2º Sgt BM'], ['ribeiro','2º Sgt Ribeiro','2º Sgt BM'],
-      ['eliziane','3º Sgt Eliziane','3º Sgt BM'], ['fernando','3º Sgt Fernando','3º Sgt BM'],
-      ['lisboa','3º Sgt Lisboa Santos','3º Sgt BM'], ['isac','3º Sgt Isac Teixeira','3º Sgt BM'],
-      ['andrade','3º Sgt Andrade Silva','3º Sgt BM'], ['belarmino','3º Sgt Belarmino','3º Sgt BM'],
-      ['igor','3º Sgt Igor','3º Sgt BM'], ['duarte','BC Duarte','Bombeiro Civil'],
-      ['eloi','BC Eloi Neto','Bombeiro Civil'],
-    ];
-    const users = [];
-    oficiais.forEach(o => users.push({
-      id:this.generateId(), nome:o.nome, posto:o.posto, categoria:'Oficial',
-      login:o.login, senha:o.senha, role:o.admin?'admin':'usuario',
-      permissoes:permTodos('edicao'), precisaTrocar:true,
-    }));
-    pracasRaw.forEach(p => users.push({
-      id:this.generateId(), nome:p[1], posto:p[2], categoria:'Praça/BC',
-      login:'praca.'+p[0], senha:'bombeiro123', role:'usuario',
-      permissoes:permTodos('visualizacao'), precisaTrocar:true,
-    }));
-    this.save('usuarios', users);
-    localStorage.setItem('bbm_usuarios_seed_v1','1');
-    return users;
+  // ---------- SUPABASE / AUTENTICAÇÃO ----------
+  SB_URL: (window.SUPABASE_URL || 'https://czujticzdtmmiugjajgh.supabase.co'),
+  SB_KEY: (window.SUPABASE_KEY || 'sb_publishable_YFyNxDKAGSpZiGESF7f55w_3EpkAUB-'),
+  _sb: null,
+  _perfil: null,
+  _authReady: false,
+  _readyCbs: [],
+
+  // cliente Supabase (carregado sob demanda)
+  async sb() {
+    if (!this._sb) {
+      const m = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+      this._sb = m.createClient(this.SB_URL, this.SB_KEY);
+    }
+    return this._sb;
   },
 
-  // Define nova senha (primeiro acesso ou troca) e atualiza sessão
-  trocarSenha(userId, novaSenha) {
-    const users = this.load('usuarios');
-    const i = users.findIndex(u => u.id === userId);
-    if (i < 0) return false;
-    users[i].senha = novaSenha;
-    users[i].precisaTrocar = false;
-    this.save('usuarios', users);
-    const s = this.session();
-    if (s && s.id === userId) { s.precisaTrocar = false; localStorage.setItem('bbm_sessao', JSON.stringify(s)); }
-    return true;
+  // carrega a sessão atual + o perfil do banco (uma vez por página)
+  async initAuth() {
+    try {
+      const sb = await this.sb();
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: perfil } = await sb.from('perfis').select('*').eq('id', session.user.id).single();
+        this._perfil = perfil || null;
+      } else {
+        this._perfil = null;
+      }
+    } catch (e) { this._perfil = null; }
+    this._authReady = true;
+    const u = this._perfil;
+    this._readyCbs.splice(0).forEach(cb => { try { cb(u); } catch (_) {} });
+    return this._perfil;
+  },
+
+  // executa um callback quando a autenticação terminar de carregar
+  onReady(cb) { if (this._authReady) cb(this._perfil); else this._readyCbs.push(cb); },
+
+  // perfil do usuário logado (síncrono, disponível após initAuth)
+  session() { return this._perfil; },
+  currentUser() { return this._perfil; },
+
+  // login por usuário (mapeado para e-mail interno) via Supabase Auth
+  async login(login, senha) {
+    const sb = await this.sb();
+    const email = (login || '').trim().toLowerCase() + '@15bbm.app';
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if (error) return { error: error.message };
+    const { data: perfil } = await sb.from('perfis').select('*').eq('id', data.user.id).single();
+    this._perfil = perfil || null;
+    return { perfil: this._perfil };
+  },
+
+  async logout() {
+    try { const sb = await this.sb(); await sb.auth.signOut(); } catch (_) {}
+    this._perfil = null;
+  },
+
+  // troca a senha do PRÓPRIO usuário logado (1º acesso ou voluntária)
+  async trocarMinhaSenha(novaSenha) {
+    const sb = await this.sb();
+    const { error } = await sb.auth.updateUser({ password: novaSenha });
+    if (error) return { error: error.message };
+    await sb.rpc('marcar_senha_trocada');
+    if (this._perfil) this._perfil.precisa_trocar = false;
+    return { ok: true };
   },
 
   // raiz relativa (./ no dashboard, ../../ dentro de /modulos/x/)
   root() { return location.pathname.includes('/modulos/') ? '../../' : './'; },
-
-  // usuário logado (ou null)
-  session() {
-    try { return JSON.parse(localStorage.getItem('bbm_sessao') || 'null'); }
-    catch { return null; }
-  },
-
-  login(login, senha) {
-    const users = this.seedUsuarios();   // garante que os usuários existam
-    const u = users.find(x => (x.login||'').toLowerCase() === (login||'').toLowerCase().trim() && x.senha === senha);
-    if (!u) return null;
-    const sess = { id:u.id, nome:u.nome, login:u.login, role:u.role, permissoes:u.permissoes||{}, precisaTrocar: !!u.precisaTrocar };
-    localStorage.setItem('bbm_sessao', JSON.stringify(sess));
-    return sess;
-  },
-
-  logout() { localStorage.removeItem('bbm_sessao'); },
 
   // módulo atual a partir do caminho
   moduloAtual() {
@@ -244,11 +253,11 @@ window.BBM = {
 
   // nível de acesso do usuário logado ao módulo: 'edicao' | 'visualizacao' | 'nenhum'
   nivel(modKey) {
-    const s = this.session();
-    if (!s) return 'edicao';            // sem login = acesso total (modo compatível)
-    if (s.role === 'admin') return 'edicao';
+    const p = this._perfil;
+    if (!p) return 'nenhum';
+    if (p.role === 'admin') return 'edicao';
     if (modKey === 'acessos') return 'nenhum';
-    return (s.permissoes && s.permissoes[modKey]) || 'nenhum';
+    return (p.permissoes && p.permissoes[modKey]) || 'nenhum';
   },
 
 };
@@ -256,55 +265,59 @@ window.BBM = {
 // ============================================================
 // GUARD DE PERMISSÃO + MENU DE CONTA (roda em todas as páginas)
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  BBM.seedUsuarios();               // garante usuários cadastrados em qualquer página
+document.addEventListener('DOMContentLoaded', async () => {
   const ROOT = BBM.root();
-  const sess = BBM.session();
-  const modAtual = BBM.moduloAtual();
+  const ehLogin = /login\.html(?:$|\?)/.test(location.pathname);
+  const ehTroca = /trocar-senha\.html(?:$|\?)/.test(location.pathname);
+
+  await BBM.initAuth();
+  const user = BBM.currentUser();
+
+  // páginas de autenticação cuidam do próprio fluxo
+  if (ehLogin || ehTroca) { document.documentElement.style.visibility = ''; return; }
+
+  // exige login
+  if (!user) { location.replace(ROOT + 'login.html'); return; }
+  // primeiro acesso: força definir senha pessoal
+  if (user.precisa_trocar) { location.replace(ROOT + 'trocar-senha.html'); return; }
+
+  // libera o conteúdo (estava oculto para evitar flash antes da checagem)
+  document.documentElement.style.visibility = '';
 
   // ---- Menu de conta na top bar ----
   const right = document.querySelector('.topbar-right');
   if (right) {
     const wrap = document.createElement('div');
     wrap.className = 'acct';
-    if (sess) {
-      const iniciais = (sess.nome||'?').split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();
-      wrap.innerHTML = `
-        <button class="acct-btn" id="acctBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="acct-avatar">${iniciais}</span>
-          <span class="acct-name">${sess.nome}${sess.role==='admin'?' <span class="acct-tag">ADMIN</span>':''}</span>
-          <span class="acct-chev">▾</span>
-        </button>
-        <div class="acct-menu" id="acctMenu">
-          ${sess.role==='admin'?`<a href="${ROOT}modulos/acessos/index.html">⚙ Controle de Acessos</a>`:''}
-          <a href="${ROOT}trocar-senha.html">🔑 Trocar minha senha</a>
-          <button id="acctLogout">⎋ Sair</button>
-        </div>`;
-      right.appendChild(wrap);
-      const btn = wrap.querySelector('#acctBtn');
-      const menu = wrap.querySelector('#acctMenu');
-      btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); btn.setAttribute('aria-expanded', menu.classList.contains('open')); });
-      document.addEventListener('click', () => menu.classList.remove('open'));
-      wrap.querySelector('#acctLogout').addEventListener('click', () => {
-        BBM.logout(); BBM.toast('Sessão encerrada.'); setTimeout(()=>location.href = ROOT+'login.html', 400);
-      });
-    } else {
-      wrap.innerHTML = `<a class="acct-login" href="${ROOT}login.html">⎆ Entrar</a>`;
-      right.appendChild(wrap);
-    }
+    const iniciais = (user.nome || '?').split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+    wrap.innerHTML = `
+      <button class="acct-btn" id="acctBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="acct-avatar">${iniciais}</span>
+        <span class="acct-name">${user.nome}${user.role === 'admin' ? ' <span class="acct-tag">ADMIN</span>' : ''}</span>
+        <span class="acct-chev">▾</span>
+      </button>
+      <div class="acct-menu" id="acctMenu">
+        ${user.role === 'admin' ? `<a href="${ROOT}modulos/acessos/index.html">⚙ Controle de Acessos</a>` : ''}
+        <a href="${ROOT}trocar-senha.html">🔑 Trocar minha senha</a>
+        <button id="acctLogout">⎋ Sair</button>
+      </div>`;
+    right.appendChild(wrap);
+    const btn = wrap.querySelector('#acctBtn');
+    const menu = wrap.querySelector('#acctMenu');
+    btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); btn.setAttribute('aria-expanded', menu.classList.contains('open')); });
+    document.addEventListener('click', () => menu.classList.remove('open'));
+    wrap.querySelector('#acctLogout').addEventListener('click', async () => {
+      await BBM.logout(); location.href = ROOT + 'login.html';
+    });
   }
 
   // ---- Enforcement de acesso ao módulo ----
-  if (sess && sess.role !== 'admin' && modAtual) {
+  const modAtual = BBM.moduloAtual();
+  if (user.role !== 'admin' && modAtual) {
     const nivel = BBM.nivel(modAtual);
-    if (nivel === 'nenhum') {
-      alert('Você não tem permissão para acessar este módulo.');
-      location.href = ROOT + 'index.html';
-      return;
-    }
+    if (nivel === 'nenhum') { location.replace(ROOT + 'index.html'); return; }
     if (nivel === 'visualizacao') {
       document.body.classList.add('somente-leitura');
-      // banner informativo
       const content = document.querySelector('.content');
       if (content) {
         const b = document.createElement('div');
@@ -312,24 +325,21 @@ document.addEventListener('DOMContentLoaded', () => {
         b.innerHTML = '👁 <strong>Modo somente leitura</strong> — você pode visualizar, mas não editar este módulo.';
         content.insertBefore(b, content.firstChild);
       }
-      // esconde botões de edição (primários, ações de linha e ghost com intenção de editar)
       const intent = /(nov[oa]|adicion|cadastr|lan[çc]|registr|movimenta|agendar|gerar|abrir|editar|excluir|salvar|remover|importar)/i;
       const sweep = () => {
-        document.querySelectorAll('.content .btn-primary, .content .action-btn, .modal .btn-primary').forEach(b => b.style.display='none');
+        document.querySelectorAll('.content .btn-primary, .content .action-btn, .modal .btn-primary').forEach(b => b.style.display = 'none');
         document.querySelectorAll('.content .btn-ghost, .content button').forEach(b => {
-          if (intent.test(b.textContent||'') && !/voltar/i.test(b.textContent||'')) b.style.display='none';
+          if (intent.test(b.textContent || '') && !/voltar/i.test(b.textContent || '')) b.style.display = 'none';
         });
       };
       sweep();
-      // re-aplica após renders dinâmicos
       const mo = new MutationObserver(() => sweep());
-      mo.observe(document.querySelector('.content') || document.body, { childList:true, subtree:true });
+      mo.observe(document.querySelector('.content') || document.body, { childList: true, subtree: true });
     }
   }
 
-  // bloqueia página de acessos para não-admin acessada diretamente
-  if (location.pathname.includes('/modulos/acessos/') && sess && sess.role !== 'admin') {
-    alert('Acesso restrito ao administrador.');
-    location.href = ROOT + 'index.html';
+  // página de acessos: somente admin
+  if (location.pathname.includes('/modulos/acessos/') && user.role !== 'admin') {
+    location.replace(ROOT + 'index.html');
   }
 });

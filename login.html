@@ -51,20 +51,31 @@
 
   <script src="assets/js/main.js"></script>
   <script>
-    // se já logado, vai pro painel
-    if (BBM.session()) location.href = 'index.html';
+    // se já estiver logado, vai direto pro painel
+    BBM.initAuth().then(p => { if (p) location.href = p.precisa_trocar ? 'trocar-senha.html' : 'index.html'; });
 
+    let entrando = false;
     function togglePw(){
       const i = document.getElementById('inSenha');
       i.type = i.type === 'password' ? 'text' : 'password';
     }
-    function entrar(){
+    async function entrar(){
+      if (entrando) return;
       const login = document.getElementById('inLogin').value;
       const senha = document.getElementById('inSenha').value;
       const err = document.getElementById('loginErr');
-      const s = BBM.login(login, senha);
-      if (!s) { err.textContent = 'Login ou senha incorretos.'; err.style.display='block'; return; }
-      location.href = s.precisaTrocar ? 'trocar-senha.html' : 'index.html';
+      const btn = document.querySelector('.btn-primary');
+      err.style.display = 'none';
+      if (!login || !senha) { err.textContent='Informe login e senha.'; err.style.display='block'; return; }
+      entrando = true; btn.textContent = 'Entrando…'; btn.disabled = true;
+      const r = await BBM.login(login, senha);
+      if (r.error) {
+        err.textContent = /Invalid login/i.test(r.error) ? 'Login ou senha incorretos.' : ('Erro: ' + r.error);
+        err.style.display = 'block';
+        entrando = false; btn.textContent = 'Entrar'; btn.disabled = false;
+        return;
+      }
+      location.href = (r.perfil && r.perfil.precisa_trocar) ? 'trocar-senha.html' : 'index.html';
     }
     document.getElementById('inSenha').addEventListener('keydown', e => { if(e.key==='Enter') entrar(); });
     document.getElementById('inLogin').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('inSenha').focus(); });

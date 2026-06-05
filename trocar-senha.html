@@ -49,20 +49,26 @@
 
   <script src="assets/js/main.js"></script>
   <script>
-    const sess = BBM.session();
-    if (!sess) location.href = 'login.html';
-    else document.getElementById('saudacao').innerHTML = 'Olá, <strong>'+sess.nome+'</strong>! Crie uma senha pessoal para proteger sua conta.';
+    // garante sessão carregada
+    BBM.initAuth().then(p => {
+      if (!p) { location.href = 'login.html'; return; }
+      document.getElementById('saudacao').innerHTML = 'Olá, <strong>'+p.nome+'</strong>! Crie uma senha pessoal para proteger sua conta.';
+    });
 
+    let salvando = false;
     function verSenha(v){ ['s1','s2'].forEach(id=>document.getElementById(id).type=v?'text':'password'); }
-    function salvar(){
+    async function salvar(){
+      if (salvando) return;
       const a = document.getElementById('s1').value, b = document.getElementById('s2').value;
       const m = document.getElementById('msg');
-      m.style.display='none';
-      if (a.length < 4) { m.textContent='A senha deve ter pelo menos 4 caracteres.'; m.style.display='block'; return; }
-      if (a !== b)     { m.textContent='As senhas não coincidem.'; m.style.display='block'; return; }
-      BBM.trocarSenha(sess.id, a);
+      m.classList.add('err'); m.style.display='none';
+      if (a.length < 6) { m.textContent='A senha deve ter pelo menos 6 caracteres.'; m.style.display='block'; return; }
+      if (a !== b)      { m.textContent='As senhas não coincidem.'; m.style.display='block'; return; }
+      salvando = true;
+      const r = await BBM.trocarMinhaSenha(a);
+      if (r.error) { m.textContent='Erro: '+r.error; m.style.display='block'; salvando=false; return; }
       BBM.toast('Senha definida com sucesso.');
-      setTimeout(()=>location.href='index.html', 500);
+      setTimeout(()=>location.href='index.html', 600);
     }
     document.getElementById('s2').addEventListener('keydown', e=>{ if(e.key==='Enter') salvar(); });
   </script>

@@ -190,50 +190,31 @@
 
   <script src="../../assets/js/main.js"></script>
   <script>
-    // ===== Garante usuários cadastrados (seed central no main.js) =====
-    BBM.seedUsuarios();
+    let usuarios = [];      // perfis vindos do Supabase
 
-    let usuarios = BBM.load('usuarios');
-    let mostrarSenhas = false;
-    const sess = BBM.session();
+    // stubs (criação de usuário será na próxima fase)
+    function senhaFacil(){ return ''; }
+    function gerarLogin(){ /* login não editável nesta fase */ }
 
-    // Aviso de admin / contexto
-    (function(){
-      const av = document.getElementById('avisoAdmin');
-      if (!sess) {
-        av.innerHTML = '🔓 Nenhuma sessão ativa (modo administrador). Faça login como <strong>felipe / admin15</strong> para ativar o controle de acesso real.';
-      } else if (sess.role==='admin') {
-        av.innerHTML = '✅ Você está como <strong>'+sess.nome+'</strong> (Administrador). Acesso total às credenciais e permissões.';
-      }
-    })();
-
-    function senhaFacil(){
-      const base = ['bombeiro','fenix','resgate','chama','brasa','salvar','heroi','coragem'];
-      return base[Math.floor(Math.random()*base.length)] + Math.floor(10+Math.random()*89);
+    async function carregar(){
+      const sb = await BBM.sb();
+      const { data, error } = await sb.from('perfis').select('*').order('nome');
+      if (error) { BBM.toast('Erro ao carregar usuários: '+error.message,'error'); return; }
+      usuarios = data || [];
+      render();
     }
-    function gerarLogin(){
-      const nome = document.getElementById('uNome').value.trim().toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const toks = nome.replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
-      const sobrenome = toks[toks.length-1] || 'usuario';
-      const cat = document.getElementById('uCategoria').value;
-      document.getElementById('uLogin').value = (cat==='Praça/BC'?'praca.':'')+sobrenome;
-    }
-
-    function mascarar(s){ return '•'.repeat(Math.min((s||'').length,8)); }
 
     function linhaUsuario(u){
       return `<tr>
-        <td><strong>${u.nome}</strong>${u.precisaTrocar?' <span class="tag-1acesso" title="Ainda usa a senha padrão">1º acesso</span>':''}</td>
+        <td><strong>${u.nome}</strong>${u.precisa_trocar?' <span class="tag-1acesso" title="Ainda não definiu a senha pessoal (1º acesso)">1º acesso</span>':''}</td>
         <td>${u.posto||'—'}</td>
         <td><span class="cred">${u.login}</span> <button class="copy-btn" title="Copiar login" onclick="copiar('${u.login}')">⧉</button></td>
-        <td><div class="senha-cell"><span class="senha-val" data-senha="${encodeURIComponent(u.senha)}">${mostrarSenhas?u.senha:mascarar(u.senha)}</span>
-          <button class="copy-btn" title="Copiar senha" onclick="copiar(decodeURIComponent('${encodeURIComponent(u.senha)}'))">⧉</button></div></td>
+        <td><div class="senha-cell"><span class="senha-val" title="As senhas ficam criptografadas no servidor">•••••• 🔒</span>
+          <button class="copy-btn" title="Redefinir senha" onclick="redefinir('${u.login}')">⟳</button></div></td>
         <td><span class="perfil-badge ${u.role==='admin'?'perfil-admin':'perfil-user'}">${u.role==='admin'?'ADMIN':'Usuário'}</span></td>
         <td><button class="perm-btn" onclick="abrirPerm('${u.id}')">${u.role==='admin'?'Acesso total':'Configurar'}</button></td>
         <td style="display:flex;gap:6px">
-          <button class="action-btn" title="Editar" onclick="editarUsuario('${u.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="action-btn" title="Excluir" onclick="excluirUsuario('${u.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="action-btn" title="Editar dados" onclick="editarUsuario('${u.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
         </td>
       </tr>`;
     }
@@ -249,46 +230,27 @@
       document.getElementById('totAdmins').textContent   = usuarios.filter(u=>u.role==='admin').length;
     }
 
-    function toggleSenhas(){
-      mostrarSenhas = !mostrarSenhas;
-      document.getElementById('btnSenhas').innerHTML = mostrarSenhas?'🙈 Ocultar senhas':'👁 Mostrar senhas';
-      render();
-    }
+    // Botão do topo: recarregar a lista do servidor
+    function toggleSenhas(){ carregar(); BBM.toast('Lista atualizada.'); }
 
     function copiar(txt){
       navigator.clipboard?.writeText(txt).then(()=>BBM.toast('Copiado.')).catch(()=>BBM.toast('Copiado.'));
     }
 
-    // ---- CRUD usuário ----
+    function redefinir(login){
+      alert('Para redefinir a senha de "'+login+'":\n\n'
+        + '• O próprio usuário pode usar "Trocar minha senha" após entrar; ou\n'
+        + '• Você redefine no painel do Supabase: Authentication → Users → '+login+'@15bbm.app → "Reset password".\n\n'
+        + 'Em breve a redefinição direta por aqui será habilitada.');
+    }
+
+    // ---- Novo usuário (requer função admin no servidor — próxima fase) ----
     function abrirUsuario(){
-      ['uId','uNome','uPosto','uLogin','uSenha'].forEach(id=>document.getElementById(id).value='');
-      document.getElementById('uCategoria').value='Praça/BC';
-      document.getElementById('uRole').value='usuario';
-      document.getElementById('uSenha').value=senhaFacil();
-      document.getElementById('userTitulo').textContent='Novo Usuário';
-      BBM.openModal('modalUsuario');
+      alert('A criação de novos usuários pelo painel chega na próxima fase (função administrativa segura).\n\n'
+        + 'Por enquanto, novos usuários são criados pelo script de setup, ou pelo painel do Supabase (Authentication → Add user).');
     }
-    function salvarUsuario(){
-      const id = document.getElementById('uId').value;
-      const nome = document.getElementById('uNome').value.trim();
-      const login = document.getElementById('uLogin').value.trim().toLowerCase();
-      const senha = document.getElementById('uSenha').value.trim();
-      if (!nome||!login||!senha){ BBM.toast('Preencha nome, login e senha.','error'); return; }
-      if (usuarios.some(u=>u.login.toLowerCase()===login && u.id!==id)){ BBM.toast('Esse login já existe.','error'); return; }
-      const role = document.getElementById('uRole').value;
-      let perm;
-      if (id){ perm = usuarios.find(u=>u.id===id).permissoes; }
-      else { perm = {}; BBM.MODULOS_SIS.forEach(m=>perm[m.key]= (document.getElementById('uCategoria').value==='Oficial'?'edicao':'visualizacao')); }
-      const obj = {
-        id: id||BBM.generateId(), nome, posto:document.getElementById('uPosto').value.trim(),
-        categoria:document.getElementById('uCategoria').value, login, senha, role, permissoes:perm,
-      };
-      if (id){ usuarios[usuarios.findIndex(u=>u.id===id)]=obj; } else usuarios.push(obj);
-      BBM.save('usuarios', usuarios);
-      BBM.closeModal('modalUsuario');
-      BBM.toast('Usuário salvo.');
-      render();
-    }
+
+    // ---- Editar dados básicos (nome, posto, perfil) ----
     function editarUsuario(id){
       const u = usuarios.find(x=>x.id===id); if(!u) return;
       document.getElementById('uId').value=u.id;
@@ -296,19 +258,29 @@
       document.getElementById('uPosto').value=u.posto||'';
       document.getElementById('uCategoria').value=u.categoria==='Oficial'?'Oficial':'Praça/BC';
       document.getElementById('uLogin').value=u.login;
-      document.getElementById('uSenha').value=u.senha;
+      document.getElementById('uLogin').disabled=true;     // login não é editável aqui
+      const senhaGroup = document.getElementById('uSenha').closest('.form-group');
+      if (senhaGroup) senhaGroup.style.display='none';     // senha não é gerenciada aqui
       document.getElementById('uRole').value=u.role;
       document.getElementById('userTitulo').textContent='Editar Usuário';
       BBM.openModal('modalUsuario');
     }
-    function excluirUsuario(id){
-      const u = usuarios.find(x=>x.id===id);
-      if (u && u.login==='felipe'){ BBM.toast('O administrador principal não pode ser excluído.','error'); return; }
-      if (!confirm('Excluir este usuário?')) return;
-      usuarios = usuarios.filter(x=>x.id!==id);
-      BBM.save('usuarios', usuarios);
-      BBM.toast('Usuário removido.','error');
-      render();
+    async function salvarUsuario(){
+      const id = document.getElementById('uId').value;
+      if (!id){ abrirUsuario(); return; }
+      const nome = document.getElementById('uNome').value.trim();
+      if (!nome){ BBM.toast('Informe o nome.','error'); return; }
+      const upd = {
+        nome, posto:document.getElementById('uPosto').value.trim(),
+        categoria:document.getElementById('uCategoria').value,
+        role:document.getElementById('uRole').value,
+      };
+      const sb = await BBM.sb();
+      const { error } = await sb.from('perfis').update(upd).eq('id', id);
+      if (error){ BBM.toast('Erro ao salvar: '+error.message,'error'); return; }
+      BBM.closeModal('modalUsuario');
+      BBM.toast('Usuário atualizado.');
+      carregar();
     }
 
     // ---- Permissões ----
@@ -317,7 +289,7 @@
       const u = usuarios.find(x=>x.id===id); if(!u) return;
       document.getElementById('permUserId').value=id;
       document.getElementById('permNome').textContent=u.nome;
-      permTmp = Object.assign({}, u.permissoes);
+      permTmp = Object.assign({}, u.permissoes||{});
       document.getElementById('permAdminAviso').style.display = u.role==='admin'?'block':'none';
       renderPermGrid(u.role==='admin');
       BBM.openModal('modalPerm');
@@ -338,19 +310,24 @@
     }
     function setPerm(mod,nivel){ permTmp[mod]=nivel; renderPermGrid(false); }
     function setAll(nivel){ BBM.MODULOS_SIS.forEach(m=>permTmp[m.key]=nivel); renderPermGrid(false); }
-    function salvarPerm(){
+    async function salvarPerm(){
       const id = document.getElementById('permUserId').value;
-      const u = usuarios.find(x=>x.id===id); if(!u) return;
-      u.permissoes = Object.assign({}, permTmp);
-      BBM.save('usuarios', usuarios);
+      const sb = await BBM.sb();
+      const { error } = await sb.from('perfis').update({ permissoes: permTmp }).eq('id', id);
+      if (error){ BBM.toast('Erro ao salvar permissões: '+error.message,'error'); return; }
       BBM.closeModal('modalPerm');
       BBM.toast('Permissões atualizadas.');
-      render();
+      carregar();
     }
 
-    document.getElementById('uNome').addEventListener('blur', ()=>{ if(!document.getElementById('uLogin').value) gerarLogin(); });
-
-    render();
+    // Inicializa quando a autenticação estiver pronta (admin garantido pelo guard)
+    BBM.onReady((u)=>{
+      const av = document.getElementById('avisoAdmin');
+      if (u) av.innerHTML = '☁️ Conectado ao Supabase como <strong>'+u.nome+'</strong> (Administrador). Dados na nuvem, compartilhados entre todos. As senhas ficam <strong>criptografadas</strong> — você redefine, mas não as vê.';
+      // atualiza o rótulo do botão do topo
+      const bs = document.getElementById('btnSenhas'); if (bs) bs.innerHTML = '🔄 Atualizar';
+      carregar();
+    });
   </script>
 </body>
 </html>
