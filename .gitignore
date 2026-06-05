@@ -13,3 +13,8 @@ desktop.ini
 
 # Logs/temporários
 *.log
+
+# Arquivo sensível — nunca enviar ao GitHub
+SENHAS.txt
+*.senhas
+credenciais*.txt
