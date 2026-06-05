@@ -11,6 +11,19 @@
   }
 })();
 
+// --- PWA: manifest + service worker (app instalável) ---
+(function () {
+  const ROOT = location.pathname.includes('/modulos/') ? '../../' : './';
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const l = document.createElement('link');
+    l.rel = 'manifest'; l.href = ROOT + 'manifest.webmanifest';
+    document.head.appendChild(l);
+  }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register(ROOT + 'sw.js').catch(() => {}));
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // --- DATA/HORA ---
