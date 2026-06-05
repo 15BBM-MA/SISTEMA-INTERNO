@@ -114,6 +114,12 @@
             </thead>
             <tbody id="tabelaChamada"></tbody>
           </table>
+          <div class="salvar-rodape">
+            <button class="btn btn-primary" onclick="salvarChamada()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Salvar Chamada
+            </button>
+          </div>
         </div>
       </div>
 
@@ -166,6 +172,8 @@
     .just-input:focus { border-color:var(--red); }
     .just-input:disabled { background:var(--bg);color:var(--text-light); }
     tr.row-falta { background:#fff8f9; }
+    .salvar-rodape { display:flex; justify-content:flex-end; padding:16px 20px; border-top:1px solid var(--border); background:#FAFBFD; }
+    @media(max-width:768px){ .salvar-rodape .btn{ width:100%; justify-content:center; } }
 
     .historico-list { display:flex;flex-direction:column;gap:12px; }
     .hist-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:16px; }
