@@ -202,9 +202,9 @@
 
   <script src="../../assets/js/main.js"></script>
   <script>
-    let empresas = BBM.load('mirim_colaboradores');
-    let doacoes  = BBM.load('mirim_doacoes');
-    let plan     = BBM.load('mirim_planejamento');
+    let empresas = [];
+    let doacoes  = [];
+    let plan     = [];
 
     function showTab(id, btn) {
       ['tabRodizio','tabEmpresas'].forEach(t=>document.getElementById(t).style.display='none');
@@ -487,7 +487,13 @@
       if (document.getElementById('tabEmpresas').style.display!=='none') renderEmpresas();
     }
 
-    refreshAll();
+    // Carrega da nuvem antes de montar a tela
+    BBM.ready(['mirim_colaboradores','mirim_doacoes','mirim_planejamento'], () => {
+      empresas = BBM.load('mirim_colaboradores');
+      doacoes  = BBM.load('mirim_doacoes');
+      plan     = BBM.load('mirim_planejamento');
+      refreshAll();
+    });
   </script>
 </body>
 </html>

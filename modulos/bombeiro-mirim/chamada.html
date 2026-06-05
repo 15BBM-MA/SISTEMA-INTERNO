@@ -185,9 +185,9 @@
   <script src="../../assets/js/main.js"></script>
   <script>
     const KEY_CH = 'mirim_chamadas';
-    let alunos   = BBM.load('mirim_alunos');
-    let turmas   = BBM.load('mirim_turmas');
-    let chamadas = BBM.load(KEY_CH);
+    let alunos   = [];
+    let turmas   = [];
+    let chamadas = [];
     let estado   = {};   // alunoId -> { status, justificativa }
     let editandoId = null;
 
@@ -404,8 +404,14 @@
     document.getElementById('chamadaTurma').addEventListener('change', verificarExistente);
     document.getElementById('searchAluno').addEventListener('input', renderLista);
 
-    popularTurmas();
-    verificarExistente();
+    // Carrega tudo da nuvem antes de montar a tela
+    BBM.ready(['mirim_alunos','mirim_turmas','mirim_chamadas'], () => {
+      alunos   = BBM.load('mirim_alunos');
+      turmas   = BBM.load('mirim_turmas');
+      chamadas = BBM.load('mirim_chamadas');
+      popularTurmas();
+      verificarExistente();
+    });
   </script>
 </body>
 </html>

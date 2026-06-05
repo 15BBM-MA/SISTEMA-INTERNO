@@ -203,40 +203,8 @@
   <script src="../../assets/js/dados-mirim.js"></script>
   <script src="../../assets/js/main.js"></script>
   <script>
-    // Importa automaticamente os candidatos da planilha (uma única vez)
-    if (!localStorage.getItem('bbm_mirim_seed_v1') && window.MIRIM_SEED) {
-      const existentes = BBM.load('mirim_alunos');
-      const nomesExist = new Set(existentes.map(a => (a.nome||'').toLowerCase().trim()));
-      window.MIRIM_SEED.forEach(s => {
-        if (nomesExist.has((s.nome||'').toLowerCase().trim())) return;
-        const mae = BBM.padronizarNome(s.mae || '');
-        const pai = BBM.padronizarNome(s.pai || '');
-        existentes.push({
-          id: BBM.generateId(), nome: s.nome, nasc: s.nasc || '',
-          turmaId: '', escola: s.escola || '', mae, pai,
-          resp: pai || mae, tel: s.tel || '',
-          saude: s.saude || '', alergias: s.alergias || '',
-          situacao: 'Ativo', obs: '',
-        });
-      });
-      BBM.save('mirim_alunos', existentes);
-      localStorage.setItem('bbm_mirim_seed_v1', '1');
-    }
-
-    // Migração: padroniza nomes de mãe/pai já cadastrados (uma única vez)
-    if (!localStorage.getItem('bbm_mirim_norm_v1')) {
-      const lista = BBM.load('mirim_alunos');
-      lista.forEach(a => {
-        a.mae  = BBM.padronizarNome(a.mae || '');
-        a.pai  = BBM.padronizarNome(a.pai || '');
-        a.resp = BBM.padronizarNome(a.resp || '') || a.pai || a.mae;
-      });
-      BBM.save('mirim_alunos', lista);
-      localStorage.setItem('bbm_mirim_norm_v1', '1');
-    }
-
-    let alunos = BBM.load('mirim_alunos');
-    let turmas = BBM.load('mirim_turmas');
+    let alunos = [];
+    let turmas = [];
 
     // Determina se o texto de alergia indica alergia real (true) ou ausência (false)
     function temAlergia(q) {
@@ -440,9 +408,25 @@
       renderAlunos(alunos.filter(a=>a.nome.toLowerCase().includes(q)&&(!t||a.turmaId===t)));
     });
 
-    populaSelects();
-    renderAlunos();
-    atualizarCards();
+    // Carrega os dados da nuvem antes de renderizar
+    BBM.ready(['mirim_alunos','mirim_turmas'], () => {
+      alunos = BBM.load('mirim_alunos');
+      turmas = BBM.load('mirim_turmas');
+      // Primeira carga: importa os 38 candidatos da planilha para a nuvem (uma vez)
+      if (alunos.length === 0 && window.MIRIM_SEED && BBM.nivel('bombeiro-mirim') === 'edicao') {
+        window.MIRIM_SEED.forEach(s => {
+          const mae = BBM.padronizarNome(s.mae || ''), pai = BBM.padronizarNome(s.pai || '');
+          alunos.push({ id: BBM.generateId(), nome: s.nome, nasc: s.nasc || '', turmaId: '',
+            escola: s.escola || '', mae, pai, resp: pai || mae, tel: s.tel || '',
+            saude: s.saude || '', alergias: s.alergias || '', situacao: 'Ativo', obs: '' });
+        });
+        BBM.save('mirim_alunos', alunos);
+        BBM.toast('Turma de Chapadinha importada para a nuvem.');
+      }
+      populaSelects();
+      renderAlunos();
+      atualizarCards();
+    });
   </script>
 </body>
 </html>

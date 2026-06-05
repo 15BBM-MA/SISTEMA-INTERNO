@@ -133,11 +133,68 @@ window.BBM = {
     if (m) m.classList.remove('open');
   },
 
+  // ---------- CAMADA DE DADOS (localStorage + nuvem) ----------
+  _cache: {},                 // cache em memória das coleções na nuvem
+  _cloudFail: {},             // coleções que caíram para localStorage (tabela ausente/erro)
+
+  // mapeia a chave do app para (módulo, coleção) na nuvem; null = fica no localStorage
+  _keyMap(key) {
+    if (key && key.indexOf('mirim_') === 0) return { modulo: 'bombeiro-mirim', colecao: key.slice(6) };
+    return null;
+  },
+
+  // pré-carrega coleções da nuvem antes de a página renderizar
+  async ready(keys, cb) {
+    await this.initAuth();
+    for (const k of (keys || [])) {
+      const map = this._keyMap(k);
+      if (!map) continue;
+      try {
+        const sb = await this.sb();
+        const { data, error } = await sb.from('app_dados').select('dados')
+          .eq('modulo', map.modulo).eq('colecao', map.colecao);
+        if (error) throw error;
+        this._cache[k] = (data || []).map(r => r.dados);
+      } catch (e) {
+        // tabela ainda não criada ou sem acesso → usa localStorage para não quebrar
+        this._cloudFail[k] = true;
+        try { this._cache[k] = JSON.parse(localStorage.getItem('bbm_' + k)) || []; }
+        catch { this._cache[k] = []; }
+      }
+    }
+    if (cb) cb();
+  },
+
   save(key, data) {
-    localStorage.setItem('bbm_' + key, JSON.stringify(data));
+    const map = this._keyMap(key);
+    if (!map || this._cloudFail[key]) {
+      localStorage.setItem('bbm_' + key, JSON.stringify(data));
+      if (map) this._cache[key] = data;
+      return;
+    }
+    const prev = this._cache[key] || [];
+    this._cache[key] = data;
+    // sincroniza com a nuvem (sem travar a interface)
+    this._sync(map, prev, data).catch(() => {});
+  },
+
+  async _sync(map, prev, data) {
+    const sb = await this.sb();
+    const novoIds = new Set(data.map(x => x.id));
+    const rows = data.map(x => ({ modulo: map.modulo, colecao: map.colecao, item_id: x.id, dados: x, atualizado: new Date().toISOString() }));
+    if (rows.length) {
+      const { error } = await sb.from('app_dados').upsert(rows, { onConflict: 'modulo,colecao,item_id' });
+      if (error) { this.toast('Falha ao salvar na nuvem: ' + error.message, 'error'); throw error; }
+    }
+    const remover = prev.map(x => x.id).filter(id => !novoIds.has(id));
+    for (const id of remover) {
+      await sb.from('app_dados').delete().eq('modulo', map.modulo).eq('colecao', map.colecao).eq('item_id', id);
+    }
   },
 
   load(key) {
+    const map = this._keyMap(key);
+    if (map && !this._cloudFail[key]) return this._cache[key] || [];
     try { return JSON.parse(localStorage.getItem('bbm_' + key)) || []; }
     catch { return []; }
   },

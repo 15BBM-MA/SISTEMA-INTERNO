@@ -201,9 +201,9 @@
   <script src="../../assets/js/main.js"></script>
   <script>
     const KEY = 'mirim_planejamento';
-    let encontros = BBM.load(KEY);
-    let colaboradores = BBM.load('mirim_colaboradores');
-    let doacoes = BBM.load('mirim_doacoes');
+    let encontros = [];
+    let colaboradores = [];
+    let doacoes = [];
 
     function addDias(d, dias) {
       const dt = new Date(d + 'T00:00:00');
@@ -277,8 +277,8 @@
     };
     function atividadeLudica(modulo){ return LUDICAS[modulo] || 'Atividade lúdica/recreativa relacionada ao tema, em equipes.'; }
 
-    // ====== SEED do NOVO planejamento 2026 (a partir do próximo sábado) ======
-    if (!localStorage.getItem('bbm_plan_2026_v1')) {
+    // ====== Gera o planejamento 2026 inicial (a partir do próximo sábado) ======
+    function gerarSeedPlanejamento() {
       const inicio = proximoSabado(new Date().toISOString().slice(0,10));
       const novos = [];
       let sab = inicio, ci = 0, ord = 1;
@@ -294,13 +294,9 @@
         }
         ord++; sab = addDias(sab, 7);
       }
-      // encerramento do curso
       novos.push({ id:BBM.generateId(), ord, data:sab, tema:'Encerramento do curso — Formatura e entrega de certificados',
                    modulo:'Recreativo / Datas especiais', obs:'Encerramento', recreativo:true, planoDia:[] });
-      encontros = novos;
-      BBM.save(KEY, encontros);
-      localStorage.setItem('bbm_plan_2026_v1', '1');
-      localStorage.setItem('bbm_plan_seed_v1', '1'); // evita seed antigo
+      return novos;
     }
 
     const MODULOS = (window.PLAN_DATA?.ementa || []).map(e => e.modulo);
@@ -577,7 +573,17 @@
       renderEncontros();
     }
 
-    renderEncontros();
+    // Carrega da nuvem; se o cronograma estiver vazio, gera o planejamento inicial
+    BBM.ready(['mirim_planejamento','mirim_colaboradores','mirim_doacoes'], () => {
+      encontros     = BBM.load('mirim_planejamento');
+      colaboradores = BBM.load('mirim_colaboradores');
+      doacoes       = BBM.load('mirim_doacoes');
+      if (encontros.length === 0 && BBM.nivel('bombeiro-mirim') === 'edicao') {
+        encontros = gerarSeedPlanejamento();
+        BBM.save('mirim_planejamento', encontros);
+      }
+      renderEncontros();
+    });
   </script>
 </body>
 </html>
