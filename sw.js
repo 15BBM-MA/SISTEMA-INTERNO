@@ -1,5 +1,5 @@
 // Service Worker — Sistema 15º BBM (PWA)
-const CACHE = 'bbm-v1';
+const CACHE = 'bbm-v2';
 const ASSETS = [
   './', './index.html', './login.html', './trocar-senha.html',
   './assets/css/main.css', './assets/js/main.js', './assets/img/logo.png'
