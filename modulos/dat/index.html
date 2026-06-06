@@ -203,7 +203,7 @@
     .doc-bar { position:fixed;top:0;left:0;right:0;z-index:10;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px); }
     #docView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4);border:2.5px solid #C8102E; }
     .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.45;position:relative; }
-    .doc-wm { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:82%;padding-bottom:82%;background-position:center;background-repeat:no-repeat;background-size:contain;opacity:.22;z-index:0;pointer-events:none;
+    .doc-wm { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:82%;padding-bottom:82%;background-position:center;background-repeat:no-repeat;background-size:contain;opacity:.18;z-index:0;pointer-events:none;
               -webkit-print-color-adjust:exact;print-color-adjust:exact; }
     .doc > *:not(.doc-wm){ position:relative;z-index:1; }
     .assin { display:block;width:232px;margin:2px auto 2px; }
@@ -241,7 +241,7 @@
       .doc .pdatas { margin-bottom:0.7cm !important; }
       .doc table { font-size:10pt;margin:7px 0; }
       .doc .sign { margin-top:16px; }
-      .doc-wm { opacity:.22; }
+      .doc-wm { opacity:.18; }
     }
   </style>
 
@@ -257,6 +257,15 @@
     }
     const val = id => (document.getElementById(id).value||'').trim();
     const chk = id => document.getElementById(id).checked;
+    const hoje = () => new Date().toISOString().slice(0,10);
+    function fmtCPF(v){ const d=(v||'').replace(/\D/g,''); return d.length===11 ? d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4') : (v||''); }
+    function montaNumero(){ let n=val('e_numlic'); const ano=new Date().getFullYear(); if(!n) return '___/'+ano; n=n.replace(/\s/g,''); return n.indexOf('/')>=0 ? n : n+'/'+ano; }
+    function validarEvento(){
+      if(!val('e_dataIni')){ BBM.toast('Informe a data de início do evento.','error'); return false; }
+      if(val('e_dataIni') < hoje()){ BBM.toast('Não é permitido gerar com data retroativa.','error'); return false; }
+      if(val('e_dataFim') && val('e_dataFim') < val('e_dataIni')){ BBM.toast('A data fim não pode ser antes do início.','error'); return false; }
+      return true;
+    }
     function brData(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
     function extenso(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); const ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return d+' de '+ms[+m-1]+' de '+y; }
     const BASE = location.origin + location.pathname.replace(/modulos\/dat\/.*/, '');
@@ -289,11 +298,12 @@
     // ---------- LICENÇA (Declaração Provisória) ----------
     function gerarLicenca(){
       if(!val('e_estab')||!val('e_resp')){ BBM.toast('Preencha estabelecimento e responsável.','error'); return; }
+      if(!validarEvento()) return;
       const local = [val('e_estab'), val('e_logr'), val('e_bairro'), val('e_mun')].filter(Boolean).join(', ');
-      const num = val('e_numlic')||'___/____';
+      const num = montaNumero();
       const html = `<div class="doc-wm" style="background-image:url('${LOGO}')"></div>` + cabecalho()
         + `<div class="doc-title">Declaração de Aprovação Provisória Nº ${num}</div>`
-        + `<p class="p1">Certifico que o evento que será realizado no <span class="b">${local}</span>, sob a responsabilidade de <span class="b">${val('e_resp')}${val('e_cpf')?', CPF '+val('e_cpf'):''}</span>, apresentando-se aparelhado com dispositivos de prevenção contra incêndio e pânico para a realização do evento, conforme lei em vigor Nº 11.390 de 21 de dezembro de 2020.</p>`
+        + `<p class="p1">Certifico que o evento que será realizado no <span class="b">${local}</span>, sob a responsabilidade de <span class="b">${val('e_resp')}${val('e_cpf')?', CPF '+fmtCPF(val('e_cpf')):''}</span>, apresentando-se aparelhado com dispositivos de prevenção contra incêndio e pânico para a realização do evento, conforme lei em vigor Nº 11.390 de 21 de dezembro de 2020.</p>`
         + `<p class="pdatas">Ficando aprovado o funcionamento do estabelecimento para o evento ${periodoTexto()}.</p>`
         + `<p><span class="b">OBSERVAÇÕES:</span></p>`
         + `<ol><li>O responsável pelo evento deverá obedecer à lotação máxima de <span class="b">${val('e_publico')||'____'} pessoas</span>;</li>`
@@ -313,6 +323,7 @@
     // ---------- REQUERIMENTO ----------
     function gerarRequerimento(){
       if(!val('e_resp')){ BBM.toast('Preencha o responsável.','error'); return; }
+      if(!validarEvento()) return;
       const cel = (l,v)=>`<tr><td class="lbl">${l}</td><td>${v||''}</td></tr>`;
       const ini=val('e_dataIni'), fim=val('e_dataFim');
       const dataTxt = (fim && fim!==ini) ? (brData(ini)+' a '+brData(fim)) : brData(ini);
@@ -323,7 +334,7 @@
         + cel('Logradouro público', val('e_logr')) + cel('Nº', val('e_num')) + cel('CEP', val('e_cep'))
         + cel('Bairro', val('e_bairro')) + cel('Município', val('e_mun')) + cel('Complemento', val('e_compl'))
         + cel('UF', val('e_uf'))
-        + cel('Responsável pelo evento', val('e_resp')) + cel('CPF', val('e_cpf'))
+        + cel('Responsável pelo evento', val('e_resp')) + cel('CPF', fmtCPF(val('e_cpf')))
         + cel('Data', dataTxt) + cel('Fone', val('e_fone'))
         + `</table>`
         + `<p class="b" style="text-align:center;margin-top:14px">EVENTO TEMPORÁRIO DE PEQUENO PORTE – F-7</p>`
@@ -337,7 +348,7 @@
         + `<div class="sign"><div class="line"></div>Responsável</div>`
         + rodape();
       abrirDoc(html);
-      salvar('Requerimento (Evento PP)', val('e_numlic')||'-', val('e_estab'), val('e_resp'), coletarEvento());
+      salvar('Requerimento (Evento PP)', montaNumero(), val('e_estab'), val('e_resp'), coletarEvento());
     }
 
     // ---------- BAIXO RISCO (Anexo B) ----------
@@ -352,7 +363,7 @@
         + cel('Logradouro público', val('b_logr')) + cel('Nº', val('b_num')) + cel('CEP', val('b_cep'))
         + cel('Bairro', val('b_bairro')) + cel('Município', val('b_mun')) + cel('Complemento', val('b_compl')) + cel('UF', val('b_uf'))
         + cel('Proprietário', val('b_prop')) + cel('CPF/CNPJ', val('b_propdoc'))
-        + cel('Responsável pelo uso', val('b_resp')) + cel('CPF', val('b_respcpf')) + cel('E-mail', val('b_email')) + cel('Fone', val('b_fone'))
+        + cel('Responsável pelo uso', val('b_resp')) + cel('CPF', fmtCPF(val('b_respcpf'))) + cel('E-mail', val('b_email')) + cel('Fone', val('b_fone'))
         + cel('Razão social', val('b_razao')) + cel('CNPJ', val('b_cnpj')) + cel('CNAE principal', val('b_cnae')) + cel('Nome fantasia', val('b_fantasia'))
         + cel('Classificação da ocupação', val('b_class'))
         + `</table>`
@@ -405,7 +416,10 @@
     }
     function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); }
 
-    document.getElementById('e_emissao').value = new Date().toISOString().slice(0,10);
+    document.getElementById('e_emissao').value = hoje();
+    document.getElementById('e_dataIni').min = hoje();   // bloqueia data retroativa
+    document.getElementById('e_dataFim').min = hoje();
+    document.getElementById('e_numlic').placeholder = 'ex: 76  (o ano /'+new Date().getFullYear()+' é automático)';
     BBM.ready(['dat_emitidos'], ()=>{ emitidos = BBM.load('dat_emitidos'); });
   </script>
 </body>
