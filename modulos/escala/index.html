@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
   <title>Escala de Serviço — 15º BBM</title>
   <link rel="stylesheet" href="../../assets/css/main.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
@@ -17,7 +18,7 @@
       <div class="nav-label">Módulos</div>
       <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
       <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
-      <a href="../escala/index.html"         class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="index.html"                   class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
       <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
       <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
       <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
@@ -28,12 +29,8 @@
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
-        <div class="topbar-breadcrumb">
-          <a href="../../index.html">Sistema de Gestão</a>
-          <span class="breadcrumb-sep">›</span>
-          <span class="breadcrumb-current">Escala de Serviço</span>
-        </div>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb"><a href="../../index.html">Sistema</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Escala de Serviço</span></div>
       </div>
       <div class="topbar-right">
         <div class="topbar-date" id="topbarDate"></div>
@@ -49,330 +46,313 @@
           </div>
           <div>
             <div class="mod-title">Escala de Serviço</div>
-            <div class="mod-subtitle">Gestão de plantões, folgas e efetivo</div>
+            <div class="mod-subtitle">Serviço diário dos praças — destaque dos serviços operacionais extras (JOE)</div>
           </div>
         </div>
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-ghost" onclick="BBM.openModal('modalMilitar')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            Cadastrar Militar
-          </button>
-          <button class="btn btn-primary" onclick="BBM.openModal('modalEscala')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Lançar Escala
-          </button>
+      </div>
+
+      <div class="tabs-scroll">
+        <button class="tab-btn active" onclick="showTab('tabDia',this)">Serviço do Dia</button>
+        <button class="tab-btn" onclick="showTab('tabMes',this)">Escala do Mês</button>
+        <button class="tab-btn" onclick="showTab('tabMil',this)">Militares</button>
+        <button class="tab-btn" onclick="showTab('tabObs',this)">Observações</button>
+      </div>
+
+      <!-- ===================== SERVIÇO DO DIA ===================== -->
+      <div id="tabDia">
+        <div class="dia-nav">
+          <button class="btn btn-ghost" onclick="mudarDia(-1)">‹ Anterior</button>
+          <input class="form-control" id="diaData" type="date" onchange="renderDia()"/>
+          <button class="btn btn-ghost" onclick="mudarDia(1)">Próximo ›</button>
+          <button class="btn btn-ghost" onclick="irHoje()">Hoje</button>
+          <button class="btn btn-primary" onclick="editarDia()">✎ Editar dia</button>
         </div>
+        <div id="servicoDia"></div>
       </div>
 
-      <div class="status-grid" style="margin-bottom:28px">
-        <div class="status-card"><div class="status-value" id="totMilitares">0</div><div class="status-label">Militares</div></div>
-        <div class="status-card"><div class="status-value" id="totServico">0</div><div class="status-label">Em Serviço Hoje</div></div>
-        <div class="status-card"><div class="status-value" id="totFolga">0</div><div class="status-label">De Folga</div></div>
-        <div class="status-card"><div class="status-value" id="totEscalas">0</div><div class="status-label">Escalas Registradas</div></div>
-      </div>
-
-      <!-- TABS -->
-      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px">
-        <button class="tab-btn active" onclick="showTab('tabEscalas',this)">Escalas</button>
-        <button class="tab-btn" onclick="showTab('tabMilitares',this)">Militares</button>
-      </div>
-
-      <div id="tabEscalas">
-        <div class="section-label">Registros de Escala</div>
+      <!-- ===================== MÊS ===================== -->
+      <div id="tabMes" style="display:none">
+        <div class="section-label">Escala do Mês</div>
         <div class="table-wrap">
-          <div class="table-toolbar">
-            <div class="search-input">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input id="searchEscala" type="text" placeholder="Pesquisar militar…"/>
-            </div>
-            <select class="form-control" id="filterTurno" style="width:auto;padding:7px 12px">
-              <option value="">Todos os turnos</option>
-              <option>Diurno</option><option>Noturno</option><option>24h</option>
-            </select>
-          </div>
           <table>
-            <thead>
-              <tr><th>Data</th><th>Militar</th><th>Posto/Grad.</th><th>Turno</th><th>Função</th><th>Viatura</th><th>Situação</th><th>Ações</th></tr>
-            </thead>
-            <tbody id="tabelaEscalas"></tbody>
+            <thead><tr><th>Data</th><th>Dia</th><th>Comandante</th><th>Chefe de Linha</th><th>Auxiliar</th><th>Motorista</th><th>JOE</th></tr></thead>
+            <tbody id="tabelaMes"></tbody>
           </table>
         </div>
       </div>
 
-      <div id="tabMilitares" style="display:none">
-        <div class="section-label">Efetivo Cadastrado</div>
+      <!-- ===================== MILITARES ===================== -->
+      <div id="tabMil" style="display:none">
+        <div class="toolbar-flex">
+          <p class="info-text">Efetivo disponível para a escala (Major Martins e Capitão Oliveira não participam).</p>
+          <button class="btn btn-primary" onclick="abrirMilitar()">+ Novo Militar</button>
+        </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Nome</th><th>Posto/Graduação</th><th>Matrícula</th><th>Setor</th><th>Situação</th><th>Ações</th></tr>
-            </thead>
-            <tbody id="tabelaMilitares"></tbody>
+            <thead><tr><th>Nome</th><th>Posto/Graduação</th><th>Categoria</th><th>Ações</th></tr></thead>
+            <tbody id="tabelaMil"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ===================== OBSERVAÇÕES ===================== -->
+      <div id="tabObs" style="display:none">
+        <div class="section-label">Observações da Escala</div>
+        <div id="listaObs" class="obs-list"></div>
+        <div class="legenda"><span class="joe-dot"></span> <strong>JORNADA OPERACIONAL EXTRA (JOE)</strong> — destacada em vermelho no serviço do dia.</div>
       </div>
     </div>
   </main>
 
-  <!-- MODAL MILITAR -->
-  <div class="modal-overlay" id="modalMilitar">
-    <div class="modal">
+  <!-- MODAL EDITAR DIA -->
+  <div class="modal-overlay" id="modalDia">
+    <div class="modal" style="max-width:560px">
       <div class="modal-header">
-        <span class="modal-title" id="modalMilitarTitle">Cadastrar Militar</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalMilitar')">×</button>
+        <span class="modal-title" id="diaTitulo">Editar Dia</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalDia')" aria-label="Fechar">×</button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="militarId"/>
-        <div class="form-group"><label class="form-label">Nome Completo *</label><input class="form-control" id="mNome" placeholder="Nome do militar"/></div>
+        <input type="hidden" id="dData"/>
+        <div id="diaFuncoes"></div>
+        <div class="fc-sec2">Serviços Operacionais Extras (JOE)</div>
+        <div id="joeEditor"></div>
+        <button class="btn-mini2" onclick="addJoe()">+ Adicionar JOE</button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalDia')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarDia()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MILITAR -->
+  <div class="modal-overlay" id="modalMil">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="milTitulo">Novo Militar</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalMil')" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="mId"/>
+        <div class="form-group"><label class="form-label">Nome *</label><input class="form-control" id="mNome"/></div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Posto/Graduação *</label>
-            <select class="form-control" id="mPosto">
-              <option>Sd BM</option><option>Cb BM</option><option>3º Sgt BM</option><option>2º Sgt BM</option>
-              <option>1º Sgt BM</option><option>Sub Ten BM</option><option>2º Ten BM</option>
-              <option>1º Ten BM</option><option>Cap BM</option><option>Maj BM</option>
-              <option>Ten Cel BM</option><option>Cel BM</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Matrícula</label><input class="form-control" id="mMatricula" placeholder="000000"/></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Setor</label><input class="form-control" id="mSetor" placeholder="Ex: Operacional"/></div>
-          <div class="form-group"><label class="form-label">Situação</label>
-            <select class="form-control" id="mSituacao"><option>Ativo</option><option>Licença</option><option>Afastado</option><option>Férias</option></select>
+          <div class="form-group"><label class="form-label">Posto/Graduação</label><input class="form-control" id="mPosto"/></div>
+          <div class="form-group"><label class="form-label">Categoria</label>
+            <select class="form-control" id="mCategoria"><option>Oficial</option><option>Praça</option><option>BC</option></select>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalMilitar')">Cancelar</button>
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalMil')">Cancelar</button>
         <button class="btn btn-primary" onclick="salvarMilitar()">Salvar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL ESCALA -->
-  <div class="modal-overlay" id="modalEscala">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title" id="modalEscalaTitle">Lançar Escala</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalEscala')">×</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="escalaId"/>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Data *</label><input class="form-control" id="eData" type="date"/></div>
-          <div class="form-group"><label class="form-label">Turno</label>
-            <select class="form-control" id="eTurno"><option>Diurno</option><option>Noturno</option><option>24h</option></select>
-          </div>
-        </div>
-        <div class="form-group"><label class="form-label">Militar *</label>
-          <select class="form-control" id="eMilitar"></select>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Função</label>
-            <select class="form-control" id="eFuncao">
-              <option>Comandante de Guarnição</option><option>Motorista</option>
-              <option>Combatente</option><option>Plantonista</option><option>Auxiliar Administrativo</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Viatura</label><input class="form-control" id="eViatura" placeholder="Ex: AB-01"/></div>
-        </div>
-        <div class="form-group"><label class="form-label">Situação</label>
-          <select class="form-control" id="eSituacao"><option>Em Serviço</option><option>De Folga</option><option>Licença</option><option>Férias</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="eObs" rows="2"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalEscala')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarEscala()">Salvar</button>
-      </div>
-    </div>
-  </div>
-
   <style>
-    .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
+    .tabs-scroll { display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto; }
+    .tab-btn { background:none;border:none;padding:12px 16px;cursor:pointer;font-size:.86rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;white-space:nowrap; }
     .tab-btn.active { color:var(--blue);border-bottom-color:var(--blue); }
-    .tab-btn:hover { color:var(--text); }
+    .toolbar-flex { display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap; }
+    .info-text { color:var(--text-mid);font-size:.84rem;max-width:520px; }
+
+    .dia-nav { display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap; }
+    .dia-nav .form-control { width:auto; }
+
+    .dia-head { background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:18px; }
+    .dia-head .dh-dia { font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold); }
+    .dia-head .dh-data { font-family:'Rajdhani',sans-serif;font-size:1.8rem;font-weight:700;line-height:1.1; }
+
+    .func-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+    @media(max-width:768px){ .func-grid{grid-template-columns:1fr} }
+    .func-card { background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow); }
+    .func-nome { font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);margin-bottom:6px; }
+    .func-militar { font-size:1.05rem;font-weight:700;color:var(--navy); }
+    .func-vazio { color:var(--text-light);font-weight:500;font-style:italic; }
+
+    .joe-card { border-left-color:var(--red);background:#fff6f7; }
+    .joe-tag { display:inline-block;background:var(--red);color:#fff;font-size:.64rem;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.05em;margin-left:8px;vertical-align:middle; }
+    .joe-sec-title { font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin:22px 0 12px; }
+    .joe-dot { display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--red);vertical-align:middle; }
+
+    .obs-list { display:flex;flex-direction:column;gap:12px;margin-bottom:18px; }
+    .obs-item { background:var(--yellow-light);border:1px solid #f0dca0;color:#7a5d00;padding:14px 18px;border-radius:10px;font-size:.88rem;line-height:1.6; }
+    .legenda { font-size:.85rem;color:var(--text-mid);display:flex;align-items:center;gap:8px; }
+
+    .fc-sec2 { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin:18px 0 10px;padding-top:10px;border-top:1px solid var(--border); }
+    .btn-mini2 { background:var(--bg);border:1px dashed var(--border);border-radius:8px;padding:8px 12px;font-size:.8rem;font-weight:600;color:var(--text-mid);cursor:pointer;width:100%;margin-top:8px; }
+    .joe-row { display:flex;gap:8px;margin-bottom:8px; }
+    .joe-row .rm { width:34px;border:none;background:#fce4e8;color:var(--red);border-radius:7px;cursor:pointer; }
+    .dia-func-row { display:grid;grid-template-columns:1fr 1.3fr;gap:10px;align-items:center;margin-bottom:10px; }
+    .dia-func-row label { font-size:.82rem;font-weight:600;color:var(--text-mid); }
   </style>
 
+  <script src="../../assets/js/dados-escala.js"></script>
   <script src="../../assets/js/main.js"></script>
   <script>
-    let militares = BBM.load('escala_militares');
-    let escalas   = BBM.load('escala_registros');
+    const FUNC = ['Comandante de Guarnição','Chefe de Linha','Auxiliar do Chefe de Linha','Motorista'];
+    let registros = [];   // {id, data, funcao, militar, joe}
+    let militares = [];    // {id, nome, posto, categoria}
+    let diaSel = new Date().toISOString().slice(0,10);
 
-    function showTab(id, btn) {
-      ['tabEscalas','tabMilitares'].forEach(t => document.getElementById(t).style.display='none');
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).style.display='block';
-      btn.classList.add('active');
-      if (id === 'tabMilitares') renderMilitares();
+    function showTab(id, btn){
+      ['tabDia','tabMes','tabMil','tabObs'].forEach(t=>document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).style.display='block'; btn.classList.add('active');
+      if(id==='tabMes') renderMes();
+      if(id==='tabMil') renderMilitares();
+      if(id==='tabObs') renderObs();
     }
 
-    const today = new Date().toISOString().slice(0,10);
+    const diaSemana = d => { const ds=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado']; return ds[new Date(d+'T00:00:00').getDay()]; };
 
-    function renderEscalas(lista = escalas) {
-      const tbody = document.getElementById('tabelaEscalas');
-      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><p>Nenhuma escala lançada.</p></div></td></tr>`; return; }
-      const sorted = [...lista].sort((a,b)=>b.data.localeCompare(a.data));
-      tbody.innerHTML = sorted.map(e => `<tr>
-        <td>${BBM.formatDate(e.data)}</td>
-        <td><strong>${e.militarNome}</strong></td>
-        <td>${e.posto}</td>
-        <td>${e.turno}</td>
-        <td>${e.funcao}</td>
-        <td>${e.viatura||'—'}</td>
-        <td><span class="badge ${sitClass(e.situacao)}">${e.situacao}</span></td>
-        <td style="display:flex;gap:6px">
-          <button class="action-btn" onclick="editarEscala('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="action-btn" onclick="excluirEscala('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-        </td>
-      </tr>`).join('');
-      atualizarCards();
+    function irHoje(){ diaSel = new Date().toISOString().slice(0,10); document.getElementById('diaData').value=diaSel; renderDia(); }
+    function mudarDia(n){ const dt=new Date(diaSel+'T00:00:00'); dt.setDate(dt.getDate()+n); diaSel=dt.toISOString().slice(0,10); document.getElementById('diaData').value=diaSel; renderDia(); }
+
+    function renderDia(){
+      diaSel = document.getElementById('diaData').value || diaSel;
+      const cont = document.getElementById('servicoDia');
+      const doDia = registros.filter(r=>r.data===diaSel);
+      const principais = FUNC.map(f => doDia.find(r=>r.funcao===f && !r.joe));
+      const joes = doDia.filter(r=>r.joe);
+      let html = `<div class="dia-head">
+        <div class="dh-dia">${diaSemana(diaSel)}</div>
+        <div class="dh-data">${BBM.formatDate(diaSel)}</div>
+      </div>`;
+      if (!doDia.length) {
+        html += `<div class="empty-state"><p>Sem escala lançada para este dia. Use "Editar dia" para registrar.</p></div>`;
+      } else {
+        html += `<div class="func-grid">` + FUNC.map((f,i)=>{
+          const r = principais[i];
+          return `<div class="func-card">
+            <div class="func-nome">${f}</div>
+            <div class="func-militar ${r&&r.militar?'':'func-vazio'}">${r&&r.militar?r.militar:'— não escalado —'}</div>
+          </div>`;
+        }).join('') + `</div>`;
+        if (joes.length) {
+          html += `<div class="joe-sec-title">🔴 Serviços Operacionais Extras (JOE)</div><div class="func-grid">`
+            + joes.map(r=>`<div class="func-card joe-card">
+                <div class="func-nome">${r.funcao} <span class="joe-tag">JOE</span></div>
+                <div class="func-militar">${r.militar}</div>
+              </div>`).join('') + `</div>`;
+        }
+      }
+      cont.innerHTML = html;
     }
 
-    function sitClass(s) {
-      if (s==='Em Serviço') return 'badge-ok';
-      if (s==='De Folga')   return 'badge-neutral';
-      if (s==='Licença')    return 'badge-warn';
-      return 'badge-info';
+    function renderMes(){
+      const tb = document.getElementById('tabelaMes');
+      const datas = [...new Set(registros.map(r=>r.data))].sort();
+      if(!datas.length){ tb.innerHTML=`<tr><td colspan="7"><div class="empty-state"><p>Nenhuma escala cadastrada.</p></div></td></tr>`; return; }
+      tb.innerHTML = datas.map(d=>{
+        const r = registros.filter(x=>x.data===d);
+        const get = f => { const x=r.find(y=>y.funcao===f&&!y.joe); return x?x.militar:'—'; };
+        const joes = r.filter(x=>x.joe).map(x=>`${x.militar} (${x.funcao.split(' ')[0]})`).join(', ');
+        return `<tr>
+          <td><strong>${BBM.formatDate(d)}</strong></td>
+          <td>${diaSemana(d).replace('-feira','')}</td>
+          <td>${get('Comandante de Guarnição')}</td>
+          <td>${get('Chefe de Linha')}</td>
+          <td>${get('Auxiliar do Chefe de Linha')}</td>
+          <td>${get('Motorista')}</td>
+          <td>${joes?`<span style="color:var(--red);font-weight:600">${joes}</span>`:'—'}</td>
+        </tr>`;
+      }).join('');
     }
 
-    function renderMilitares() {
-      const tbody = document.getElementById('tabelaMilitares');
-      if (!militares.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhum militar cadastrado.</p></div></td></tr>`; return; }
-      tbody.innerHTML = militares.map(m => `<tr>
-        <td><strong>${m.nome}</strong></td>
-        <td>${m.posto}</td>
-        <td>${m.matricula||'—'}</td>
-        <td>${m.setor||'—'}</td>
-        <td><span class="badge ${m.situacao==='Ativo'?'badge-ok':'badge-warn'}">${m.situacao}</span></td>
+    // ---------- EDITAR DIA ----------
+    let joeTmp = [];
+    function editarDia(){
+      const data = diaSel;
+      document.getElementById('dData').value = data;
+      document.getElementById('diaTitulo').textContent = 'Editar — ' + BBM.formatDate(data) + ' (' + diaSemana(data) + ')';
+      const doDia = registros.filter(r=>r.data===data);
+      const opts = '<option value="">— não escalado —</option>' + militares.map(m=>`<option>${m.nome}</option>`).join('');
+      document.getElementById('diaFuncoes').innerHTML = FUNC.map((f,i)=>{
+        const r = doDia.find(x=>x.funcao===f && !x.joe);
+        return `<div class="dia-func-row"><label>${f}</label><select class="form-control" id="df_${i}">${opts}</select></div>`;
+      }).join('');
+      FUNC.forEach((f,i)=>{ const r=doDia.find(x=>x.funcao===f&&!x.joe); document.getElementById('df_'+i).value = r?r.militar:''; });
+      joeTmp = doDia.filter(x=>x.joe).map(x=>({funcao:x.funcao, militar:x.militar}));
+      renderJoeEditor();
+      BBM.openModal('modalDia');
+    }
+    function renderJoeEditor(){
+      const opts = militares.map(m=>`<option>${m.nome}</option>`).join('');
+      const fopts = FUNC.map(f=>`<option>${f}</option>`).join('');
+      document.getElementById('joeEditor').innerHTML = joeTmp.map((j,i)=>`
+        <div class="joe-row">
+          <select class="form-control" onchange="joeTmp[${i}].funcao=this.value">${fopts}</select>
+          <select class="form-control" onchange="joeTmp[${i}].militar=this.value">${opts}</select>
+          <button class="rm" onclick="joeTmp.splice(${i},1);renderJoeEditor()">×</button>
+        </div>`).join('');
+      joeTmp.forEach((j,i)=>{ const r=document.querySelectorAll('#joeEditor .joe-row')[i]; if(r){ r.children[0].value=j.funcao; r.children[1].value=j.militar; } });
+    }
+    function addJoe(){ joeTmp.push({funcao:'Motorista', militar:''}); renderJoeEditor(); }
+    async function salvarDia(){
+      const data = document.getElementById('dData').value;
+      registros = registros.filter(r=>r.data!==data);   // limpa o dia
+      FUNC.forEach((f,i)=>{ const mil=document.getElementById('df_'+i).value; if(mil) registros.push({id:BBM.generateId(),data,funcao:f,militar:mil,joe:false}); });
+      joeTmp.forEach(j=>{ if(j.militar) registros.push({id:BBM.generateId(),data,funcao:j.funcao,militar:j.militar,joe:true}); });
+      BBM.save('escala_registros', registros);
+      BBM.closeModal('modalDia');
+      BBM.toast('Escala do dia salva.');
+      renderDia();
+    }
+
+    // ---------- MILITARES ----------
+    function renderMilitares(){
+      const tb = document.getElementById('tabelaMil');
+      if(!militares.length){ tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><p>Nenhum militar.</p></div></td></tr>`; return; }
+      tb.innerHTML = militares.map(m=>`<tr>
+        <td><strong>${m.nome}</strong></td><td>${m.posto||'—'}</td><td>${m.categoria||'—'}</td>
         <td style="display:flex;gap:6px">
           <button class="action-btn" onclick="editarMilitar('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
           <button class="action-btn" onclick="excluirMilitar('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-        </td>
-      </tr>`).join('');
+        </td></tr>`).join('');
     }
-
-    function atualizarCards() {
-      document.getElementById('totMilitares').textContent = militares.length;
-      const hoje = escalas.filter(e=>e.data===today);
-      document.getElementById('totServico').textContent = hoje.filter(e=>e.situacao==='Em Serviço').length;
-      document.getElementById('totFolga').textContent   = hoje.filter(e=>e.situacao==='De Folga').length;
-      document.getElementById('totEscalas').textContent = escalas.length;
-    }
-
-    function populaSelectMilitares() {
-      const sel = document.getElementById('eMilitar');
-      sel.innerHTML = militares.length
-        ? militares.filter(m=>m.situacao==='Ativo').map(m=>`<option value="${m.id}">${m.posto} ${m.nome}</option>`).join('')
-        : '<option>Nenhum militar cadastrado</option>';
-    }
-
-    function salvarMilitar() {
-      const id   = document.getElementById('militarId').value;
-      const nome = document.getElementById('mNome').value.trim();
-      if (!nome) { BBM.toast('Informe o nome.','error'); return; }
-      const obj = {
-        id: id || BBM.generateId(),
-        nome, posto: document.getElementById('mPosto').value,
-        matricula: document.getElementById('mMatricula').value,
-        setor:     document.getElementById('mSetor').value,
-        situacao:  document.getElementById('mSituacao').value,
-      };
-      if (id) { militares[militares.findIndex(m=>m.id===id)]=obj; }
-      else militares.push(obj);
+    function abrirMilitar(){ ['mId','mNome','mPosto'].forEach(k=>document.getElementById(k).value=''); document.getElementById('mCategoria').value='Praça'; document.getElementById('milTitulo').textContent='Novo Militar'; BBM.openModal('modalMil'); }
+    function editarMilitar(id){ const m=militares.find(x=>x.id===id); if(!m)return; document.getElementById('mId').value=m.id; document.getElementById('mNome').value=m.nome; document.getElementById('mPosto').value=m.posto||''; document.getElementById('mCategoria').value=m.categoria||'Praça'; document.getElementById('milTitulo').textContent='Editar Militar'; BBM.openModal('modalMil'); }
+    function salvarMilitar(){
+      const id=document.getElementById('mId').value, nome=document.getElementById('mNome').value.trim();
+      if(!nome){ BBM.toast('Informe o nome.','error'); return; }
+      const obj={ id:id||BBM.generateId(), nome:BBM.padronizarNome(nome), posto:document.getElementById('mPosto').value.trim(), categoria:document.getElementById('mCategoria').value };
+      if(id){ militares[militares.findIndex(m=>m.id===id)]=obj; } else militares.push(obj);
       BBM.save('escala_militares', militares);
-      BBM.closeModal('modalMilitar');
-      BBM.toast('Militar salvo.');
-      renderMilitares();
-      atualizarCards();
-      document.getElementById('militarId').value='';
-      document.getElementById('mNome').value='';
+      BBM.closeModal('modalMil'); BBM.toast('Militar salvo.'); renderMilitares();
+    }
+    function excluirMilitar(id){ if(!confirm('Excluir militar?'))return; militares=militares.filter(m=>m.id!==id); BBM.save('escala_militares',militares); BBM.toast('Removido.','error'); renderMilitares(); }
+
+    function renderObs(){
+      const obs = (window.ESCALA_SEED&&window.ESCALA_SEED.obs)||[];
+      document.getElementById('listaObs').innerHTML = obs.map(o=>`<div class="obs-item">⚠ ${o}</div>`).join('');
     }
 
-    function editarMilitar(id) {
-      const m = militares.find(x=>x.id===id); if(!m) return;
-      document.getElementById('militarId').value   = m.id;
-      document.getElementById('mNome').value       = m.nome;
-      document.getElementById('mPosto').value      = m.posto;
-      document.getElementById('mMatricula').value  = m.matricula;
-      document.getElementById('mSetor').value      = m.setor;
-      document.getElementById('mSituacao').value   = m.situacao;
-      document.getElementById('modalMilitarTitle').textContent = 'Editar Militar';
-      BBM.openModal('modalMilitar');
-    }
-
-    function excluirMilitar(id) {
-      if (!confirm('Excluir militar?')) return;
-      militares = militares.filter(m=>m.id!==id);
+    // ---------- SEED + INIT ----------
+    function seedEscala(){
+      const S = window.ESCALA_SEED; if(!S) return;
+      // militares
+      militares = S.militares.map(m=>({ id:BBM.generateId(), nome:m.nome, posto:m.posto, categoria:m.categoria }));
       BBM.save('escala_militares', militares);
-      BBM.toast('Removido.','error');
-      renderMilitares();
-      atualizarCards();
+      // registros (a partir de dias + joe)
+      registros = [];
+      Object.entries(S.dias).forEach(([data, arr])=>{
+        FUNC.forEach((f,i)=>{ if(arr[i]) registros.push({ id:BBM.generateId(), data, funcao:f, militar:arr[i], joe:false }); });
+      });
+      (S.joe||[]).forEach(j=> registros.push({ id:BBM.generateId(), data:j.data, funcao:j.funcao, militar:j.militar, joe:true }));
+      BBM.save('escala_registros', registros);
     }
 
-    function salvarEscala() {
-      const id  = document.getElementById('escalaId').value;
-      const mId = document.getElementById('eMilitar').value;
-      const data= document.getElementById('eData').value;
-      if (!mId||!data) { BBM.toast('Preencha data e militar.','error'); return; }
-      const mil = militares.find(m=>m.id===mId);
-      const obj = {
-        id: id || BBM.generateId(),
-        data, militarId: mId,
-        militarNome: mil?.nome||'—',
-        posto: mil?.posto||'—',
-        turno:    document.getElementById('eTurno').value,
-        funcao:   document.getElementById('eFuncao').value,
-        viatura:  document.getElementById('eViatura').value,
-        situacao: document.getElementById('eSituacao').value,
-        obs:      document.getElementById('eObs').value,
-      };
-      if (id) { escalas[escalas.findIndex(e=>e.id===id)]=obj; }
-      else escalas.push(obj);
-      BBM.save('escala_registros', escalas);
-      BBM.closeModal('modalEscala');
-      BBM.toast('Escala salva.');
-      renderEscalas();
-    }
-
-    function editarEscala(id) {
-      const e = escalas.find(x=>x.id===id); if(!e) return;
-      populaSelectMilitares();
-      document.getElementById('escalaId').value   = e.id;
-      document.getElementById('eData').value      = e.data;
-      document.getElementById('eTurno').value     = e.turno;
-      document.getElementById('eMilitar').value   = e.militarId;
-      document.getElementById('eFuncao').value    = e.funcao;
-      document.getElementById('eViatura').value   = e.viatura;
-      document.getElementById('eSituacao').value  = e.situacao;
-      document.getElementById('eObs').value       = e.obs;
-      document.getElementById('modalEscalaTitle').textContent = 'Editar Escala';
-      BBM.openModal('modalEscala');
-    }
-
-    function excluirEscala(id) {
-      if (!confirm('Excluir este registro de escala?')) return;
-      escalas = escalas.filter(e=>e.id!==id);
-      BBM.save('escala_registros', escalas);
-      BBM.toast('Removido.','error');
-      renderEscalas();
-    }
-
-    document.getElementById('searchEscala').addEventListener('input', () => {
-      const q = document.getElementById('searchEscala').value.toLowerCase();
-      const t = document.getElementById('filterTurno').value;
-      renderEscalas(escalas.filter(e=>e.militarNome.toLowerCase().includes(q)&&(!t||e.turno===t)));
+    document.getElementById('diaData').value = diaSel;
+    BBM.ready(['escala_registros','escala_militares'], ()=>{
+      registros = BBM.load('escala_registros');
+      militares = BBM.load('escala_militares');
+      if ((!registros.length || !militares.length) && BBM.nivel('escala')==='edicao') {
+        seedEscala();
+        BBM.toast('Escala de Junho importada.');
+      }
+      renderDia();
     });
-    document.getElementById('filterTurno').addEventListener('change', () => {
-      document.getElementById('searchEscala').dispatchEvent(new Event('input'));
-    });
-
-    document.querySelector('[onclick="BBM.openModal(\'modalEscala\')"]')?.addEventListener('click', ()=>{
-      populaSelectMilitares();
-      document.getElementById('eData').value = today;
-    });
-
-    renderEscalas();
-    atualizarCards();
   </script>
 </body>
 </html>

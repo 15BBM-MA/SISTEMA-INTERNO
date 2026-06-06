@@ -178,6 +178,7 @@ window.BBM = {
   _keyMap(key) {
     if (key && key.indexOf('mirim_') === 0) return { modulo: 'bombeiro-mirim', colecao: key.slice(6) };
     if (key && key.indexOf('dat_') === 0) return { modulo: 'dat', colecao: key.slice(4) };
+    if (key && key.indexOf('escala_') === 0) return { modulo: 'escala', colecao: key.slice(7) };
     return null;
   },
 
