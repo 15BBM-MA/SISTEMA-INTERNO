@@ -224,34 +224,14 @@
     .doc .chk { font-family:Arial,sans-serif; }
 
     @media print {
-      @page { size: A4; margin: 10mm; }                 /* moldura/conteúdo a 1 cm das bordas */
+      @page { size: A4; margin: 12mm; }                 /* conteúdo a ~1 cm das bordas */
       * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
-      body * { visibility:hidden !important; }
-      #docOverlay, #docOverlay * { visibility:visible !important; }
-      #docOverlay { position:absolute;inset:0;background:#fff;overflow:visible;display:block !important; }
+      /* remove de fato o restante do app (não só esconde) -> sem páginas em branco */
+      body > *:not(#docOverlay) { display:none !important; }
       .no-print { display:none !important; }
-      #docView { margin:0;max-width:none;box-shadow:none;padding:12px 16px;border:2.5px solid #C8102E;overflow:hidden;height:auto; }
-      #docOverlay { height:auto; }
-      html,body { visibility:visible !important;height:auto; }
-      /* marca d'água FIXA: não entra no fluxo (não cria 2ª página) */
-      .doc-wm { position:fixed !important;top:50%;left:50%;transform:translate(-50%,-50%);
-                width:150mm;height:150mm;padding-bottom:0;opacity:.18; }
-      /* tamanhos para caber em uma página */
-      .doc { font-size:10.5pt;line-height:1.26; }
-      .doc-head img { width:84px;height:84px; }
-      .doc-head .l { font-size:10.5pt; }
-      .doc-title { font-size:12pt;margin:8px 0; }
-      .doc p, .doc li { margin:3px 0; }
-      .doc .p1 { margin-top:0.45cm !important; }
-      .doc .pdatas { margin-bottom:0.45cm !important; }
-      .doc ol { margin:4px 0 4px 18px; }
-      .doc table { font-size:9.5pt;margin:5px 0; }
-      .doc table td { padding:2px 5px; }
-      .doc .sign { margin-top:10px; }
-      .doc .line { margin:22px auto 4px; }
-      .doc .assin { margin:2px auto 2px; }
-      .doc > *:last-child { margin-bottom:0 !important; }
-      .doc > p[style*="margin-top:30px"] { margin-top:14px !important; }
+      #docOverlay { position:static !important;display:block !important;background:#fff;overflow:visible; }
+      #docView { margin:0 !important;max-width:none;box-shadow:none;padding:16px 20px;border:2.5px solid #C8102E;overflow:hidden; }
+      .doc { font-size:11pt;line-height:1.4; }          /* tamanho natural, sem distorção */
     }
   </style>
 
