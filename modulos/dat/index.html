@@ -208,8 +208,10 @@
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
     #docOverlay.open { display:block; }
     .doc-bar { position:fixed;top:0;left:0;right:0;z-index:10;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px); }
-    .doc-bar .btn-ghost { color:#fff;border-color:rgba(255,255,255,.6);background:transparent; }
-    .doc-bar .btn-ghost:hover { background:rgba(255,255,255,.15);color:#fff; }
+    .doc-bar .btn { color:#fff !important; }
+    .doc-bar .btn-ghost { border-color:rgba(255,255,255,.6) !important;background:transparent !important; }
+    .doc-bar .btn-ghost:hover { background:rgba(255,255,255,.15) !important; }
+    .doc-bar .btn-primary { background:var(--red) !important; }
     #docView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4);overflow:hidden; }
     #docView.com-moldura { border:2.5px solid #C8102E; }
     .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.45;position:relative; }
