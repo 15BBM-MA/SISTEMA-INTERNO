@@ -201,7 +201,7 @@
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
     #docOverlay.open { display:block; }
     .doc-bar { position:fixed;top:0;left:0;right:0;z-index:10;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px); }
-    #docView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4);border:2.5px solid #C8102E; }
+    #docView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4);border:2.5px solid #C8102E;overflow:hidden; }
     .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.45;position:relative; }
     .doc-wm { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:82%;padding-bottom:82%;background-position:center;background-repeat:no-repeat;background-size:contain;opacity:.18;z-index:0;pointer-events:none;
               -webkit-print-color-adjust:exact;print-color-adjust:exact; }
@@ -230,18 +230,21 @@
       #docOverlay, #docOverlay * { visibility:visible !important; }
       #docOverlay { position:absolute;inset:0;background:#fff;overflow:visible;display:block !important; }
       .no-print { display:none !important; }
-      #docView { margin:0;max-width:none;box-shadow:none;padding:14px 18px;border:2.5px solid #C8102E; }
-      html,body { visibility:visible !important; }
+      #docView { margin:0;max-width:none;box-shadow:none;padding:14px 18px;border:2.5px solid #C8102E;overflow:hidden;height:auto; }
+      #docOverlay { height:auto; }
+      html,body { visibility:visible !important;height:auto; }
       /* fonte maior, ainda cabendo em uma página */
-      .doc { font-size:11pt;line-height:1.32; }
-      .doc-head img { width:104px;height:104px; }
-      .doc-title { font-size:13pt;margin:12px 0; }
-      .doc p, .doc li { margin:5px 0; }
-      .doc .p1 { margin-top:0.7cm !important; }
-      .doc .pdatas { margin-bottom:0.7cm !important; }
-      .doc table { font-size:10pt;margin:7px 0; }
-      .doc .sign { margin-top:16px; }
+      .doc { font-size:11pt;line-height:1.3; }
+      .doc-head img { width:100px;height:100px; }
+      .doc-title { font-size:13pt;margin:10px 0; }
+      .doc p, .doc li { margin:4px 0; }
+      .doc .p1 { margin-top:0.55cm !important; }
+      .doc .pdatas { margin-bottom:0.55cm !important; }
+      .doc table { font-size:10pt;margin:6px 0; }
+      .doc .sign { margin-top:12px; }
+      .doc .line { margin:26px auto 4px; }
       .doc-wm { opacity:.18; }
+      .doc > p:last-child, .doc > div:last-child { margin-bottom:0 !important; }
     }
   </style>
 
