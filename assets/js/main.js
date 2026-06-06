@@ -177,6 +177,7 @@ window.BBM = {
   // mapeia a chave do app para (módulo, coleção) na nuvem; null = fica no localStorage
   _keyMap(key) {
     if (key && key.indexOf('mirim_') === 0) return { modulo: 'bombeiro-mirim', colecao: key.slice(6) };
+    if (key && key.indexOf('dat_') === 0) return { modulo: 'dat', colecao: key.slice(4) };
     return null;
   },
 
@@ -266,6 +267,7 @@ window.BBM = {
     { key:'bombeiro-mirim', label:'Bombeiro Mirim' },
     { key:'estrutura',      label:'Estrutura Interna' },
     { key:'manutencao',     label:'Manutenção' },
+    { key:'dat',            label:'DAT — Atividades Técnicas' },
   ],
 
   // ---------- SUPABASE / AUTENTICAÇÃO ----------

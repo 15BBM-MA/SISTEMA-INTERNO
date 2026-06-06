@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
+  <title>DAT — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+      <a href="index.html" class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-text">DAT</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb"><a href="../../index.html">Sistema</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">DAT</span></div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="topbar-badge"><span class="badge-dot"></span>Sistema Ativo</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:var(--blue-light);color:var(--blue)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Diretoria de Atividades Técnicas</div>
+            <div class="mod-subtitle">Preenchimento e geração de declarações e licenças</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs-scroll">
+        <button class="tab-btn active" onclick="showTab('tabEvento',this)">Evento de Pequeno Porte</button>
+        <button class="tab-btn" onclick="showTab('tabBaixo',this)">Baixo Risco (Anexo B)</button>
+        <button class="tab-btn" onclick="showTab('tabHist',this)">Documentos Emitidos</button>
+      </div>
+
+      <!-- ===================== EVENTO ===================== -->
+      <div id="tabEvento">
+        <p class="info-dat">Preencha os dados do evento e gere o <strong>Requerimento</strong> e a <strong>Licença (Declaração Provisória)</strong>. Ao gerar, o documento é salvo no histórico.</p>
+        <div class="form-card">
+          <div class="fc-sec">Identificação do Evento / Local</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Estabelecimento / Nome do local *</label><input class="form-control" id="e_estab"/></div>
+            <div class="form-group"><label class="form-label">Nº da Licença</label><input class="form-control" id="e_numlic" placeholder="ex: 76/2026"/></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Logradouro (rua/av.)</label><input class="form-control" id="e_logr"/></div>
+            <div class="form-group"><label class="form-label">Nº</label><input class="form-control" id="e_num" placeholder="SN"/></div>
+            <div class="form-group"><label class="form-label">Bairro</label><input class="form-control" id="e_bairro"/></div>
+            <div class="form-group"><label class="form-label">Complemento</label><input class="form-control" id="e_compl"/></div>
+            <div class="form-group"><label class="form-label">Município</label><input class="form-control" id="e_mun" value="Chapadinha - MA"/></div>
+            <div class="form-group"><label class="form-label">CEP</label><input class="form-control" id="e_cep" value="65500-000"/></div>
+            <div class="form-group"><label class="form-label">UF</label><input class="form-control" id="e_uf" value="MARANHÃO"/></div>
+          </div>
+          <div class="fc-sec">Responsável</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Responsável pelo evento *</label><input class="form-control" id="e_resp"/></div>
+            <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="e_cpf"/></div>
+            <div class="form-group"><label class="form-label">Telefone</label><input class="form-control" id="e_fone"/></div>
+          </div>
+          <div class="fc-sec">Dados do Evento</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Data do evento *</label><input class="form-control" id="e_data" type="date"/></div>
+            <div class="form-group"><label class="form-label">Público / Lotação máxima</label><input class="form-control" id="e_publico" placeholder="ex: 200"/></div>
+            <div class="form-group"><label class="form-label">Área do evento</label><input class="form-control" id="e_area" placeholder="ex: ATÉ 200 m²"/></div>
+            <div class="form-group"><label class="form-label">Data de emissão</label><input class="form-control" id="e_emissao" type="date"/></div>
+          </div>
+          <div class="fc-actions">
+            <button class="btn btn-ghost" onclick="gerarRequerimento()">📄 Gerar Requerimento</button>
+            <button class="btn btn-primary" onclick="gerarLicenca()">🛡️ Gerar Licença</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== BAIXO RISCO ===================== -->
+      <div id="tabBaixo" style="display:none">
+        <p class="info-dat">Declaração de Baixo Risco (Anexo B / NT-01) — para edificação ou área. Ao gerar, é salva no histórico.</p>
+        <div class="form-card">
+          <div class="fc-sec">Identificação da Edificação / Área</div>
+          <div class="grid2">
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Logradouro público</label><input class="form-control" id="b_logr"/></div>
+            <div class="form-group"><label class="form-label">Nº</label><input class="form-control" id="b_num"/></div>
+            <div class="form-group"><label class="form-label">CEP</label><input class="form-control" id="b_cep"/></div>
+            <div class="form-group"><label class="form-label">Bairro</label><input class="form-control" id="b_bairro"/></div>
+            <div class="form-group"><label class="form-label">Município</label><input class="form-control" id="b_mun" value="Chapadinha"/></div>
+            <div class="form-group"><label class="form-label">Complemento</label><input class="form-control" id="b_compl"/></div>
+            <div class="form-group"><label class="form-label">UF</label><input class="form-control" id="b_uf" value="MARANHÃO"/></div>
+          </div>
+          <div class="fc-sec">Proprietário / Responsável</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Proprietário *</label><input class="form-control" id="b_prop"/></div>
+            <div class="form-group"><label class="form-label">CPF/CNPJ</label><input class="form-control" id="b_propdoc"/></div>
+            <div class="form-group"><label class="form-label">Responsável pelo uso</label><input class="form-control" id="b_resp"/></div>
+            <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="b_respcpf"/></div>
+            <div class="form-group"><label class="form-label">E-mail</label><input class="form-control" id="b_email"/></div>
+            <div class="form-group"><label class="form-label">Fone</label><input class="form-control" id="b_fone"/></div>
+          </div>
+          <div class="fc-sec">Pessoa Jurídica (se houver)</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Razão social</label><input class="form-control" id="b_razao"/></div>
+            <div class="form-group"><label class="form-label">CNPJ</label><input class="form-control" id="b_cnpj"/></div>
+            <div class="form-group"><label class="form-label">CNAE principal</label><input class="form-control" id="b_cnae"/></div>
+            <div class="form-group"><label class="form-label">Nome fantasia</label><input class="form-control" id="b_fantasia"/></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Classificação da ocupação (Tab.1, Anexo A)</label><input class="form-control" id="b_class"/></div>
+          </div>
+          <div class="fc-sec">Características Construtivas</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Estrutura (concreto, aço, madeira…)</label><input class="form-control" id="b_estrut"/></div>
+            <div class="form-group"><label class="form-label">Elementos de cobertura</label><input class="form-control" id="b_cobert"/></div>
+            <div class="form-group"><label class="form-label">Elementos de vedação</label><input class="form-control" id="b_vedac"/></div>
+          </div>
+          <div class="fc-sec">Características de Baixo Risco</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Área total construída (até 200m²)</label><input class="form-control" id="b_area"/></div>
+            <div class="form-group"><label class="form-label">Lotação (até 100 pessoas)</label><input class="form-control" id="b_lot"/></div>
+            <div class="form-group"><label class="form-label">Nº de pavimentos (até 2)</label><input class="form-control" id="b_pav"/></div>
+            <div class="form-group"><label class="form-label">Líq. combustíveis/inflam. (até 250L)</label><input class="form-control" id="b_liq"/></div>
+            <div class="form-group"><label class="form-label">Pavimentos subsolo</label><input class="form-control" id="b_subsolo"/></div>
+            <div class="form-group"><label class="form-label">GLP (até 90Kg)</label><input class="form-control" id="b_glp"/></div>
+          </div>
+          <div class="fc-sec">Medidas de Segurança Contra Incêndio (marque as existentes)</div>
+          <div class="chips">
+            <label><input type="checkbox" id="m_acab"/> Controle de material de acabamento</label>
+            <label><input type="checkbox" id="m_ilum"/> Iluminação de emergência</label>
+            <label><input type="checkbox" id="m_saidas"/> Saídas de emergência</label>
+            <label><input type="checkbox" id="m_sinal"/> Sinalização de emergência</label>
+            <label><input type="checkbox" id="m_gerenc"/> Gerenciamento de risco</label>
+            <label><input type="checkbox" id="m_extint"/> Proteção por extintores</label>
+            <label><input type="checkbox" id="m_brigada"/> Brigada de incêndio</label>
+          </div>
+          <div class="fc-actions">
+            <button class="btn btn-primary" onclick="gerarBaixoRisco()">🛡️ Gerar Declaração de Baixo Risco</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== HISTÓRICO ===================== -->
+      <div id="tabHist" style="display:none">
+        <div class="section-label">Documentos Emitidos</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Tipo</th><th>Identificação</th><th>Responsável</th><th>Emitido por</th><th>Ações</th></tr></thead>
+            <tbody id="tabelaHist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- VISUALIZADOR / IMPRESSÃO -->
+  <div id="docOverlay">
+    <div class="doc-bar no-print">
+      <button class="btn btn-ghost" onclick="fecharDoc()">✕ Fechar</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+    <div id="docView"></div>
+  </div>
+
+  <style>
+    .tabs-scroll { display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto; }
+    .tab-btn { background:none;border:none;padding:12px 16px;cursor:pointer;font-size:.86rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;white-space:nowrap; }
+    .tab-btn.active { color:var(--blue);border-bottom-color:var(--blue); }
+    .info-dat { color:var(--text-mid);font-size:.86rem;line-height:1.6;margin-bottom:16px;max-width:760px; }
+    .form-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:22px; }
+    .fc-sec { font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin:18px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border); }
+    .fc-sec:first-child { margin-top:0; }
+    .grid2 { display:grid;grid-template-columns:repeat(3,1fr);gap:14px; }
+    .chips { display:flex;flex-wrap:wrap;gap:10px 18px; }
+    .chips label { display:flex;align-items:center;gap:7px;font-size:.85rem;color:var(--text);cursor:pointer; }
+    .fc-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap; }
+    @media(max-width:768px){ .grid2{grid-template-columns:1fr} .fc-actions .btn{flex:1;justify-content:center} }
+
+    /* Visualizador */
+    #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
+    #docOverlay.open { display:block; }
+    .doc-bar { position:sticky;top:0;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.4);backdrop-filter:blur(4px); }
+    #docView { max-width:800px;margin:18px auto;background:#fff;padding:48px 56px;box-shadow:0 4px 24px rgba(0,0,0,.4); }
+    .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.5; }
+    .doc-head { text-align:center;line-height:1.3;margin-bottom:6px; }
+    .doc-head img { width:70px;height:70px;object-fit:contain; }
+    .doc-head .l { font-weight:bold;font-size:11pt;text-transform:uppercase; }
+    .doc-title { text-align:center;font-weight:bold;font-size:13pt;margin:18px 0;text-transform:uppercase; }
+    .doc p { margin:8px 0;text-align:justify; }
+    .doc .b { font-weight:bold; }
+    .doc table { width:100%;border-collapse:collapse;margin:10px 0;font-size:10.5pt; }
+    .doc table td { border:1px solid #000;padding:4px 6px;vertical-align:top; }
+    .doc .lbl { font-weight:bold;background:#f0f0f0;white-space:nowrap; }
+    .doc .sign { text-align:center;margin-top:42px; }
+    .doc .line { border-top:1px solid #000;width:320px;margin:38px auto 4px; }
+    .doc ol { margin:8px 0 8px 20px; } .doc li { margin:5px 0;text-align:justify; }
+    .doc .chk { font-family:Arial,sans-serif; }
+
+    @media print {
+      body * { visibility:hidden !important; }
+      #docOverlay, #docOverlay * { visibility:visible !important; }
+      #docOverlay { position:absolute;inset:0;background:#fff;overflow:visible; }
+      .no-print { display:none !important; }
+      #docView { margin:0;max-width:none;box-shadow:none;padding:0; }
+      html,body{ visibility:visible !important; }
+    }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    let emitidos = [];
+
+    function showTab(id, btn){
+      ['tabEvento','tabBaixo','tabHist'].forEach(t=>document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).style.display='block'; btn.classList.add('active');
+      if(id==='tabHist') renderHist();
+    }
+    const val = id => (document.getElementById(id).value||'').trim();
+    const chk = id => document.getElementById(id).checked;
+    function brData(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+    function extenso(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); const ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return d+' de '+ms[+m-1]+' de '+y; }
+    const LOGO = location.origin + location.pathname.replace(/modulos\/dat\/.*/, '') + 'assets/img/logo.png';
+
+    function cabecalho(){
+      return `<div class="doc-head">
+        <img src="${LOGO}" alt=""/>
+        <div class="l">Estado do Maranhão</div>
+        <div class="l">Corpo de Bombeiros Militar</div>
+        <div class="l">Comando Operacional Norte</div>
+        <div class="l">15º Batalhão de Bombeiros Militar</div>
+        <div>Subseção de Operações e Atividades Técnicas</div>
+      </div>`;
+    }
+    function rodape(){
+      return `<p style="text-align:center;font-size:9pt;margin-top:30px">RODOVIA BR 222, KM 0, S/Nº, BOA VISTA, CHAPADINHA-MA, CEP: 65.500-000<br>FONE: (98) 98115-1126 / (98) 99193-0106 — E-mail: 5cicbma@gmail.com</p>`;
+    }
+
+    function abrirDoc(html){ document.getElementById('docView').innerHTML = '<div class="doc">'+html+'</div>'; document.getElementById('docOverlay').classList.add('open'); }
+    function fecharDoc(){ document.getElementById('docOverlay').classList.remove('open'); }
+
+    // ---------- LICENÇA (Declaração Provisória) ----------
+    function gerarLicenca(){
+      if(!val('e_estab')||!val('e_resp')){ BBM.toast('Preencha estabelecimento e responsável.','error'); return; }
+      const local = [val('e_estab'), val('e_logr'), val('e_bairro'), val('e_mun')].filter(Boolean).join(', ');
+      const num = val('e_numlic')||'___/____';
+      const html = cabecalho()
+        + `<div class="doc-title">Declaração de Aprovação Provisória Nº ${num}</div>`
+        + `<p>Certifico que o evento que será realizado no <span class="b">${local}</span>, sob a responsabilidade de <span class="b">${val('e_resp')}${val('e_cpf')?', CPF '+val('e_cpf'):''}</span>, apresentando-se aparelhado com dispositivos de prevenção contra incêndio e pânico para a realização do evento, conforme lei em vigor Nº 11.390 de 21 de dezembro de 2020.</p>`
+        + `<p>Ficando aprovado o funcionamento do estabelecimento para o evento no dia <span class="b">${brData(val('e_data'))}</span>.</p>`
+        + `<p><span class="b">OBSERVAÇÕES:</span></p>`
+        + `<ol><li>O responsável pelo evento deverá obedecer à lotação máxima de <span class="b">${val('e_publico')||'____'} pessoas</span>;</li>`
+        + `<li>Deverá haver extintores de incêndio compatíveis com os materiais existentes e notificação emitida pelo CBMMA;</li>`
+        + `<li>As saídas de emergência deverão estar sinalizadas; deverão ainda conter iluminação de emergência e estar sinalizadas com os dizeres “SAÍDA DE EMERGÊNCIA” em luzes fotoluminescentes;</li>`
+        + `<li>Está vedada a instalação de palcos no local e de show;</li>`
+        + `<li>Está vedado espetáculo pirotécnico;</li>`
+        + `<li>O local poderá ser vistoriado no dia do evento pelo Corpo de Bombeiros, e sendo constatada qualquer irregularidade nos dispositivos contra incêndio e pânico, o local poderá ser interditado até a correção da irregularidade.</li></ol>`
+        + `<p><i>Obs.: Esta Declaração de Aprovação Provisória terá validade desde que cumpridas todas as exigências do CBMMA em relação à Segurança Contra Incêndio e Pânico.</i></p>`
+        + `<p style="text-align:center;margin-top:20px">Quartel do 15º BBM em Chapadinha-MA, ${extenso(val('e_emissao'))||extenso(new Date().toISOString().slice(0,10))}.</p>`
+        + `<div class="sign"><div class="line"></div>Kleyton Tavares Martins – MAJ QOCBM<br>Comandante do 15º BBM</div>`
+        + rodape();
+      abrirDoc(html);
+      salvar('Licença (Decl. Provisória)', num, val('e_estab'), val('e_resp'), coletarEvento());
+    }
+
+    // ---------- REQUERIMENTO ----------
+    function gerarRequerimento(){
+      if(!val('e_resp')){ BBM.toast('Preencha o responsável.','error'); return; }
+      const cel = (l,v)=>`<tr><td class="lbl">${l}</td><td>${v||''}</td></tr>`;
+      const html = cabecalho()
+        + `<div class="doc-title">Requerimento para Certificação de Evento Temporário de Pequeno Porte</div>`
+        + `<p class="b" style="text-align:center">IDENTIFICAÇÃO DA EDIFICAÇÃO E/OU ÁREA DE RISCO</p>`
+        + `<table>`
+        + cel('Logradouro público', val('e_logr')) + cel('Nº', val('e_num')) + cel('CEP', val('e_cep'))
+        + cel('Bairro', val('e_bairro')) + cel('Município', val('e_mun')) + cel('Complemento', val('e_compl'))
+        + cel('UF', val('e_uf'))
+        + cel('Responsável pelo evento', val('e_resp')) + cel('CPF', val('e_cpf'))
+        + cel('Data', brData(val('e_data'))) + cel('Fone', val('e_fone'))
+        + cel('Área do evento (abrangência de público)', val('e_area'))
+        + `</table>`
+        + `<p class="b" style="text-align:center;margin-top:14px">EVENTO TEMPORÁRIO DE PEQUENO PORTE – F-7</p>`
+        + `<p class="b">CARACTERÍSTICAS DE EVENTO DE PEQUENO PORTE</p>`
+        + `<ul style="margin-left:18px"><li>Evento de pequeno porte em área externa;</li>`
+        + `<li>Sem montagem de estruturas como palcos (permitido tablado até 30 cm de altura), camarotes ou suporte de som e luz;</li>`
+        + `<li>Sem barreiras de delimitação (fechamento);</li>`
+        + `<li>Público máximo a ser recebido no evento será de <span class="b">${val('e_publico')||'____'}</span> pessoas.</li></ul>`
+        + `<p class="b">DECLARAÇÕES</p>`
+        + `<p>Declaro que as informações acima são verdadeiras e estou ciente de que o registro de informações inverídicas pode acarretar, a mim, o crime de falsidade ideológica, tipificado no Artigo 299 do Código Penal. Declaro estar ciente de que o CBMMA pode, a qualquer tempo, verificar as informações prestadas, inclusive por meio de vistorias. Declaro que as instalações elétricas estarão em conformidade com as exigências da norma técnica, e devidamente aterradas.</p>`
+        + `<div class="sign"><div class="line"></div>Responsável</div>`
+        + rodape();
+      abrirDoc(html);
+      salvar('Requerimento (Evento PP)', val('e_numlic')||'-', val('e_estab'), val('e_resp'), coletarEvento());
+    }
+
+    // ---------- BAIXO RISCO (Anexo B) ----------
+    function gerarBaixoRisco(){
+      if(!val('b_prop')){ BBM.toast('Preencha o proprietário.','error'); return; }
+      const cel = (l,v)=>`<tr><td class="lbl">${l}</td><td>${v||''}</td></tr>`;
+      const ck = (c,t)=>`<span class="chk">${c?'☑':'☐'} ${t}</span>`;
+      const html = cabecalho()
+        + `<div class="doc-title">Anexo B — Declaração de Baixo Risco</div>`
+        + `<p class="b">IDENTIFICAÇÃO DA EDIFICAÇÃO E/OU ÁREA DE RISCO</p>`
+        + `<table>`
+        + cel('Logradouro público', val('b_logr')) + cel('Nº', val('b_num')) + cel('CEP', val('b_cep'))
+        + cel('Bairro', val('b_bairro')) + cel('Município', val('b_mun')) + cel('Complemento', val('b_compl')) + cel('UF', val('b_uf'))
+        + cel('Proprietário', val('b_prop')) + cel('CPF/CNPJ', val('b_propdoc'))
+        + cel('Responsável pelo uso', val('b_resp')) + cel('CPF', val('b_respcpf')) + cel('E-mail', val('b_email')) + cel('Fone', val('b_fone'))
+        + cel('Razão social', val('b_razao')) + cel('CNPJ', val('b_cnpj')) + cel('CNAE principal', val('b_cnae')) + cel('Nome fantasia', val('b_fantasia'))
+        + cel('Classificação da ocupação', val('b_class'))
+        + `</table>`
+        + `<p class="b">CARACTERÍSTICAS CONSTRUTIVAS</p>`
+        + `<table>` + cel('Estrutura', val('b_estrut')) + cel('Elementos de cobertura', val('b_cobert')) + cel('Elementos de vedação', val('b_vedac')) + `</table>`
+        + `<p class="b">CARACTERÍSTICAS DE BAIXO RISCO</p>`
+        + `<table>` + cel('Área total construída (até 200m²)', val('b_area')) + cel('Lotação (até 100 pessoas)', val('b_lot'))
+        + cel('Nº de pavimentos (até 2)', val('b_pav')) + cel('Líq. combustíveis/inflamáveis (até 250L)', val('b_liq'))
+        + cel('Pavimentos subsolo', val('b_subsolo')) + cel('GLP (até 90Kg)', val('b_glp')) + `</table>`
+        + `<p class="b">MEDIDAS DE SEGURANÇA CONTRA INCÊNDIO</p>`
+        + `<p style="line-height:2">${ck(chk('m_acab'),'Controle de material de acabamento e revestimento')} &nbsp; ${ck(chk('m_ilum'),'Iluminação de emergência')} &nbsp; ${ck(chk('m_saidas'),'Saídas de emergência')} &nbsp; ${ck(chk('m_sinal'),'Sinalização de emergência')} &nbsp; ${ck(chk('m_gerenc'),'Gerenciamento de risco')} &nbsp; ${ck(chk('m_extint'),'Proteção por extintores')} &nbsp; ${ck(chk('m_brigada'),'Brigada de incêndio')}</p>`
+        + `<p class="b">DECLARAÇÕES</p>`
+        + `<ol><li>Declaro que a presente edificação se classifica como sendo de <span class="b">BAIXO POTENCIAL DE RISCO À VIDA E AO PATRIMÔNIO</span>, nos termos do item 5.1 da Norma Técnica nº 42 — Processo Técnico Simplificado.</li>`
+        + `<li>Declaro que as medidas de segurança assinaladas acima se encontrarão de acordo com a Norma Técnica específica no âmbito do CBMMA.</li>`
+        + `<li>Declaro que as instalações elétricas estarão em conformidade com a Norma Técnica de inspeção visual em instalações de baixa tensão.</li>`
+        + `<li>Declaro estar ciente de que o CBMMA pode, a qualquer tempo, verificar as informações prestadas, inclusive por vistorias.</li>`
+        + `<li>Declaro estar ciente de que não devem ser alteradas as características da edificação de forma a perder o enquadramento de baixo risco.</li>`
+        + `<li>Estou ciente de que o registro de informações inverídicas pode acarretar o crime de falsidade ideológica (Art. 299 do Código Penal).</li></ol>`
+        + `<div class="sign"><div class="line"></div>Proprietário / Responsável pelo uso</div>`
+        + rodape();
+      abrirDoc(html);
+      salvar('Decl. Baixo Risco (Anexo B)', '-', val('b_logr'), val('b_prop'), coletarBaixo());
+    }
+
+    function coletarEvento(){ const o={}; ['e_estab','e_numlic','e_logr','e_num','e_bairro','e_compl','e_mun','e_cep','e_uf','e_resp','e_cpf','e_fone','e_data','e_publico','e_area','e_emissao'].forEach(k=>o[k]=val(k)); return o; }
+    function coletarBaixo(){ const o={}; ['b_logr','b_num','b_cep','b_bairro','b_mun','b_compl','b_uf','b_prop','b_propdoc','b_resp','b_respcpf','b_email','b_fone','b_razao','b_cnpj','b_cnae','b_fantasia','b_class','b_estrut','b_cobert','b_vedac','b_area','b_lot','b_pav','b_liq','b_subsolo','b_glp'].forEach(k=>o[k]=val(k)); ['m_acab','m_ilum','m_saidas','m_sinal','m_gerenc','m_extint','m_brigada'].forEach(k=>o[k]=chk(k)); return o; }
+
+    function salvar(tipo, numero, identificacao, responsavel, dados){
+      const u = BBM.currentUser();
+      emitidos.push({ id:BBM.generateId(), tipo, numero, identificacao, responsavel,
+        emitidoPor: u?u.nome:'—', data:new Date().toLocaleString('pt-BR'), dados });
+      BBM.save('dat_emitidos', emitidos);
+      BBM.toast('Documento gerado e salvo no histórico.');
+    }
+
+    function renderHist(){
+      const tb = document.getElementById('tabelaHist');
+      if(!emitidos.length){ tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhum documento emitido.</p></div></td></tr>`; return; }
+      tb.innerHTML = [...emitidos].reverse().map(d=>`<tr>
+        <td>${d.data}</td><td>${d.tipo}</td><td>${d.identificacao||'—'}</td><td>${d.responsavel||'—'}</td><td>${d.emitidoPor||'—'}</td>
+        <td><button class="action-btn" title="Reabrir/Imprimir" onclick="reabrir('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+        <button class="action-btn" title="Excluir" onclick="excluirDoc('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+      </tr>`).join('');
+    }
+    function reabrir(id){
+      const d = emitidos.find(x=>x.id===id); if(!d) return;
+      // re-preenche o formulário e regera
+      if(d.tipo.indexOf('Baixo')>=0){ Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=v; else el.value=v; } }); gerarBaixoRisco(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
+      else { Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el) el.value=v; }); if(d.tipo.indexOf('Licença')>=0) gerarLicenca(); else gerarRequerimento(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
+    }
+    function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); }
+
+    document.getElementById('e_emissao').value = new Date().toISOString().slice(0,10);
+    BBM.ready(['dat_emitidos'], ()=>{ emitidos = BBM.load('dat_emitidos'); });
+  </script>
+</body>
+</html>
