@@ -71,6 +71,7 @@
 
       <!-- ===================== CRONOGRAMA ===================== -->
       <div id="tabCronograma">
+        <div class="progresso-bar" id="progressoResumo"></div>
         <div class="toolbar-flex">
           <div class="rotina-chip">
             <strong>Rotina padrão:</strong> 08h Apresentação • 09h30 Intervalo/Lanche • ~11h Liberação
@@ -144,6 +145,13 @@
     .enc-num.especial { background:#fce4e8;color:var(--red); }
     .enc-num.descanso { background:var(--slate-light);color:var(--slate); }
     .enc-num.recreativa { background:var(--yellow-light);color:#a87b00; }
+    .enc-num.ok { background:var(--green);color:#fff; }
+    .progresso-bar { background:var(--green-light);border:1px solid #a3d9b5;color:var(--green);padding:10px 16px;border-radius:10px;font-size:.88rem;margin-bottom:16px; }
+    .badge-prox { background:var(--green);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.04em;padding:2px 9px;border-radius:99px; }
+    .badge-feito { background:var(--green-light);color:var(--green);font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:99px; }
+    .enc-card.feito { opacity:.78; }
+    .enc-card.feito .enc-tema { text-decoration:line-through;color:var(--text-light); }
+    .enc-card.proxima { border:2px solid var(--green);box-shadow:0 0 0 3px var(--green-light); }
     .pt-row.ludica .pt-hora { color:var(--gold); }
     .pt-row.ludica .pt-tit { color:#a87b00; }
     .enc-info { flex:1;min-width:0; }
@@ -415,17 +423,29 @@
       const cont = document.getElementById('listaEncontros');
       if (!encontros.length) { cont.innerHTML = `<div class="empty-state"><p>Nenhum encontro no cronograma.</p></div>`; return; }
       const ord = [...encontros].sort((a,b)=> (a.data||'').localeCompare(b.data||'') || a.ord-b.ord);
+      // próxima instrução = primeiro encontro de aula ainda não concluído
+      let proximaId = null;
+      for (const e of ord) { if (!e.feito && tipoEncontro(e.tema)==='aula') { proximaId = e.id; break; } }
+      // atualiza resumo de progresso
+      const aulas = ord.filter(e=>tipoEncontro(e.tema)==='aula');
+      const feitas = aulas.filter(e=>e.feito).length;
+      const resumo = document.getElementById('progressoResumo');
+      if (resumo) resumo.innerHTML = `<strong>${feitas}</strong> de <strong>${aulas.length}</strong> instruções concluídas`
+        + (proximaId? ` • Próxima: <strong>${(ord.find(e=>e.id===proximaId).tema||'').slice(0,40)}</strong>` : ' • Tudo concluído! 🎉');
       cont.innerHTML = ord.map(e => {
         const tipo = tipoEncontro(e.tema);
         const plano = (e.planoDia && e.planoDia.length) ? e.planoDia : planoSugerido(e);
         const numCls = e.recreativo?'recreativa':(tipo==='feriado'?'especial':(tipo==='ferias'||tipo==='semaula'?'descanso':''));
         const doador = doadorDoDia(e.data);
-        return `<div class="enc-card" id="enc_${e.id}">
+        const ehProxima = e.id===proximaId;
+        return `<div class="enc-card ${e.feito?'feito':''} ${ehProxima?'proxima':''}" id="enc_${e.id}">
           <div class="enc-head" onclick="toggleEnc('${e.id}')">
-            <div class="enc-num ${numCls}">${e.ord||'•'}</div>
+            <div class="enc-num ${numCls} ${e.feito?'ok':''}">${e.feito?'✓':(e.ord||'•')}</div>
             <div class="enc-info">
               <div class="enc-tema">${e.tema||'(sem tema)'}</div>
               <div class="enc-meta">
+                ${ehProxima?`<span class="badge-prox">▶ PRÓXIMA INSTRUÇÃO</span>`:''}
+                ${e.feito?`<span class="badge-feito">✓ Concluída</span>`:''}
                 <span>📅 ${e.data?BBM.formatDate(e.data):'—'} ${e.data?'· '+diaSemana(e.data):''}</span>
                 ${e.modulo && e.modulo!=='—'?`<span>📚 ${e.modulo}</span>`:''}
                 ${doador?`<span class="doador-inline">🥪 ${doador.empresa}</span>`:''}
@@ -447,6 +467,7 @@
               </div>`).join('')}
             </div>
             <div class="enc-actions">
+              <button class="btn ${e.feito?'btn-ghost':'btn-primary'}" onclick="marcarFeito('${e.id}')">${e.feito?'↩ Reabrir':'✓ Marcar como concluída'}</button>
               <button class="btn btn-ghost" onclick="editarEncontro('${e.id}')">✏ Editar / Plano do dia</button>
               <button class="btn btn-ghost" onclick="excluirEncontro('${e.id}')">🗑 Excluir</button>
             </div>
@@ -456,6 +477,14 @@
     }
 
     function toggleEnc(id){ document.getElementById('enc_'+id)?.classList.toggle('open'); }
+
+    function marcarFeito(id){
+      const e = encontros.find(x=>x.id===id); if(!e) return;
+      e.feito = !e.feito;
+      BBM.save('mirim_planejamento', encontros);
+      BBM.toast(e.feito?'Instrução marcada como concluída.':'Instrução reaberta.');
+      renderEncontros();
+    }
 
     function renderEmenta() {
       const cont = document.getElementById('listaEmenta');
