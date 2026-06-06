@@ -82,9 +82,14 @@
           </div>
           <div class="fc-sec">Dados do Evento</div>
           <div class="grid2">
-            <div class="form-group"><label class="form-label">Data do evento *</label><input class="form-control" id="e_data" type="date"/></div>
-            <div class="form-group"><label class="form-label">Público / Lotação máxima</label><input class="form-control" id="e_publico" placeholder="ex: 200"/></div>
-            <div class="form-group"><label class="form-label">Área do evento</label><input class="form-control" id="e_area" placeholder="ex: ATÉ 200 m²"/></div>
+            <div class="form-group"><label class="form-label">Início do evento *</label><input class="form-control" id="e_dataIni" type="date"/></div>
+            <div class="form-group"><label class="form-label">Fim do evento (se mais de 1 dia)</label><input class="form-control" id="e_dataFim" type="date"/></div>
+            <div class="form-group"><label class="form-label">Lotação máxima</label>
+              <select class="form-control" id="e_publico">
+                <option value="100">Até 100 pessoas</option>
+                <option value="200">Até 200 pessoas</option>
+              </select>
+            </div>
             <div class="form-group"><label class="form-label">Data de emissão</label><input class="form-control" id="e_emissao" type="date"/></div>
           </div>
           <div class="fc-actions">
@@ -197,7 +202,10 @@
     #docOverlay.open { display:block; }
     .doc-bar { position:sticky;top:0;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.4);backdrop-filter:blur(4px); }
     #docView { max-width:800px;margin:18px auto;background:#fff;padding:48px 56px;box-shadow:0 4px 24px rgba(0,0,0,.4); }
-    .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.5; }
+    .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.5;position:relative; }
+    .doc-wm { position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);width:78%;padding-bottom:78%;background-position:center;background-repeat:no-repeat;background-size:contain;opacity:.06;z-index:0;pointer-events:none; }
+    .doc > *:not(.doc-wm){ position:relative;z-index:1; }
+    .assin { display:block;width:230px;margin:4px auto -10px; }
     .doc-head { text-align:center;line-height:1.3;margin-bottom:6px; }
     .doc-head img { width:70px;height:70px;object-fit:contain; }
     .doc-head .l { font-weight:bold;font-size:11pt;text-transform:uppercase; }
@@ -236,13 +244,15 @@
     const chk = id => document.getElementById(id).checked;
     function brData(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
     function extenso(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); const ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return d+' de '+ms[+m-1]+' de '+y; }
-    const LOGO = location.origin + location.pathname.replace(/modulos\/dat\/.*/, '') + 'assets/img/logo.png';
+    const BASE = location.origin + location.pathname.replace(/modulos\/dat\/.*/, '');
+    const LOGO = BASE + 'assets/img/logo.png';
+    const ASSIN = BASE + 'assets/img/assinatura-major.png';
 
     function cabecalho(){
       return `<div class="doc-head">
         <img src="${LOGO}" alt=""/>
         <div class="l">Estado do Maranhão</div>
-        <div class="l">Corpo de Bombeiros Militar</div>
+        <div class="l" style="color:#C8102E">Corpo de Bombeiros Militar</div>
         <div class="l">Comando Operacional Norte</div>
         <div class="l">15º Batalhão de Bombeiros Militar</div>
         <div>Subseção de Operações e Atividades Técnicas</div>
@@ -255,15 +265,21 @@
     function abrirDoc(html){ document.getElementById('docView').innerHTML = '<div class="doc">'+html+'</div>'; document.getElementById('docOverlay').classList.add('open'); }
     function fecharDoc(){ document.getElementById('docOverlay').classList.remove('open'); }
 
+    function periodoTexto(){
+      const ini=val('e_dataIni'), fim=val('e_dataFim');
+      if(fim && fim!==ini) return 'nos dias <span class="b">'+brData(ini)+' a '+brData(fim)+'</span>';
+      return 'no dia <span class="b">'+brData(ini)+'</span>';
+    }
+
     // ---------- LICENÇA (Declaração Provisória) ----------
     function gerarLicenca(){
       if(!val('e_estab')||!val('e_resp')){ BBM.toast('Preencha estabelecimento e responsável.','error'); return; }
       const local = [val('e_estab'), val('e_logr'), val('e_bairro'), val('e_mun')].filter(Boolean).join(', ');
       const num = val('e_numlic')||'___/____';
-      const html = cabecalho()
+      const html = `<div class="doc-wm" style="background-image:url('${LOGO}')"></div>` + cabecalho()
         + `<div class="doc-title">Declaração de Aprovação Provisória Nº ${num}</div>`
         + `<p>Certifico que o evento que será realizado no <span class="b">${local}</span>, sob a responsabilidade de <span class="b">${val('e_resp')}${val('e_cpf')?', CPF '+val('e_cpf'):''}</span>, apresentando-se aparelhado com dispositivos de prevenção contra incêndio e pânico para a realização do evento, conforme lei em vigor Nº 11.390 de 21 de dezembro de 2020.</p>`
-        + `<p>Ficando aprovado o funcionamento do estabelecimento para o evento no dia <span class="b">${brData(val('e_data'))}</span>.</p>`
+        + `<p>Ficando aprovado o funcionamento do estabelecimento para o evento ${periodoTexto()}.</p>`
         + `<p><span class="b">OBSERVAÇÕES:</span></p>`
         + `<ol><li>O responsável pelo evento deverá obedecer à lotação máxima de <span class="b">${val('e_publico')||'____'} pessoas</span>;</li>`
         + `<li>Deverá haver extintores de incêndio compatíveis com os materiais existentes e notificação emitida pelo CBMMA;</li>`
@@ -273,7 +289,7 @@
         + `<li>O local poderá ser vistoriado no dia do evento pelo Corpo de Bombeiros, e sendo constatada qualquer irregularidade nos dispositivos contra incêndio e pânico, o local poderá ser interditado até a correção da irregularidade.</li></ol>`
         + `<p><i>Obs.: Esta Declaração de Aprovação Provisória terá validade desde que cumpridas todas as exigências do CBMMA em relação à Segurança Contra Incêndio e Pânico.</i></p>`
         + `<p style="text-align:center;margin-top:20px">Quartel do 15º BBM em Chapadinha-MA, ${extenso(val('e_emissao'))||extenso(new Date().toISOString().slice(0,10))}.</p>`
-        + `<div class="sign"><div class="line"></div>Kleyton Tavares Martins – MAJ QOCBM<br>Comandante do 15º BBM</div>`
+        + `<div class="sign"><img src="${ASSIN}" class="assin" alt="Assinatura"/><div class="b">Kleyton Tavares Martins – MAJ QOCBM</div><div>Comandante do 15º BBM</div></div>`
         + rodape();
       abrirDoc(html);
       salvar('Licença (Decl. Provisória)', num, val('e_estab'), val('e_resp'), coletarEvento());
@@ -283,6 +299,8 @@
     function gerarRequerimento(){
       if(!val('e_resp')){ BBM.toast('Preencha o responsável.','error'); return; }
       const cel = (l,v)=>`<tr><td class="lbl">${l}</td><td>${v||''}</td></tr>`;
+      const ini=val('e_dataIni'), fim=val('e_dataFim');
+      const dataTxt = (fim && fim!==ini) ? (brData(ini)+' a '+brData(fim)) : brData(ini);
       const html = cabecalho()
         + `<div class="doc-title">Requerimento para Certificação de Evento Temporário de Pequeno Porte</div>`
         + `<p class="b" style="text-align:center">IDENTIFICAÇÃO DA EDIFICAÇÃO E/OU ÁREA DE RISCO</p>`
@@ -291,8 +309,7 @@
         + cel('Bairro', val('e_bairro')) + cel('Município', val('e_mun')) + cel('Complemento', val('e_compl'))
         + cel('UF', val('e_uf'))
         + cel('Responsável pelo evento', val('e_resp')) + cel('CPF', val('e_cpf'))
-        + cel('Data', brData(val('e_data'))) + cel('Fone', val('e_fone'))
-        + cel('Área do evento (abrangência de público)', val('e_area'))
+        + cel('Data', dataTxt) + cel('Fone', val('e_fone'))
         + `</table>`
         + `<p class="b" style="text-align:center;margin-top:14px">EVENTO TEMPORÁRIO DE PEQUENO PORTE – F-7</p>`
         + `<p class="b">CARACTERÍSTICAS DE EVENTO DE PEQUENO PORTE</p>`
@@ -345,7 +362,7 @@
       salvar('Decl. Baixo Risco (Anexo B)', '-', val('b_logr'), val('b_prop'), coletarBaixo());
     }
 
-    function coletarEvento(){ const o={}; ['e_estab','e_numlic','e_logr','e_num','e_bairro','e_compl','e_mun','e_cep','e_uf','e_resp','e_cpf','e_fone','e_data','e_publico','e_area','e_emissao'].forEach(k=>o[k]=val(k)); return o; }
+    function coletarEvento(){ const o={}; ['e_estab','e_numlic','e_logr','e_num','e_bairro','e_compl','e_mun','e_cep','e_uf','e_resp','e_cpf','e_fone','e_dataIni','e_dataFim','e_publico','e_emissao'].forEach(k=>o[k]=val(k)); return o; }
     function coletarBaixo(){ const o={}; ['b_logr','b_num','b_cep','b_bairro','b_mun','b_compl','b_uf','b_prop','b_propdoc','b_resp','b_respcpf','b_email','b_fone','b_razao','b_cnpj','b_cnae','b_fantasia','b_class','b_estrut','b_cobert','b_vedac','b_area','b_lot','b_pav','b_liq','b_subsolo','b_glp'].forEach(k=>o[k]=val(k)); ['m_acab','m_ilum','m_saidas','m_sinal','m_gerenc','m_extint','m_brigada'].forEach(k=>o[k]=chk(k)); return o; }
 
     function salvar(tipo, numero, identificacao, responsavel, dados){
