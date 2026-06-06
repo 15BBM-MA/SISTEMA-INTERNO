@@ -407,6 +407,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ---- Injeta o item DAT no menu lateral (em todas as páginas, se tiver acesso) ----
+  const navEl = document.querySelector('.sidebar-nav');
+  if (navEl && BBM.moduloAtual() !== 'dat' && BBM.nivel('dat') !== 'nenhum') {
+    const a = document.createElement('a');
+    a.className = 'nav-item';
+    a.href = ROOT + 'modulos/dat/index.html';
+    a.innerHTML = '<span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-text">DAT</span><span class="nav-arrow">›</span>';
+    navEl.appendChild(a);
+  }
+
   // ---- Enforcement de acesso ao módulo ----
   const modAtual = BBM.moduloAtual();
   if (user.role !== 'admin' && modAtual) {
