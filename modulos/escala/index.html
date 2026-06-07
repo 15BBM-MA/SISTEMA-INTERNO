@@ -66,6 +66,7 @@
           <button class="btn btn-ghost" onclick="mudarDia(1)">Próximo ›</button>
           <button class="btn btn-ghost" onclick="irHoje()">Hoje</button>
           <button class="btn btn-primary" onclick="editarDia()">✎ Editar dia</button>
+          <button class="btn btn-ghost" onclick="reimportar()" title="Reimporta a escala de Junho do PDF (substitui tudo)">🔄 Reimportar PDF</button>
         </div>
         <div id="servicoDia"></div>
       </div>
@@ -341,6 +342,12 @@
       });
       (S.joe||[]).forEach(j=> registros.push({ id:BBM.generateId(), data:j.data, funcao:j.funcao, militar:j.militar, joe:true }));
       BBM.save('escala_registros', registros);
+    }
+
+    function reimportar(){
+      if(BBM.nivel('escala')!=='edicao'){ BBM.toast('Sem permissão para reimportar.','error'); return; }
+      if(!confirm('Reimportar a escala de Junho do PDF? Isso substitui os lançamentos atuais.')) return;
+      seedEscala(); renderDia(); BBM.toast('Escala reimportada (JOE corrigido).');
     }
 
     document.getElementById('diaData').value = diaSel;

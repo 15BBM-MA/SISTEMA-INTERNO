@@ -57,12 +57,20 @@ window.ESCALA_SEED = {
     '2026-06-28': ['1º Sgt P Monteiro','2º Sgt Costa Barros','3º Sgt Isac Teixeira','3º Sgt Igor'],
     '2026-06-29': ['3º Sgt Eliziane','3º Sgt Belarmino','3º Sgt Igor','BC Eloi Neto'],
   },
-  // Serviços operacionais extras (JOE) — destacados em vermelho no PDF.
-  // (entradas adicionais de motorista; confira/ajuste conforme o documento oficial)
+  // Serviços operacionais extras (JOE) — células em vermelho no PDF (decodificadas).
+  // Regra: bombeiros civis (Duarte/Eloi) nunca fazem JOE; quando há 2 nomes, o militar é o de JOE.
   joe: [
-    { data:'2026-06-04', funcao:'Motorista', militar:'BC Duarte' },
-    { data:'2026-06-05', funcao:'Motorista', militar:'BC Duarte' },
-    { data:'2026-06-06', funcao:'Motorista', militar:'BC Duarte' },
+    { data:'2026-06-02', funcao:'Motorista',                 militar:'3º Sgt Igor' },
+    { data:'2026-06-03', funcao:'Motorista',                 militar:'3º Sgt Igor' },
+    { data:'2026-06-05', funcao:'Auxiliar do Chefe de Linha',militar:'3º Sgt Belarmino' },
+    { data:'2026-06-06', funcao:'Auxiliar do Chefe de Linha',militar:'3º Sgt Belarmino' },
+    { data:'2026-06-14', funcao:'Auxiliar do Chefe de Linha',militar:'3º Sgt Belarmino' },
+    { data:'2026-06-16', funcao:'Comandante de Guarnição',   militar:'3º Sgt José Lima' },
+    { data:'2026-06-17', funcao:'Comandante de Guarnição',   militar:'3º Sgt José Lima' },
+    { data:'2026-06-18', funcao:'Comandante de Guarnição',   militar:'3º Sgt José Lima' },
+    { data:'2026-06-20', funcao:'Motorista',                 militar:'3º Sgt Lisboa Santos' },
+    { data:'2026-06-21', funcao:'Motorista',                 militar:'3º Sgt Lisboa Santos' },
+    { data:'2026-06-29', funcao:'Motorista',                 militar:'3º Sgt Lisboa Santos' },
   ],
   obs: [
     'OBS 1: O sobreaviso de cada ala será o militar ou bombeiro civil da ala subsequente, respeitando-se a função exercida pelo militar ou bombeiro civil substituído.',
