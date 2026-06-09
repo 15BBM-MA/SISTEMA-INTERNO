@@ -65,18 +65,7 @@
             <tbody id="tabelaDeleg"></tbody>
           </table>
         </div>
-
-        <div class="section-label" style="margin-top:30px">Oficiais</div>
-        <div class="toolbar-flex">
-          <p class="info-text">Efetivo de oficiais do batalhão.</p>
-          <button class="btn btn-primary" onclick="abrirOficial()">+ Novo Oficial</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Nome</th><th>Posto</th><th>Ações</th></tr></thead>
-            <tbody id="tabelaOfi"></tbody>
-          </table>
-        </div>
+        <p class="info-text" style="margin-top:14px">Os oficiais são cadastrados em <strong>Controle de Acessos</strong>. Aqui você apenas delega as funções.</p>
       </div>
 
       <div id="avisoRestrito" style="display:none">
@@ -84,25 +73,6 @@
       </div>
     </div>
   </main>
-
-  <!-- MODAL OFICIAL -->
-  <div class="modal-overlay" id="modalOfi">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title" id="ofiTitulo">Novo Oficial</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalOfi')" aria-label="Fechar">×</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="oId"/>
-        <div class="form-group"><label class="form-label">Nome *</label><input class="form-control" id="oNome"/></div>
-        <div class="form-group"><label class="form-label">Posto</label><input class="form-control" id="oPosto" placeholder="ex: Cap BM"/></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalOfi')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarOficial()">Salvar</button>
-      </div>
-    </div>
-  </div>
 
   <style>
     .info-text { color:var(--text-mid);font-size:.84rem;max-width:560px;margin-bottom:14px; }
@@ -140,14 +110,6 @@
       'B3 — Treinamentos, Instruções, Contratos e JOE',
       'B4 — Material e Almoxarifado','B5 — Seção de Mídia',
       'Analista Técnico','Manutenção das Instalações','Bombeiro Mirim','Responsável pelas Viaturas',
-    ];
-    const OFICIAIS_SEED = [
-      { nome:'Major Martins',          posto:'Maj BM' },
-      { nome:'Capitão Oliveira',       posto:'Cap BM' },
-      { nome:'Capitão Daniel',         posto:'Cap BM' },
-      { nome:'1º Ten Araújo',          posto:'1º Ten BM' },
-      { nome:'1º Ten Paulo José',      posto:'1º Ten BM' },
-      { nome:'Aspirante Felipe Souza', posto:'Asp Of BM' },
     ];
     let oficiais = [];
     let deleg = {};   // funcao -> nome do oficial
@@ -201,36 +163,16 @@
       BBM.toast('Delegação salva.');
     }
 
-    function renderOficiais(){
-      const tb = document.getElementById('tabelaOfi');
-      tb.innerHTML = oficiais.length ? oficiais.map(o=>`<tr>
-        <td><strong>${o.nome}</strong></td><td>${o.posto||'—'}</td>
-        <td style="display:flex;gap:6px">
-          <button class="action-btn" onclick="editarOficial('${o.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="action-btn" onclick="excluirOficial('${o.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-        </td></tr>`).join('') : `<tr><td colspan="3"><div class="empty-state"><p>Nenhum oficial.</p></div></td></tr>`;
-    }
-    function abrirOficial(){ ['oId','oNome','oPosto'].forEach(k=>document.getElementById(k).value=''); document.getElementById('ofiTitulo').textContent='Novo Oficial'; BBM.openModal('modalOfi'); }
-    function editarOficial(id){ const o=oficiais.find(x=>x.id===id); if(!o)return; document.getElementById('oId').value=o.id; document.getElementById('oNome').value=o.nome; document.getElementById('oPosto').value=o.posto||''; document.getElementById('ofiTitulo').textContent='Editar Oficial'; BBM.openModal('modalOfi'); }
-    function salvarOficial(){
-      const id=document.getElementById('oId').value, nome=document.getElementById('oNome').value.trim();
-      if(!nome){ BBM.toast('Informe o nome.','error'); return; }
-      const obj={ id:id||BBM.generateId(), nome:BBM.padronizarNome(nome), posto:document.getElementById('oPosto').value.trim() };
-      if(id){ oficiais[oficiais.findIndex(o=>o.id===id)]=obj; } else oficiais.push(obj);
-      BBM.save('estrutura_oficiais', oficiais);
-      BBM.closeModal('modalOfi'); BBM.toast('Oficial salvo.'); renderOficiais(); renderDeleg();
-    }
-    function excluirOficial(id){ if(!confirm('Excluir oficial?'))return; oficiais=oficiais.filter(o=>o.id!==id); BBM.save('estrutura_oficiais',oficiais); BBM.toast('Removido.','error'); renderOficiais(); renderDeleg(); }
-
-    BBM.ready(['estrutura_oficiais','estrutura_funcoes'], ()=>{
+    BBM.ready(['estrutura_funcoes'], async ()=>{
       const u = BBM.currentUser();
       ehAdmin = u && u.role==='admin';
-      oficiais = BBM.load('estrutura_oficiais');
-      if (!oficiais.length && ehAdmin) { oficiais = OFICIAIS_SEED.map(o=>({ id:BBM.generateId(), nome:o.nome, posto:o.posto })); BBM.save('estrutura_oficiais', oficiais); }
+      // oficiais vêm do cadastro central (Controle de Acessos)
+      const efetivo = await BBM.militares();
+      oficiais = efetivo.filter(p => (p.categoria||'').toLowerCase().indexOf('ofic')===0);
       const fa = BBM.load('estrutura_funcoes');
       deleg = {}; fa.forEach(x=>{ deleg[x.funcao]=x.oficial; });
       renderQuadro();
-      if (ehAdmin) { document.getElementById('areaAdmin').style.display='block'; renderDeleg(); renderOficiais(); }
+      if (ehAdmin) { document.getElementById('areaAdmin').style.display='block'; renderDeleg(); }
       else { document.getElementById('avisoRestrito').style.display='block'; }
     });
   </script>

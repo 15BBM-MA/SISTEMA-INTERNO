@@ -54,7 +54,6 @@
       <div class="tabs-scroll">
         <button class="tab-btn active" onclick="showTab('tabDia',this)">Serviço do Dia</button>
         <button class="tab-btn" onclick="showTab('tabMes',this)">Escala do Mês</button>
-        <button class="tab-btn" onclick="showTab('tabMil',this)">Militares</button>
         <button class="tab-btn" onclick="showTab('tabObs',this)">Observações</button>
       </div>
 
@@ -78,20 +77,6 @@
           <table>
             <thead><tr><th>Data</th><th>Dia</th><th>Comandante</th><th>Chefe de Linha</th><th>Auxiliar</th><th>Motorista</th><th>JOE</th></tr></thead>
             <tbody id="tabelaMes"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===================== MILITARES ===================== -->
-      <div id="tabMil" style="display:none">
-        <div class="toolbar-flex">
-          <p class="info-text">Efetivo disponível para a escala (Major Martins e Capitão Oliveira não participam).</p>
-          <button class="btn btn-primary" onclick="abrirMilitar()">+ Novo Militar</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Nome</th><th>Posto/Graduação</th><th>Categoria</th><th>Ações</th></tr></thead>
-            <tbody id="tabelaMil"></tbody>
           </table>
         </div>
       </div>
@@ -122,30 +107,6 @@
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalDia')">Cancelar</button>
         <button class="btn btn-primary" onclick="salvarDia()">Salvar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL MILITAR -->
-  <div class="modal-overlay" id="modalMil">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title" id="milTitulo">Novo Militar</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalMil')" aria-label="Fechar">×</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="mId"/>
-        <div class="form-group"><label class="form-label">Nome *</label><input class="form-control" id="mNome"/></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Posto/Graduação</label><input class="form-control" id="mPosto"/></div>
-          <div class="form-group"><label class="form-label">Categoria</label>
-            <select class="form-control" id="mCategoria"><option>Oficial</option><option>Praça</option><option>BC</option></select>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalMil')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarMilitar()">Salvar</button>
       </div>
     </div>
   </div>
@@ -197,11 +158,10 @@
     let diaSel = new Date().toISOString().slice(0,10);
 
     function showTab(id, btn){
-      ['tabDia','tabMes','tabMil','tabObs'].forEach(t=>document.getElementById(t).style.display='none');
+      ['tabDia','tabMes','tabObs'].forEach(t=>document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(id).style.display='block'; btn.classList.add('active');
       if(id==='tabMes') renderMes();
-      if(id==='tabMil') renderMilitares();
       if(id==='tabObs') renderObs();
     }
 
@@ -301,28 +261,14 @@
       renderDia();
     }
 
-    // ---------- MILITARES ----------
-    function renderMilitares(){
-      const tb = document.getElementById('tabelaMil');
-      if(!militares.length){ tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><p>Nenhum militar.</p></div></td></tr>`; return; }
-      tb.innerHTML = militares.map(m=>`<tr>
-        <td><strong>${m.nome}</strong></td><td>${m.posto||'—'}</td><td>${m.categoria||'—'}</td>
-        <td style="display:flex;gap:6px">
-          <button class="action-btn" onclick="editarMilitar('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="action-btn" onclick="excluirMilitar('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-        </td></tr>`).join('');
+    // Lista de militares (cadastro central do Controle de Acessos) + nomes já presentes na escala
+    async function carregarMilitares(){
+      const perfis = await BBM.militares();
+      const mapa = new Map();
+      perfis.forEach(p=>{ if(p.nome) mapa.set(p.nome, {nome:p.nome, posto:p.posto||'', categoria:p.categoria||''}); });
+      registros.forEach(r=>{ if(r.militar && !mapa.has(r.militar)) mapa.set(r.militar, {nome:r.militar, posto:'', categoria:''}); });
+      militares = [...mapa.values()].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
     }
-    function abrirMilitar(){ ['mId','mNome','mPosto'].forEach(k=>document.getElementById(k).value=''); document.getElementById('mCategoria').value='Praça'; document.getElementById('milTitulo').textContent='Novo Militar'; BBM.openModal('modalMil'); }
-    function editarMilitar(id){ const m=militares.find(x=>x.id===id); if(!m)return; document.getElementById('mId').value=m.id; document.getElementById('mNome').value=m.nome; document.getElementById('mPosto').value=m.posto||''; document.getElementById('mCategoria').value=m.categoria||'Praça'; document.getElementById('milTitulo').textContent='Editar Militar'; BBM.openModal('modalMil'); }
-    function salvarMilitar(){
-      const id=document.getElementById('mId').value, nome=document.getElementById('mNome').value.trim();
-      if(!nome){ BBM.toast('Informe o nome.','error'); return; }
-      const obj={ id:id||BBM.generateId(), nome:BBM.padronizarNome(nome), posto:document.getElementById('mPosto').value.trim(), categoria:document.getElementById('mCategoria').value };
-      if(id){ militares[militares.findIndex(m=>m.id===id)]=obj; } else militares.push(obj);
-      BBM.save('escala_militares', militares);
-      BBM.closeModal('modalMil'); BBM.toast('Militar salvo.'); renderMilitares();
-    }
-    function excluirMilitar(id){ if(!confirm('Excluir militar?'))return; militares=militares.filter(m=>m.id!==id); BBM.save('escala_militares',militares); BBM.toast('Removido.','error'); renderMilitares(); }
 
     function renderObs(){
       const obs = (window.ESCALA_SEED&&window.ESCALA_SEED.obs)||[];
@@ -332,10 +278,7 @@
     // ---------- SEED + INIT ----------
     function seedEscala(){
       const S = window.ESCALA_SEED; if(!S) return;
-      // militares
-      militares = S.militares.map(m=>({ id:BBM.generateId(), nome:m.nome, posto:m.posto, categoria:m.categoria }));
-      BBM.save('escala_militares', militares);
-      // registros (a partir de dias + joe)
+      // registros (a partir de dias + joe). Os militares vêm do cadastro central.
       registros = [];
       Object.entries(S.dias).forEach(([data, arr])=>{
         FUNC.forEach((f,i)=>{ if(arr[i]) registros.push({ id:BBM.generateId(), data, funcao:f, militar:arr[i], joe:false }); });
@@ -351,13 +294,13 @@
     }
 
     document.getElementById('diaData').value = diaSel;
-    BBM.ready(['escala_registros','escala_militares'], ()=>{
+    BBM.ready(['escala_registros'], async ()=>{
       registros = BBM.load('escala_registros');
-      militares = BBM.load('escala_militares');
-      if ((!registros.length || !militares.length) && BBM.nivel('escala')==='edicao') {
+      if (!registros.length && BBM.nivel('escala')==='edicao') {
         seedEscala();
         BBM.toast('Escala de Junho importada.');
       }
+      await carregarMilitares();
       renderDia();
     });
   </script>

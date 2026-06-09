@@ -349,6 +349,16 @@ window.BBM = {
     return m ? m[1] : null;
   },
 
+  // lista o efetivo do cadastro central (perfis) — para Escala, Estrutura, etc.
+  async militares() {
+    try {
+      const sb = await this.sb();
+      const { data, error } = await sb.rpc('listar_militares');
+      if (error) throw error;
+      return data || [];
+    } catch (e) { return []; }
+  },
+
   // nível de acesso do usuário logado ao módulo: 'edicao' | 'visualizacao' | 'nenhum'
   nivel(modKey) {
     const p = this._perfil;
