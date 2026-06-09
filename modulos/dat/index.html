@@ -242,13 +242,13 @@
     .doc table.req .band-vermelho { color:#C8102E; }
 
     @media print {
-      @page { size: A4; margin: 12mm; }                 /* conteúdo a ~1 cm das bordas */
+      @page { size: A4; margin: 0; }                    /* margem 0 -> remove URL/numero do navegador */
       * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
       /* remove de fato o restante do app (não só esconde) -> sem páginas em branco */
       body > *:not(#docOverlay) { display:none !important; }
       .no-print { display:none !important; }
       #docOverlay { position:static !important;display:block !important;background:#fff;overflow:visible; }
-      #docView { margin:0 !important;max-width:none;box-shadow:none;padding:16px 20px;overflow:hidden; }
+      #docView { margin:10mm !important;max-width:none;box-shadow:none;padding:14px 18px;overflow:hidden; }
       #docView.com-moldura { border:2.5px solid #C8102E; }
       .doc { font-size:11pt;line-height:1.4; }          /* tamanho natural, sem distorção */
     }
