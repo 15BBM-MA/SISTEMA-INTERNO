@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0D1B2A"/>
   <title>Estrutura Interna — 15º BBM</title>
   <link rel="stylesheet" href="../../assets/css/main.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
@@ -19,7 +20,7 @@
       <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Almoxarifado</span><span class="nav-arrow">›</span></a>
       <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
       <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
-      <a href="../estrutura/index.html"      class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="index.html"                   class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
       <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
     </nav>
     <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
@@ -28,12 +29,8 @@
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
-        <div class="topbar-breadcrumb">
-          <a href="../../index.html">Sistema de Gestão</a>
-          <span class="breadcrumb-sep">›</span>
-          <span class="breadcrumb-current">Estrutura Interna</span>
-        </div>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb"><a href="../../index.html">Sistema</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Estrutura Interna</span></div>
       </div>
       <div class="topbar-right">
         <div class="topbar-date" id="topbarDate"></div>
@@ -49,287 +46,162 @@
           </div>
           <div>
             <div class="mod-title">Estrutura Interna</div>
-            <div class="mod-subtitle">Organograma, setores e comunicações do batalhão</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-ghost" onclick="BBM.openModal('modalComunicado')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Comunicado
-          </button>
-          <button class="btn btn-primary" onclick="BBM.openModal('modalSetor')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Novo Setor
-          </button>
-        </div>
-      </div>
-
-      <!-- ORGANOGRAMA -->
-      <div class="section-label">Organograma — 15º Batalhão de Bombeiros Militar</div>
-      <div class="org-container">
-        <div class="org-root">
-          <div class="org-card org-command">
-            <div class="org-card-icon">⚜</div>
-            <div class="org-card-title">Comando</div>
-            <div class="org-card-sub" id="orgComandante">Comandante do Batalhão</div>
-          </div>
-          <div class="org-children">
-            <div class="org-branch">
-              <div class="org-card org-op">
-                <div class="org-card-title">Seção de Operações</div>
-                <div class="org-card-sub">P3 — Operacional</div>
-              </div>
-            </div>
-            <div class="org-branch">
-              <div class="org-card org-adm">
-                <div class="org-card-title">Seção Administrativa</div>
-                <div class="org-card-sub">P1 — Pessoal / P4 — Logística</div>
-              </div>
-            </div>
-            <div class="org-branch">
-              <div class="org-card org-intel">
-                <div class="org-card-title">Seção de Instrução</div>
-                <div class="org-card-sub">P5 — Civis / Bombeiro Mirim</div>
-              </div>
-            </div>
+            <div class="mod-subtitle">Organograma e delegação de funções aos oficiais</div>
           </div>
         </div>
       </div>
 
-      <!-- TABS -->
-      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin:28px 0 20px">
-        <button class="tab-btn active" onclick="showTab('tabSetores',this)">Setores</button>
-        <button class="tab-btn" onclick="showTab('tabComunicados',this)">Comunicados</button>
-      </div>
+      <!-- ORGANOGRAMA / QUADRO DE FUNÇÕES -->
+      <div class="section-label">Quadro de Funções</div>
+      <div id="quadro" class="quadro"></div>
 
-      <div id="tabSetores">
-        <div class="section-label">Setores do Batalhão</div>
+      <!-- ÁREA ADMIN: DELEGAÇÃO -->
+      <div id="areaAdmin" style="display:none">
+        <div class="section-label" style="margin-top:30px">Delegação de Funções <span class="adm-chip">somente administrador</span></div>
+        <p class="info-text">Selecione o oficial responsável por cada função. As mudanças são salvas automaticamente e ficam visíveis para todos.</p>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Setor</th><th>Sigla</th><th>Responsável</th><th>Localização</th><th>Telefone</th><th>Situação</th><th>Ações</th></tr>
-            </thead>
-            <tbody id="tabelaSetores"></tbody>
+            <thead><tr><th>Função</th><th>Oficial Responsável</th></tr></thead>
+            <tbody id="tabelaDeleg"></tbody>
+          </table>
+        </div>
+
+        <div class="section-label" style="margin-top:30px">Oficiais</div>
+        <div class="toolbar-flex">
+          <p class="info-text">Efetivo de oficiais do batalhão.</p>
+          <button class="btn btn-primary" onclick="abrirOficial()">+ Novo Oficial</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>Posto</th><th>Ações</th></tr></thead>
+            <tbody id="tabelaOfi"></tbody>
           </table>
         </div>
       </div>
 
-      <div id="tabComunicados" style="display:none">
-        <div class="section-label">Comunicados Internos</div>
-        <div id="listaComunicados" class="comunicados-list"></div>
+      <div id="avisoRestrito" style="display:none">
+        <div class="restrito">🔒 A delegação de funções é restrita ao administrador. Acima estão as funções e seus responsáveis atuais.</div>
       </div>
     </div>
   </main>
 
-  <!-- MODAL SETOR -->
-  <div class="modal-overlay" id="modalSetor">
+  <!-- MODAL OFICIAL -->
+  <div class="modal-overlay" id="modalOfi">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title" id="modalSetorTitle">Novo Setor</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalSetor')">×</button>
+        <span class="modal-title" id="ofiTitulo">Novo Oficial</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalOfi')" aria-label="Fechar">×</button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="setorId"/>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Nome do Setor *</label><input class="form-control" id="sNome" placeholder="Ex: Seção de Operações"/></div>
-          <div class="form-group"><label class="form-label">Sigla</label><input class="form-control" id="sSigla" placeholder="Ex: P3"/></div>
-        </div>
-        <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="sResp" placeholder="Nome do responsável"/></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Localização</label><input class="form-control" id="sLocal" placeholder="Ex: Sala 02"/></div>
-          <div class="form-group"><label class="form-label">Telefone/Ramal</label><input class="form-control" id="sTel" placeholder="(98) 0000-0000"/></div>
-        </div>
-        <div class="form-group"><label class="form-label">Situação</label>
-          <select class="form-control" id="sSituacao"><option>Ativo</option><option>Inativo</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">Atribuições</label><textarea class="form-control" id="sAtrib" rows="2" placeholder="Principais funções do setor…"></textarea></div>
+        <input type="hidden" id="oId"/>
+        <div class="form-group"><label class="form-label">Nome *</label><input class="form-control" id="oNome"/></div>
+        <div class="form-group"><label class="form-label">Posto</label><input class="form-control" id="oPosto" placeholder="ex: Cap BM"/></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalSetor')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarSetor()">Salvar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL COMUNICADO -->
-  <div class="modal-overlay" id="modalComunicado">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">Novo Comunicado</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalComunicado')">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="cTitulo" placeholder="Título do comunicado"/></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Prioridade</label>
-            <select class="form-control" id="cPrioridade"><option>Normal</option><option>Urgente</option><option>Informativo</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Destinatário</label><input class="form-control" id="cDest" placeholder="Todos / Setor específico"/></div>
-        </div>
-        <div class="form-group"><label class="form-label">Conteúdo *</label><textarea class="form-control" id="cTexto" rows="4" placeholder="Texto do comunicado…"></textarea></div>
-        <div class="form-group"><label class="form-label">Assinado por</label><input class="form-control" id="cAssinatura" placeholder="Nome e posto"/></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalComunicado')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarComunicado()">Publicar</button>
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalOfi')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarOficial()">Salvar</button>
       </div>
     </div>
   </div>
 
   <style>
-    .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
-    .tab-btn.active { color:var(--slate);border-bottom-color:var(--slate); }
+    .info-text { color:var(--text-mid);font-size:.84rem;max-width:560px;margin-bottom:14px; }
+    .toolbar-flex { display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;flex-wrap:wrap; }
+    .adm-chip { font-size:.62rem;font-weight:700;background:#fce4e8;color:var(--red);padding:2px 8px;border-radius:99px;vertical-align:middle;text-transform:none;letter-spacing:0; }
+    .restrito { background:var(--bg);border:1px solid var(--border);color:var(--text-mid);padding:14px 18px;border-radius:10px;font-size:.85rem;margin-top:20px; }
 
-    .org-container { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 24px;box-shadow:var(--shadow);text-align:center;margin-bottom:8px; }
-    .org-root { display:flex;flex-direction:column;align-items:center;gap:0; }
-    .org-card { border-radius:10px;padding:14px 20px;min-width:180px;display:inline-block;position:relative; }
-    .org-card-icon { font-size:1.4rem;margin-bottom:4px; }
-    .org-card-title { font-weight:700;font-size:.9rem;color:var(--navy); }
-    .org-card-sub { font-size:.76rem;color:var(--text-mid);margin-top:3px; }
-    .org-command { background:var(--navy);border:2px solid var(--gold); }
-    .org-command .org-card-title, .org-command .org-card-sub, .org-command .org-card-icon { color:#fff; }
-    .org-command .org-card-sub { color:var(--gold-light); }
-    .org-children { display:flex;gap:20px;margin-top:0;position:relative;padding-top:32px; }
-    .org-children::before { content:'';position:absolute;top:0;left:50%;width:1px;height:32px;background:var(--border); }
-    .org-branch { display:flex;flex-direction:column;align-items:center;position:relative; }
-    .org-branch::before { content:'';position:absolute;top:-32px;left:50%;width:1px;height:32px;background:var(--border); }
-    .org-op   { background:#EBF5FB;border:1px solid #AED6F1; }
-    .org-adm  { background:#FDFEFE;border:1px solid var(--border); }
-    .org-intel{ background:#E8F8F5;border:1px solid #A3E4D7; }
-
-    .comunicados-list { display:flex;flex-direction:column;gap:12px; }
-    .comunicado-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-left:4px solid var(--slate); }
-    .comunicado-card.urgente { border-left-color:var(--red); }
-    .comunicado-card.informativo { border-left-color:var(--blue); }
-    .comunicado-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:8px; }
-    .comunicado-titulo { font-weight:700;font-size:.95rem;color:var(--navy); }
-    .comunicado-meta { font-size:.75rem;color:var(--text-light); }
-    .comunicado-texto { font-size:.85rem;color:var(--text-mid);line-height:1.6; }
-    .comunicado-footer { margin-top:10px;font-size:.78rem;color:var(--text-light);display:flex;justify-content:space-between;align-items:center; }
+    .quadro { display:grid;grid-template-columns:repeat(2,1fr);gap:12px; }
+    @media(max-width:768px){ .quadro{grid-template-columns:1fr} }
+    .qcard { background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--slate);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow); }
+    .qcard.topo { border-left-color:var(--gold);background:linear-gradient(135deg,#fff,#fffdf5); grid-column:1/-1; }
+    .qfunc { font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-light); }
+    .qofi { font-size:1.02rem;font-weight:700;color:var(--navy);margin-top:3px; }
+    .qofi.vago { color:var(--text-light);font-weight:500;font-style:italic; }
+    .deleg-sel { width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem; }
   </style>
 
   <script src="../../assets/js/main.js"></script>
   <script>
-    let setores      = BBM.load('estrutura_setores');
-    let comunicados  = BBM.load('estrutura_comunicados');
+    const FUNCOES = [
+      'Comando','Subcomandante',
+      'B1 — Escalante dos Praças','B1 — Escalante dos Oficiais',
+      'B3 — Treinamentos, Instruções, Contratos e JOE',
+      'B4 — Material e Almoxarifado','B5 — Seção de Mídia',
+      'Analista Técnico','Manutenção das Instalações','Bombeiro Mirim','Responsável pelas Viaturas',
+    ];
+    const OFICIAIS_SEED = [
+      { nome:'Major Martins',          posto:'Maj BM' },
+      { nome:'Capitão Oliveira',       posto:'Cap BM' },
+      { nome:'Capitão Daniel',         posto:'Cap BM' },
+      { nome:'1º Ten Araújo',          posto:'1º Ten BM' },
+      { nome:'1º Ten Paulo José',      posto:'1º Ten BM' },
+      { nome:'Aspirante Felipe Souza', posto:'Asp Of BM' },
+    ];
+    let oficiais = [];
+    let deleg = {};   // funcao -> nome do oficial
+    let ehAdmin = false;
 
-    function showTab(id,btn) {
-      ['tabSetores','tabComunicados'].forEach(t=>document.getElementById(t).style.display='none');
-      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-      document.getElementById(id).style.display='block';
-      btn.classList.add('active');
-      if (id==='tabComunicados') renderComunicados();
+    function renderQuadro(){
+      const q = document.getElementById('quadro');
+      q.innerHTML = FUNCOES.map(f=>{
+        const topo = (f==='Comando'||f==='Subcomandante');
+        const ofi = deleg[f];
+        return `<div class="qcard ${topo?'topo':''}">
+          <div class="qfunc">${f}</div>
+          <div class="qofi ${ofi?'':'vago'}">${ofi||'— a definir —'}</div>
+        </div>`;
+      }).join('');
     }
 
-    function renderSetores() {
-      const tbody = document.getElementById('tabelaSetores');
-      if (!setores.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><p>Nenhum setor cadastrado.</p></div></td></tr>`; return; }
-      tbody.innerHTML = setores.map(s => `<tr>
-        <td><strong>${s.nome}</strong>${s.atrib?`<br><small style="color:var(--text-light)">${s.atrib.substring(0,60)}…</small>`:''}</td>
-        <td>${s.sigla||'—'}</td>
-        <td>${s.resp||'—'}</td>
-        <td>${s.local||'—'}</td>
-        <td>${s.tel||'—'}</td>
-        <td><span class="badge ${s.situacao==='Ativo'?'badge-ok':'badge-neutral'}">${s.situacao}</span></td>
-        <td style="display:flex;gap:6px">
-          <button class="action-btn" onclick="editarSetor('${s.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="action-btn" onclick="excluirSetor('${s.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-        </td>
+    function renderDeleg(){
+      const tb = document.getElementById('tabelaDeleg');
+      const opts = nome => '<option value="">— a definir —</option>' + oficiais.map(o=>`<option ${o.nome===nome?'selected':''}>${o.nome}</option>`).join('');
+      tb.innerHTML = FUNCOES.map(f=>`<tr>
+        <td><strong>${f}</strong></td>
+        <td><select class="deleg-sel" onchange="setDeleg('${f.replace(/'/g,"\\'")}', this.value)">${opts(deleg[f]||'')}</select></td>
       </tr>`).join('');
     }
-
-    function renderComunicados() {
-      const lista = document.getElementById('listaComunicados');
-      if (!comunicados.length) { lista.innerHTML=`<div class="empty-state"><p>Nenhum comunicado publicado.</p></div>`; return; }
-      lista.innerHTML = [...comunicados].reverse().map(c => `
-        <div class="comunicado-card ${c.prioridade==='Urgente'?'urgente':c.prioridade==='Informativo'?'informativo':''}">
-          <div class="comunicado-header">
-            <span class="comunicado-titulo">${c.titulo}</span>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span class="badge ${c.prioridade==='Urgente'?'badge-danger':c.prioridade==='Informativo'?'badge-info':'badge-neutral'}">${c.prioridade}</span>
-              <button class="action-btn" onclick="excluirComunicado('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-            </div>
-          </div>
-          <div class="comunicado-texto">${c.texto}</div>
-          <div class="comunicado-footer">
-            <span>Para: ${c.dest||'Todos'}</span>
-            <span>${c.assinatura?'— '+c.assinatura:''} &nbsp;|&nbsp; ${c.data}</span>
-          </div>
-        </div>`).join('');
+    async function setDeleg(funcao, nome){
+      if(nome) deleg[funcao]=nome; else delete deleg[funcao];
+      // salva como lista de itens {id:funcao, funcao, oficial}
+      const arr = FUNCOES.filter(f=>deleg[f]).map(f=>({ id:f, funcao:f, oficial:deleg[f] }));
+      BBM.save('estrutura_funcoes', arr);
+      renderQuadro();
+      BBM.toast('Delegação salva.');
     }
 
-    function salvarSetor() {
-      const id   = document.getElementById('setorId').value;
-      const nome = document.getElementById('sNome').value.trim();
-      if (!nome) { BBM.toast('Informe o nome.','error'); return; }
-      const obj = {
-        id: id||BBM.generateId(), nome,
-        sigla:    document.getElementById('sSigla').value,
-        resp:     document.getElementById('sResp').value,
-        local:    document.getElementById('sLocal').value,
-        tel:      document.getElementById('sTel').value,
-        situacao: document.getElementById('sSituacao').value,
-        atrib:    document.getElementById('sAtrib').value,
-      };
-      if (id) { setores[setores.findIndex(s=>s.id===id)]=obj; }
-      else setores.push(obj);
-      BBM.save('estrutura_setores', setores);
-      BBM.closeModal('modalSetor');
-      BBM.toast('Setor salvo.');
-      renderSetores();
-      document.getElementById('setorId').value='';
+    function renderOficiais(){
+      const tb = document.getElementById('tabelaOfi');
+      tb.innerHTML = oficiais.length ? oficiais.map(o=>`<tr>
+        <td><strong>${o.nome}</strong></td><td>${o.posto||'—'}</td>
+        <td style="display:flex;gap:6px">
+          <button class="action-btn" onclick="editarOficial('${o.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="action-btn" onclick="excluirOficial('${o.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </td></tr>`).join('') : `<tr><td colspan="3"><div class="empty-state"><p>Nenhum oficial.</p></div></td></tr>`;
     }
-
-    function editarSetor(id) {
-      const s = setores.find(x=>x.id===id); if(!s) return;
-      document.getElementById('setorId').value    = s.id;
-      document.getElementById('sNome').value      = s.nome;
-      document.getElementById('sSigla').value     = s.sigla;
-      document.getElementById('sResp').value      = s.resp;
-      document.getElementById('sLocal').value     = s.local;
-      document.getElementById('sTel').value       = s.tel;
-      document.getElementById('sSituacao').value  = s.situacao;
-      document.getElementById('sAtrib').value     = s.atrib;
-      document.getElementById('modalSetorTitle').textContent='Editar Setor';
-      BBM.openModal('modalSetor');
+    function abrirOficial(){ ['oId','oNome','oPosto'].forEach(k=>document.getElementById(k).value=''); document.getElementById('ofiTitulo').textContent='Novo Oficial'; BBM.openModal('modalOfi'); }
+    function editarOficial(id){ const o=oficiais.find(x=>x.id===id); if(!o)return; document.getElementById('oId').value=o.id; document.getElementById('oNome').value=o.nome; document.getElementById('oPosto').value=o.posto||''; document.getElementById('ofiTitulo').textContent='Editar Oficial'; BBM.openModal('modalOfi'); }
+    function salvarOficial(){
+      const id=document.getElementById('oId').value, nome=document.getElementById('oNome').value.trim();
+      if(!nome){ BBM.toast('Informe o nome.','error'); return; }
+      const obj={ id:id||BBM.generateId(), nome:BBM.padronizarNome(nome), posto:document.getElementById('oPosto').value.trim() };
+      if(id){ oficiais[oficiais.findIndex(o=>o.id===id)]=obj; } else oficiais.push(obj);
+      BBM.save('estrutura_oficiais', oficiais);
+      BBM.closeModal('modalOfi'); BBM.toast('Oficial salvo.'); renderOficiais(); renderDeleg();
     }
+    function excluirOficial(id){ if(!confirm('Excluir oficial?'))return; oficiais=oficiais.filter(o=>o.id!==id); BBM.save('estrutura_oficiais',oficiais); BBM.toast('Removido.','error'); renderOficiais(); renderDeleg(); }
 
-    function excluirSetor(id) {
-      if (!confirm('Excluir setor?')) return;
-      setores = setores.filter(s=>s.id!==id);
-      BBM.save('estrutura_setores', setores);
-      BBM.toast('Removido.','error');
-      renderSetores();
-    }
-
-    function salvarComunicado() {
-      const titulo = document.getElementById('cTitulo').value.trim();
-      const texto  = document.getElementById('cTexto').value.trim();
-      if (!titulo||!texto) { BBM.toast('Preencha título e conteúdo.','error'); return; }
-      const obj = {
-        id: BBM.generateId(), titulo, texto,
-        prioridade:  document.getElementById('cPrioridade').value,
-        dest:        document.getElementById('cDest').value,
-        assinatura:  document.getElementById('cAssinatura').value,
-        data:        new Date().toLocaleString('pt-BR'),
-      };
-      comunicados.push(obj);
-      BBM.save('estrutura_comunicados', comunicados);
-      BBM.closeModal('modalComunicado');
-      BBM.toast('Comunicado publicado.');
-      document.getElementById('cTitulo').value='';
-      document.getElementById('cTexto').value='';
-    }
-
-    function excluirComunicado(id) {
-      if (!confirm('Excluir comunicado?')) return;
-      comunicados = comunicados.filter(c=>c.id!==id);
-      BBM.save('estrutura_comunicados', comunicados);
-      BBM.toast('Removido.','error');
-      renderComunicados();
-    }
-
-    renderSetores();
+    BBM.ready(['estrutura_oficiais','estrutura_funcoes'], ()=>{
+      const u = BBM.currentUser();
+      ehAdmin = u && u.role==='admin';
+      oficiais = BBM.load('estrutura_oficiais');
+      if (!oficiais.length && ehAdmin) { oficiais = OFICIAIS_SEED.map(o=>({ id:BBM.generateId(), nome:o.nome, posto:o.posto })); BBM.save('estrutura_oficiais', oficiais); }
+      const fa = BBM.load('estrutura_funcoes');
+      deleg = {}; fa.forEach(x=>{ deleg[x.funcao]=x.oficial; });
+      renderQuadro();
+      if (ehAdmin) { document.getElementById('areaAdmin').style.display='block'; renderDeleg(); renderOficiais(); }
+      else { document.getElementById('avisoRestrito').style.display='block'; }
+    });
   </script>
 </body>
 </html>
