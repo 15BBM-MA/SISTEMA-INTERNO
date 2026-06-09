@@ -174,6 +174,19 @@
     .doador-inline { display:inline-flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green);font-size:.74rem;font-weight:600;padding:2px 9px;border-radius:99px;margin-top:4px; }
 
     .enc-actions { display:flex;gap:8px;margin-top:16px;flex-wrap:wrap; }
+    .tarefas-box { margin-top:16px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px; }
+    .tarefas-title { font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);margin-bottom:8px; }
+    .tar-pend-lbl { font-size:.74rem;font-weight:600;color:var(--red);margin:4px 0 6px; }
+    .tarefa-row { display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.86rem;color:var(--text); }
+    .tarefa-row input[type=checkbox]{ width:16px;height:16px;flex-shrink:0; }
+    .tarefa-row span { flex:1; }
+    .tarefa-row.feita span { text-decoration:line-through;color:var(--text-light); }
+    .tarefa-row.pend { background:#fff6f7;border-radius:6px;padding:5px 8px; }
+    .tarefa-row.pend small { color:var(--text-light); }
+    .tar-rm { width:24px;height:24px;border:none;background:none;color:var(--text-light);cursor:pointer;font-size:1.1rem;border-radius:5px; }
+    .tar-rm:hover { background:#fce4e8;color:var(--red); }
+    .tarefa-add { display:flex;gap:8px;margin-top:8px; }
+    .tarefa-add input { flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:.85rem; }
 
     .ementa-intro { color:var(--text-mid);font-size:.88rem;margin-bottom:18px;line-height:1.6;max-width:760px; }
     .ementa-list { display:flex;flex-direction:column;gap:10px; }
@@ -419,9 +432,11 @@
       if (id==='tabSugestoes') renderSugestoes();
     }
 
+    function escHtml(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function renderEncontros() {
       const cont = document.getElementById('listaEncontros');
       if (!encontros.length) { cont.innerHTML = `<div class="empty-state"><p>Nenhum encontro no cronograma.</p></div>`; return; }
+      const abertos = [...cont.querySelectorAll('.enc-card.open')].map(c=>c.id);
       const ord = [...encontros].sort((a,b)=> (a.data||'').localeCompare(b.data||'') || a.ord-b.ord);
       // próxima instrução = primeiro encontro de aula ainda não concluído
       let proximaId = null;
@@ -438,6 +453,8 @@
         const numCls = e.recreativo?'recreativa':(tipo==='feriado'?'especial':(tipo==='ferias'||tipo==='semaula'?'descanso':''));
         const doador = doadorDoDia(e.data);
         const ehProxima = e.id===proximaId;
+        const idx = ord.indexOf(e);
+        const pend = ehProxima ? ord.slice(0,idx).flatMap(x => (x.tarefas||[]).filter(t=>!t.feita).map(t=>({oid:x.id, od:x.data, t}))) : [];
         return `<div class="enc-card ${e.feito?'feito':''} ${ehProxima?'proxima':''}" id="enc_${e.id}">
           <div class="enc-head" onclick="toggleEnc('${e.id}')">
             <div class="enc-num ${numCls} ${e.feito?'ok':''}">${e.feito?'✓':(e.ord||'•')}</div>
@@ -466,6 +483,12 @@
                 </div>
               </div>`).join('')}
             </div>
+            <div class="tarefas-box">
+              <div class="tarefas-title">📋 Tarefas</div>
+              ${ehProxima && pend.length ? `<div class="tar-pend-lbl">↪ Pendentes de instruções anteriores:</div>` + pend.map(p=>`<label class="tarefa-row pend"><input type="checkbox" onchange="toggleTarefa('${p.oid}','${p.t.id}')"/><span>${escHtml(p.t.texto)} <small>(de ${BBM.formatDate(p.od)})</small></span></label>`).join('') : ''}
+              ${(e.tarefas||[]).map(t=>`<label class="tarefa-row ${t.feita?'feita':''}"><input type="checkbox" ${t.feita?'checked':''} onchange="toggleTarefa('${e.id}','${t.id}')"/><span>${escHtml(t.texto)}</span><button class="tar-rm" title="Remover" onclick="event.preventDefault();removerTarefa('${e.id}','${t.id}')">×</button></label>`).join('')}
+              <div class="tarefa-add"><input id="ntar_${e.id}" placeholder="Registrar tarefa…" onkeydown="if(event.key==='Enter'){event.preventDefault();addTarefa('${e.id}')}"/><button class="btn-mini" onclick="addTarefa('${e.id}')">+ Tarefa</button></div>
+            </div>
             <div class="enc-actions">
               <button class="btn ${e.feito?'btn-ghost':'btn-primary'}" onclick="marcarFeito('${e.id}')">${e.feito?'↩ Reabrir':'✓ Marcar como concluída'}</button>
               <button class="btn btn-ghost" onclick="editarEncontro('${e.id}')">✏ Editar / Plano do dia</button>
@@ -474,6 +497,7 @@
           </div>
         </div>`;
       }).join('');
+      abertos.forEach(id=>document.getElementById(id)?.classList.add('open'));
     }
 
     function toggleEnc(id){ document.getElementById('enc_'+id)?.classList.toggle('open'); }
@@ -483,6 +507,31 @@
       e.feito = !e.feito;
       BBM.save('mirim_planejamento', encontros);
       BBM.toast(e.feito?'Instrução marcada como concluída.':'Instrução reaberta.');
+      renderEncontros();
+    }
+
+    // ---------- TAREFAS POR INSTRUÇÃO ----------
+    function addTarefa(id){
+      const inp = document.getElementById('ntar_'+id); if(!inp) return;
+      const txt = (inp.value||'').trim(); if(!txt) return;
+      const e = encontros.find(x=>x.id===id); if(!e) return;
+      e.tarefas = e.tarefas || [];
+      e.tarefas.push({ id:BBM.generateId(), texto:txt, feita:false });
+      BBM.save('mirim_planejamento', encontros);
+      renderEncontros();
+      const ni = document.getElementById('ntar_'+id); if(ni){ ni.focus(); }
+    }
+    function toggleTarefa(encId, tarId){
+      const e = encontros.find(x=>x.id===encId); if(!e) return;
+      const t = (e.tarefas||[]).find(x=>x.id===tarId); if(!t) return;
+      t.feita = !t.feita;
+      BBM.save('mirim_planejamento', encontros);
+      renderEncontros();
+    }
+    function removerTarefa(encId, tarId){
+      const e = encontros.find(x=>x.id===encId); if(!e) return;
+      e.tarefas = (e.tarefas||[]).filter(x=>x.id!==tarId);
+      BBM.save('mirim_planejamento', encontros);
       renderEncontros();
     }
 
