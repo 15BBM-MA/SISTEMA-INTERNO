@@ -110,11 +110,15 @@
     .adm-chip { font-size:.62rem;font-weight:700;background:#fce4e8;color:var(--red);padding:2px 8px;border-radius:99px;vertical-align:middle;text-transform:none;letter-spacing:0; }
     .restrito { background:var(--bg);border:1px solid var(--border);color:var(--text-mid);padding:14px 18px;border-radius:10px;font-size:.85rem;margin-top:20px; }
 
-    /* Organograma vertical por hierarquia */
+    /* Organograma: Comando e Subcomandante verticais, demais em linha horizontal */
     .quadro { display:flex;flex-direction:column;align-items:center;gap:0; }
-    .org-node { display:flex;flex-direction:column;align-items:center;width:100%;max-width:560px;position:relative; }
-    .org-node:not(:first-child)::before { content:'';width:2px;height:18px;background:var(--border); }
-    .org-card { width:100%;background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--slate);border-radius:var(--radius-lg);padding:16px 20px;box-shadow:var(--shadow);text-align:center; }
+    .org-conn { width:2px;height:20px;background:var(--border); }
+    .org-node { display:flex;flex-direction:column;align-items:center;width:100%;max-width:380px; }
+    .org-linha { display:flex;flex-wrap:wrap;gap:16px;justify-content:center;width:100%;position:relative;padding-top:20px; }
+    .org-linha::before { content:'';position:absolute;top:0;left:50%;width:2px;height:20px;background:var(--border); }
+    .org-linha .org-node { max-width:230px;flex:1 1 200px;min-width:180px; }
+    .org-rotulo { font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:4px; }
+    .org-card { width:100%;background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--slate);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow);text-align:center; }
     .org-node.n1 .org-card { border-top-color:var(--gold);background:linear-gradient(135deg,#fffdf5,#fff); }
     .org-node.n2 .org-card { border-top-color:var(--red); }
     .org-node.n3 .org-card { border-top-color:var(--blue); }
@@ -150,28 +154,34 @@
     let ehAdmin = false;
 
     const HIERARQUIA = ['Major Martins','Capitão Oliveira','Capitão Daniel','1º Ten Araújo','1º Ten Paulo José','Aspirante Felipe Souza'];
+    const hierSort = (a,b)=>{ const ia=HIERARQUIA.indexOf(a.nome), ib=HIERARQUIA.indexOf(b.nome); return (ia<0?99:ia)-(ib<0?99:ib); };
+    function nivelClasse(o){ return /Maj/.test(o.posto)?'n1':(/Cap/.test(o.posto)?'n2':(/Ten/.test(o.posto)?'n3':'n4')); }
+    function cardOficial(o, rotulo){
+      if(!o) return '';
+      const funcs = FUNCOES.filter(f=>deleg[f]===o.nome);
+      return `<div class="org-node ${nivelClasse(o)}">
+        <div class="org-card">
+          ${rotulo?`<div class="org-rotulo">${rotulo}</div>`:''}
+          <div class="org-posto">${o.posto||''}</div>
+          <div class="org-nome">${o.nome}</div>
+          <div class="org-funcs">${funcs.length ? funcs.map(f=>`<span class="org-func">${f}</span>`).join('') : '<span class="org-vago">sem função delegada</span>'}</div>
+        </div>
+      </div>`;
+    }
     function renderQuadro(){
       const q = document.getElementById('quadro');
-      const ord = [...oficiais].sort((a,b)=>{
-        const ia=HIERARQUIA.indexOf(a.nome), ib=HIERARQUIA.indexOf(b.nome);
-        return (ia<0?99:ia)-(ib<0?99:ib);
-      });
-      q.innerHTML = ord.map((o,i)=>{
-        const funcs = FUNCOES.filter(f=>deleg[f]===o.nome);
-        const nivel = i===0?'n1':(/Cap/.test(o.posto)?'n2':(/Ten/.test(o.posto)?'n3':'n4'));
-        return `<div class="org-node ${nivel}">
-          <div class="org-card">
-            <div class="org-posto">${o.posto||''}</div>
-            <div class="org-nome">${o.nome}</div>
-            <div class="org-funcs">${
-              funcs.length ? funcs.map(f=>`<span class="org-func">${f}</span>`).join('') : '<span class="org-vago">sem função delegada</span>'
-            }</div>
-          </div>
-        </div>`;
-      }).join('');
-      // funções ainda não delegadas
+      const ord = [...oficiais].sort(hierSort);
+      const byNome = n => oficiais.find(o=>o.nome===n);
+      let comandante = oficiais.find(o=>deleg['Comando']===o.nome) || byNome(HIERARQUIA[0]) || ord[0];
+      let sub = oficiais.find(o=>deleg['Subcomandante']===o.nome) || byNome(HIERARQUIA[1]) || ord[1];
+      const demais = ord.filter(o=>o && o!==comandante && o!==sub);
+      let html = '';
+      if(comandante) html += cardOficial(comandante, 'Comando');
+      if(sub) html += `<div class="org-conn"></div>` + cardOficial(sub, 'Subcomandante');
+      if(demais.length) html += `<div class="org-conn"></div><div class="org-linha">` + demais.map(o=>cardOficial(o)).join('') + `</div>`;
       const pend = FUNCOES.filter(f=>!deleg[f]);
-      if (pend.length) q.innerHTML += `<div class="org-pend">A definir: ${pend.join(' • ')}</div>`;
+      if(pend.length) html += `<div class="org-pend">Funções a definir: ${pend.join(' • ')}</div>`;
+      q.innerHTML = html;
     }
 
     function renderDeleg(){
