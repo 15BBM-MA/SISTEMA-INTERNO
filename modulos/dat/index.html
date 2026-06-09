@@ -262,12 +262,21 @@
     function limparEvento(){
       ['e_estab','e_logr','e_num','e_bairro','e_compl','e_resp','e_cpf','e_fone','e_dataIni','e_dataFim'].forEach(k=>document.getElementById(k).value='');
     }
+    function setNumeroField(){
+      const ano = new Date().getFullYear();
+      const el = document.getElementById('e_numlic');
+      el.value = (contador ? contador.prox : 83) + '/' + ano;
+      el.readOnly = true;
+      el.style.background = 'var(--bg)';
+      el.style.color = 'var(--text-mid)';
+      el.style.fontWeight = '700';
+    }
     function novoEvento(){
       if(!contador){ return; }
-      contador.prox = (parseInt(contador.prox,10)||70) + 1;
+      contador.prox = (parseInt(contador.prox,10)||83) + 1;
       BBM.save('dat_contador', [contador]);
       limparEvento();
-      document.getElementById('e_numlic').value = String(contador.prox);
+      setNumeroField();
       BBM.toast('Novo evento — Nº ' + contador.prox);
     }
 
@@ -456,7 +465,7 @@
       contador = c[0];
       if(!contador || contador.ano !== ano){ contador = { id:'seq', ano, prox:83 }; BBM.save('dat_contador', [contador]); }
       else if(contador.prox < 83){ contador.prox = 83; BBM.save('dat_contador', [contador]); }
-      if(!val('e_numlic')) document.getElementById('e_numlic').value = String(contador.prox);
+      setNumeroField();
     });
   </script>
 </body>
