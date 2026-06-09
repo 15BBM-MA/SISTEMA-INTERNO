@@ -110,13 +110,21 @@
     .adm-chip { font-size:.62rem;font-weight:700;background:#fce4e8;color:var(--red);padding:2px 8px;border-radius:99px;vertical-align:middle;text-transform:none;letter-spacing:0; }
     .restrito { background:var(--bg);border:1px solid var(--border);color:var(--text-mid);padding:14px 18px;border-radius:10px;font-size:.85rem;margin-top:20px; }
 
-    .quadro { display:grid;grid-template-columns:repeat(2,1fr);gap:12px; }
-    @media(max-width:768px){ .quadro{grid-template-columns:1fr} }
-    .qcard { background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--slate);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow); }
-    .qcard.topo { border-left-color:var(--gold);background:linear-gradient(135deg,#fff,#fffdf5); grid-column:1/-1; }
-    .qfunc { font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-light); }
-    .qofi { font-size:1.02rem;font-weight:700;color:var(--navy);margin-top:3px; }
-    .qofi.vago { color:var(--text-light);font-weight:500;font-style:italic; }
+    /* Organograma vertical por hierarquia */
+    .quadro { display:flex;flex-direction:column;align-items:center;gap:0; }
+    .org-node { display:flex;flex-direction:column;align-items:center;width:100%;max-width:560px;position:relative; }
+    .org-node:not(:first-child)::before { content:'';width:2px;height:18px;background:var(--border); }
+    .org-card { width:100%;background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--slate);border-radius:var(--radius-lg);padding:16px 20px;box-shadow:var(--shadow);text-align:center; }
+    .org-node.n1 .org-card { border-top-color:var(--gold);background:linear-gradient(135deg,#fffdf5,#fff); }
+    .org-node.n2 .org-card { border-top-color:var(--red); }
+    .org-node.n3 .org-card { border-top-color:var(--blue); }
+    .org-node.n4 .org-card { border-top-color:var(--green); }
+    .org-posto { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light); }
+    .org-nome { font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:var(--navy);line-height:1.1;margin:2px 0 8px; }
+    .org-funcs { display:flex;flex-wrap:wrap;gap:6px;justify-content:center; }
+    .org-func { background:var(--slate-light);color:var(--slate);font-size:.76rem;font-weight:600;padding:4px 10px;border-radius:99px; }
+    .org-vago { color:var(--text-light);font-style:italic;font-size:.82rem; }
+    .org-pend { margin-top:18px;font-size:.82rem;color:var(--text-mid);background:var(--yellow-light);border:1px solid #f0dca0;padding:10px 16px;border-radius:10px;text-align:center;max-width:560px; }
     .deleg-sel { width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem; }
   </style>
 
@@ -141,16 +149,29 @@
     let deleg = {};   // funcao -> nome do oficial
     let ehAdmin = false;
 
+    const HIERARQUIA = ['Major Martins','Capitão Oliveira','Capitão Daniel','1º Ten Araújo','1º Ten Paulo José','Aspirante Felipe Souza'];
     function renderQuadro(){
       const q = document.getElementById('quadro');
-      q.innerHTML = FUNCOES.map(f=>{
-        const topo = (f==='Comando'||f==='Subcomandante');
-        const ofi = deleg[f];
-        return `<div class="qcard ${topo?'topo':''}">
-          <div class="qfunc">${f}</div>
-          <div class="qofi ${ofi?'':'vago'}">${ofi||'— a definir —'}</div>
+      const ord = [...oficiais].sort((a,b)=>{
+        const ia=HIERARQUIA.indexOf(a.nome), ib=HIERARQUIA.indexOf(b.nome);
+        return (ia<0?99:ia)-(ib<0?99:ib);
+      });
+      q.innerHTML = ord.map((o,i)=>{
+        const funcs = FUNCOES.filter(f=>deleg[f]===o.nome);
+        const nivel = i===0?'n1':(/Cap/.test(o.posto)?'n2':(/Ten/.test(o.posto)?'n3':'n4'));
+        return `<div class="org-node ${nivel}">
+          <div class="org-card">
+            <div class="org-posto">${o.posto||''}</div>
+            <div class="org-nome">${o.nome}</div>
+            <div class="org-funcs">${
+              funcs.length ? funcs.map(f=>`<span class="org-func">${f}</span>`).join('') : '<span class="org-vago">sem função delegada</span>'
+            }</div>
+          </div>
         </div>`;
       }).join('');
+      // funções ainda não delegadas
+      const pend = FUNCOES.filter(f=>!deleg[f]);
+      if (pend.length) q.innerHTML += `<div class="org-pend">A definir: ${pend.join(' • ')}</div>`;
     }
 
     function renderDeleg(){
