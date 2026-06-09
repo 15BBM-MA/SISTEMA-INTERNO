@@ -305,7 +305,7 @@
       </div>`;
     }
     function rodape(){
-      return `<p style="text-align:center;font-size:9pt;margin-top:30px">RODOVIA BR 222, KM 0, S/Nº, BOA VISTA, CHAPADINHA-MA, CEP: 65.500-000<br>FONE: (98) 98115-1126 / (98) 99193-0106 — E-mail: 5cicbma@gmail.com</p>`;
+      return `<p style="text-align:center;font-size:10pt;margin-top:26px;font-weight:bold">15º Batalhão de Bombeiros Militar — Chapadinha/MA</p>`;
     }
 
     function abrirDoc(html, moldura){ const dv=document.getElementById('docView'); dv.innerHTML='<div class="doc">'+html+'</div>'; dv.classList.toggle('com-moldura', !!moldura); document.getElementById('docOverlay').classList.add('open'); }
@@ -454,7 +454,8 @@
       const ano = new Date().getFullYear();
       const c = BBM.load('dat_contador');
       contador = c[0];
-      if(!contador || contador.ano !== ano){ contador = { id:'seq', ano, prox:70 }; BBM.save('dat_contador', [contador]); }
+      if(!contador || contador.ano !== ano){ contador = { id:'seq', ano, prox:83 }; BBM.save('dat_contador', [contador]); }
+      else if(contador.prox < 83){ contador.prox = 83; BBM.save('dat_contador', [contador]); }
       if(!val('e_numlic')) document.getElementById('e_numlic').value = String(contador.prox);
     });
   </script>
