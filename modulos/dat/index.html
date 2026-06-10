@@ -257,27 +257,35 @@
   <script src="../../assets/js/main.js"></script>
   <script>
     let emitidos = [];
-    let contador = null;   // numeração sequencial dos eventos no ano
+    const BASE_NUM = 83;   // primeira numeração do ano
 
     function limparEvento(){
       ['e_estab','e_logr','e_num','e_bairro','e_compl','e_resp','e_cpf','e_fone','e_dataIni','e_dataFim'].forEach(k=>document.getElementById(k).value='');
     }
+    // Próxima numeração lida automaticamente do histórico: maior nº emitido no ano + 1
+    function proximoNumero(){
+      const ano = new Date().getFullYear();
+      let max = BASE_NUM - 1;
+      emitidos.forEach(d=>{
+        const n = parseInt(String(d.numero||'').split('/')[0], 10);
+        const a = parseInt(String(d.numero||'').split('/')[1], 10);
+        if(!isNaN(n) && a===ano && n>max) max = n;
+      });
+      return max + 1;
+    }
     function setNumeroField(){
       const ano = new Date().getFullYear();
       const el = document.getElementById('e_numlic');
-      el.value = (contador ? contador.prox : 83) + '/' + ano;
+      el.value = proximoNumero() + '/' + ano;
       el.readOnly = true;
       el.style.background = 'var(--bg)';
       el.style.color = 'var(--text-mid)';
       el.style.fontWeight = '700';
     }
     function novoEvento(){
-      if(!contador){ return; }
-      contador.prox = (parseInt(contador.prox,10)||83) + 1;
-      BBM.save('dat_contador', [contador]);
       limparEvento();
       setNumeroField();
-      BBM.toast('Novo evento — Nº ' + contador.prox);
+      BBM.toast('Novo evento — Nº ' + proximoNumero());
     }
 
     function showTab(id, btn){
@@ -434,6 +442,7 @@
       emitidos.push({ id:BBM.generateId(), tipo, numero, identificacao, responsavel,
         emitidoPor: u?u.nome:'—', data:new Date().toLocaleString('pt-BR'), dados });
       BBM.save('dat_emitidos', emitidos);
+      setNumeroField();   // já avança para a próxima numeração automaticamente
       BBM.toast('Documento gerado e salvo no histórico.');
     }
 
@@ -451,20 +460,16 @@
       // re-preenche o formulário e regera
       if(d.tipo.indexOf('Baixo')>=0){ Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=v; else el.value=v; } }); gerarBaixoRisco(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
       else { Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el) el.value=v; }); if(d.tipo.indexOf('Licença')>=0) gerarLicenca(); else gerarRequerimento(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
+      setNumeroField();
     }
-    function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); }
+    function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); setNumeroField(); }
 
     document.getElementById('e_emissao').value = hoje();
     document.getElementById('e_dataIni').min = hoje();   // bloqueia data retroativa
     document.getElementById('e_dataFim').min = hoje();
     document.getElementById('e_numlic').placeholder = 'nº automático (ano /'+new Date().getFullYear()+')';
-    BBM.ready(['dat_emitidos','dat_contador'], ()=>{
+    BBM.ready(['dat_emitidos'], ()=>{
       emitidos = BBM.load('dat_emitidos');
-      const ano = new Date().getFullYear();
-      const c = BBM.load('dat_contador');
-      contador = c[0];
-      if(!contador || contador.ano !== ano){ contador = { id:'seq', ano, prox:83 }; BBM.save('dat_contador', [contador]); }
-      else if(contador.prox < 83){ contador.prox = 83; BBM.save('dat_contador', [contador]); }
       setNumeroField();
     });
   </script>
