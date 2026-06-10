@@ -337,7 +337,7 @@
     }
 
     // ---------- LICENÇA (Declaração Provisória) ----------
-    function gerarLicenca(){
+    function gerarLicenca(reimp){
       if(!val('e_estab')||!val('e_resp')){ BBM.toast('Preencha estabelecimento e responsável.','error'); return; }
       if(!validarEvento()) return;
       const local = [val('e_estab'), val('e_logr'), val('e_bairro'), val('e_mun')].filter(Boolean).join(', ');
@@ -358,11 +358,11 @@
         + `<div class="sign"><img src="${ASSIN}" class="assin" alt="Assinatura"/><div>Comandante do 15º BBM</div></div>`
         + rodape();
       abrirDoc(html, true);
-      salvar('Licença — Evento de Pequeno Porte', num, val('e_estab'), val('e_resp'), coletarEvento());
+      if(!reimp) salvar('Licença — Evento de Pequeno Porte', num, val('e_estab'), val('e_resp'), coletarEvento());
     }
 
     // ---------- REQUERIMENTO (idêntico ao modelo oficial) ----------
-    function gerarRequerimento(){
+    function gerarRequerimento(reimp){
       if(!val('e_resp')){ BBM.toast('Preencha o responsável.','error'); return; }
       if(!validarEvento()) return;
       const ini=val('e_dataIni'), fim=val('e_dataFim');
@@ -396,11 +396,11 @@
         + `<tr><td colspan="6" style="text-align:center;padding-top:34px">_________________________________________<br>RESPONSÁVEL</td></tr>`
         + `</table>`;
       abrirDoc(html, false);
-      salvar('Requerimento — Evento de Pequeno Porte', montaNumero(), val('e_estab'), val('e_resp'), coletarEvento());
+      if(!reimp) salvar('Requerimento — Evento de Pequeno Porte', montaNumero(), val('e_estab'), val('e_resp'), coletarEvento());
     }
 
     // ---------- BAIXO RISCO (Anexo B) ----------
-    function gerarBaixoRisco(){
+    function gerarBaixoRisco(reimp){
       if(!val('b_prop')){ BBM.toast('Preencha o proprietário.','error'); return; }
       const cel = (l,v)=>`<tr><td class="lbl">${l}</td><td>${v||''}</td></tr>`;
       const ck = (c,t)=>`<span class="chk">${c?'☑':'☐'} ${t}</span>`;
@@ -433,34 +433,65 @@
         + `<div class="sign"><div class="line"></div>Proprietário / Responsável pelo uso</div>`
         + rodape();
       abrirDoc(html, false);
-      salvar('Declaração de Baixo Risco', '—', val('b_logr'), val('b_prop'), coletarBaixo());
+      if(!reimp) salvar('Declaração de Baixo Risco', '—', val('b_logr'), val('b_prop'), coletarBaixo());
     }
 
     function coletarEvento(){ const o={}; ['e_estab','e_numlic','e_logr','e_num','e_bairro','e_compl','e_mun','e_cep','e_uf','e_resp','e_cpf','e_fone','e_dataIni','e_dataFim','e_publico','e_area','e_emissao'].forEach(k=>o[k]=val(k)); return o; }
     function coletarBaixo(){ const o={}; ['b_logr','b_num','b_cep','b_bairro','b_mun','b_compl','b_uf','b_prop','b_propdoc','b_resp','b_respcpf','b_email','b_fone','b_razao','b_cnpj','b_cnae','b_fantasia','b_class','b_estrut','b_cobert','b_vedac','b_area','b_lot','b_pav','b_liq','b_subsolo','b_glp'].forEach(k=>o[k]=val(k)); ['m_acab','m_ilum','m_saidas','m_sinal','m_gerenc','m_extint','m_brigada'].forEach(k=>o[k]=chk(k)); return o; }
 
+    // Um registro (processo) por numeração: Licença e Requerimento de mesmo nº ficam na mesma linha.
     function salvar(tipo, numero, identificacao, responsavel, dados){
       const u = BBM.currentUser();
-      emitidos.push({ id:BBM.generateId(), tipo, numero, identificacao, responsavel,
-        emitidoPor: u?u.nome:'—', data:new Date().toLocaleString('pt-BR'), dados });
+      const quem = u?u.nome:'—';
+      const agora = new Date().toLocaleString('pt-BR');
+      const kind = tipo.indexOf('Licença')>=0 ? 'licenca' : (tipo.indexOf('Requerimento')>=0 ? 'requerimento' : 'baixo');
+      if(kind==='baixo'){
+        // Baixo Risco não tem numeração: sempre uma linha própria
+        emitidos.push({ id:BBM.generateId(), numero:'—', identificacao, responsavel, emitidoPor:quem, data:agora, docs:{ baixo:{ tipo, dados, data:agora } } });
+      } else {
+        let proc = emitidos.find(e=> e.numero===numero && e.docs && (e.docs.licenca || e.docs.requerimento));
+        if(!proc){ proc = { id:BBM.generateId(), numero, identificacao, responsavel, emitidoPor:quem, data:agora, docs:{} }; emitidos.push(proc); }
+        proc.docs[kind] = { tipo, dados, data:agora };
+        proc.data = agora; proc.emitidoPor = quem;
+        if(identificacao) proc.identificacao = identificacao;
+        if(responsavel) proc.responsavel = responsavel;
+      }
       BBM.save('dat_emitidos', emitidos);
       BBM.toast('Documento gerado e salvo no histórico.');
     }
 
+    const PRINTER = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`;
+    function btnReimp(id, kind, sigla){
+      const titulo = kind==='licenca'?'Reimprimir Licença':(kind==='requerimento'?'Reimprimir Requerimento':'Reimprimir Decl. Baixo Risco');
+      return `<button class="action-btn" title="${titulo}" onclick="reabrir('${id}','${kind}')">${PRINTER}<span style="font-size:.6rem;font-weight:700;margin-left:1px">${sigla}</span></button>`;
+    }
     function renderHist(){
       const tb = document.getElementById('tabelaHist');
       if(!emitidos.length){ tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhum documento emitido.</p></div></td></tr>`; return; }
-      tb.innerHTML = [...emitidos].reverse().map(d=>`<tr>
-        <td>${d.data}</td><td>${d.tipo}</td><td><strong>${d.numero||'—'}</strong></td><td>${d.responsavel||'—'}</td><td>${d.emitidoPor||'—'}</td>
-        <td><button class="action-btn" title="Reabrir/Imprimir" onclick="reabrir('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
-        <button class="action-btn" title="Excluir" onclick="excluirDoc('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></td>
-      </tr>`).join('');
+      tb.innerHTML = [...emitidos].reverse().map(d=>{
+        const docs = d.docs || {};
+        const tipos = [];
+        if(docs.licenca) tipos.push('Licença');
+        if(docs.requerimento) tipos.push('Requerimento');
+        if(docs.baixo) tipos.push('Decl. Baixo Risco');
+        const reimp = [];
+        if(docs.licenca) reimp.push(btnReimp(d.id,'licenca','L'));
+        if(docs.requerimento) reimp.push(btnReimp(d.id,'requerimento','R'));
+        if(docs.baixo) reimp.push(btnReimp(d.id,'baixo','BR'));
+        return `<tr>
+          <td>${d.data}</td><td>${tipos.join(' + ')||'—'}</td><td><strong>${d.numero||'—'}</strong></td><td>${d.responsavel||'—'}</td><td>${d.emitidoPor||'—'}</td>
+          <td>${reimp.join('')}<button class="action-btn" title="Excluir" onclick="excluirDoc('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+        </tr>`;
+      }).join('');
     }
-    function reabrir(id){
-      const d = emitidos.find(x=>x.id===id); if(!d) return;
-      // re-preenche o formulário e regera
-      if(d.tipo.indexOf('Baixo')>=0){ Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=v; else el.value=v; } }); gerarBaixoRisco(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
-      else { Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el) el.value=v; }); if(d.tipo.indexOf('Licença')>=0) gerarLicenca(); else gerarRequerimento(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
+    function reabrir(id, kind){
+      const d = emitidos.find(x=>x.id===id); if(!d || !d.docs) return;
+      const doc = d.docs[kind]; if(!doc) return;
+      const dados = doc.dados || {};
+      Object.entries(dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=v; else el.value=v; } });
+      if(kind==='licenca') gerarLicenca(true);
+      else if(kind==='requerimento') gerarRequerimento(true);
+      else gerarBaixoRisco(true);
     }
     function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); }
 
@@ -470,6 +501,16 @@
     document.getElementById('e_numlic').placeholder = 'nº automático (ano /'+new Date().getFullYear()+')';
     BBM.ready(['dat_emitidos'], ()=>{
       emitidos = BBM.load('dat_emitidos');
+      // migra registros antigos (sem docs) para o novo formato
+      let mig = false;
+      emitidos.forEach(d=>{
+        if(d.docs) return;
+        mig = true;
+        const kind = (d.tipo||'').indexOf('Licença')>=0 ? 'licenca' : ((d.tipo||'').indexOf('Requerimento')>=0 ? 'requerimento' : 'baixo');
+        d.docs = { [kind]:{ tipo:d.tipo, dados:d.dados, data:d.data } };
+        delete d.tipo; delete d.dados;
+      });
+      if(mig) BBM.save('dat_emitidos', emitidos);
       numeroAtual = proximoNumero();   // fixa a numeração da sessão a partir do histórico
       setNumeroField();
     });
