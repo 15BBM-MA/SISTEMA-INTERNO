@@ -257,6 +257,7 @@
   <script src="../../assets/js/main.js"></script>
   <script>
     let emitidos = [];
+    let numeroAtual = 83;  // numeração da sessão — só muda ao atualizar a página ou clicar em "Novo evento"
     const BASE_NUM = 83;   // primeira numeração do ano
 
     function limparEvento(){
@@ -276,16 +277,17 @@
     function setNumeroField(){
       const ano = new Date().getFullYear();
       const el = document.getElementById('e_numlic');
-      el.value = proximoNumero() + '/' + ano;
+      el.value = numeroAtual + '/' + ano;
       el.readOnly = true;
       el.style.background = 'var(--bg)';
       el.style.color = 'var(--text-mid)';
       el.style.fontWeight = '700';
     }
     function novoEvento(){
+      numeroAtual = Math.max(proximoNumero(), numeroAtual + 1);
       limparEvento();
       setNumeroField();
-      BBM.toast('Novo evento — Nº ' + proximoNumero());
+      BBM.toast('Novo evento — Nº ' + numeroAtual);
     }
 
     function showTab(id, btn){
@@ -442,7 +444,6 @@
       emitidos.push({ id:BBM.generateId(), tipo, numero, identificacao, responsavel,
         emitidoPor: u?u.nome:'—', data:new Date().toLocaleString('pt-BR'), dados });
       BBM.save('dat_emitidos', emitidos);
-      setNumeroField();   // já avança para a próxima numeração automaticamente
       BBM.toast('Documento gerado e salvo no histórico.');
     }
 
@@ -460,9 +461,8 @@
       // re-preenche o formulário e regera
       if(d.tipo.indexOf('Baixo')>=0){ Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=v; else el.value=v; } }); gerarBaixoRisco(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
       else { Object.entries(d.dados).forEach(([k,v])=>{ const el=document.getElementById(k); if(el) el.value=v; }); if(d.tipo.indexOf('Licença')>=0) gerarLicenca(); else gerarRequerimento(); emitidos.pop(); BBM.save('dat_emitidos',emitidos); }
-      setNumeroField();
     }
-    function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); setNumeroField(); }
+    function excluirDoc(id){ if(!confirm('Excluir este registro?'))return; emitidos=emitidos.filter(x=>x.id!==id); BBM.save('dat_emitidos',emitidos); renderHist(); }
 
     document.getElementById('e_emissao').value = hoje();
     document.getElementById('e_dataIni').min = hoje();   // bloqueia data retroativa
@@ -470,6 +470,7 @@
     document.getElementById('e_numlic').placeholder = 'nº automático (ano /'+new Date().getFullYear()+')';
     BBM.ready(['dat_emitidos'], ()=>{
       emitidos = BBM.load('dat_emitidos');
+      numeroAtual = proximoNumero();   // fixa a numeração da sessão a partir do histórico
       setNumeroField();
     });
   </script>
