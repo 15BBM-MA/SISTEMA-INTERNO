@@ -97,9 +97,31 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input id="searchAluno" type="text" placeholder="Pesquisar aluno…"/>
             </div>
-            <select class="form-control" id="filterTurmaAluno" style="width:auto;padding:7px 12px">
+            <select class="form-control" id="filterTurmaAluno" style="width:auto;padding:7px 12px" onchange="aplicarFiltros()">
               <option value="">Todas as turmas</option>
             </select>
+            <select class="form-control" id="filterSituacao" style="width:auto;padding:7px 12px" onchange="aplicarFiltros()">
+              <option value="">Todas as situações</option>
+              <option value="Ativo">Ativo</option>
+              <option value="Concluinte">Concluinte</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+            <select class="form-control" id="filterSaude" style="width:auto;padding:7px 12px" onchange="aplicarFiltros()">
+              <option value="">Saúde: todos</option>
+              <option value="alergia">Somente com alergia</option>
+              <option value="saude">Somente com obs. de saúde</option>
+            </select>
+            <select class="form-control" id="ordemAluno" style="width:auto;padding:7px 12px" onchange="aplicarFiltros()">
+              <option value="nome">Ordenar: Nome (A→Z)</option>
+              <option value="nome_desc">Nome (Z→A)</option>
+              <option value="idade">Idade (menor→maior)</option>
+              <option value="idade_desc">Idade (maior→menor)</option>
+              <option value="escola">Escola (A→Z)</option>
+            </select>
+            <button class="btn btn-ghost no-print" onclick="imprimirAlunos()" style="margin-left:auto">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir lista
+            </button>
           </div>
           <table>
             <thead>
@@ -332,7 +354,7 @@
       BBM.save('mirim_alunos', alunos);
       BBM.closeModal('modalAluno');
       BBM.toast('Aluno salvo.');
-      renderAlunos();
+      aplicarFiltros();
     }
 
     function editarAluno(id) {
@@ -359,7 +381,7 @@
       alunos = alunos.filter(a=>a.id!==id);
       BBM.save('mirim_alunos', alunos);
       BBM.toast('Removido.','error');
-      renderAlunos();
+      aplicarFiltros();
     }
 
     function salvarTurma() {
@@ -402,11 +424,63 @@
       renderTurmas();
     }
 
-    document.getElementById('searchAluno').addEventListener('input', () => {
-      const q = document.getElementById('searchAluno').value.toLowerCase();
+    let alunosVisiveis = [];
+    function aplicarFiltros() {
+      const q = (document.getElementById('searchAluno').value||'').toLowerCase();
       const t = document.getElementById('filterTurmaAluno').value;
-      renderAlunos(alunos.filter(a=>a.nome.toLowerCase().includes(q)&&(!t||a.turmaId===t)));
-    });
+      const sit = document.getElementById('filterSituacao').value;
+      const saude = document.getElementById('filterSaude').value;
+      const ordem = document.getElementById('ordemAluno').value;
+      let lista = alunos.filter(a => {
+        if (q && !a.nome.toLowerCase().includes(q)) return false;
+        if (t && a.turmaId !== t) return false;
+        if (sit && a.situacao !== sit) return false;
+        if (saude === 'alergia' && !temAlergia(a.alergias)) return false;
+        if (saude === 'saude' && !a.saude) return false;
+        return true;
+      });
+      lista.sort((a,b) => {
+        if (ordem === 'nome') return a.nome.localeCompare(b.nome,'pt');
+        if (ordem === 'nome_desc') return b.nome.localeCompare(a.nome,'pt');
+        if (ordem === 'idade') return (calcIdade(a.nasc)||0) - (calcIdade(b.nasc)||0);
+        if (ordem === 'idade_desc') return (calcIdade(b.nasc)||0) - (calcIdade(a.nasc)||0);
+        if (ordem === 'escola') return (a.escola||'').localeCompare(b.escola||'','pt');
+        return 0;
+      });
+      alunosVisiveis = lista;
+      renderAlunos(lista);
+    }
+    document.getElementById('searchAluno').addEventListener('input', aplicarFiltros);
+
+    function imprimirAlunos() {
+      const lista = alunosVisiveis.length ? alunosVisiveis : alunos;
+      const linhas = lista.map((a,i) => `<tr>
+        <td>${i+1}</td><td>${a.nome}</td><td style="text-align:center">${calcIdade(a.nasc)||'—'}</td>
+        <td>${a.escola||'—'}</td><td>${a.mae||'—'}</td><td>${a.pai||'—'}</td>
+        <td>${a.tel||'—'}</td>
+        <td>${temAlergia(a.alergias)?('⚠ '+a.alergias):''}${a.saude?(' ⚕ '+a.saude):''}${(!temAlergia(a.alergias)&&!a.saude)?'—':''}</td>
+        <td>${a.situacao||'—'}</td></tr>`).join('');
+      const w = window.open('', '_blank');
+      w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Lista de Alunos — Bombeiro Mirim</title>
+        <style>
+          @page { size: A4 landscape; margin: 12mm; }
+          body { font-family: Arial, sans-serif; color:#1a1a1a; font-size:11px; }
+          h1 { font-size:15px; text-align:center; margin:0 0 2px; }
+          .sub { text-align:center; font-size:11px; color:#555; margin:0 0 12px; }
+          table { width:100%; border-collapse:collapse; }
+          th,td { border:1px solid #999; padding:4px 6px; text-align:left; vertical-align:top; }
+          th { background:#C8102E; color:#fff; font-size:10px; }
+          tr:nth-child(even) td { background:#f6f6f6; }
+        </style></head><body>
+        <h1>15º Batalhão de Bombeiros Militar — Projeto Bombeiro Mirim</h1>
+        <p class="sub">Lista de Alunos &nbsp;•&nbsp; ${lista.length} aluno(s) &nbsp;•&nbsp; Emitido em ${new Date().toLocaleDateString('pt-BR')}</p>
+        <table><thead><tr><th>#</th><th>Nome</th><th>Idade</th><th>Escola</th><th>Mãe</th><th>Pai</th><th>Contato</th><th>Saúde / Alergias</th><th>Situação</th></tr></thead>
+        <tbody>${linhas||'<tr><td colspan="9">Nenhum aluno.</td></tr>'}</tbody></table>
+        </body></html>`);
+      w.document.close();
+      w.focus();
+      setTimeout(()=>w.print(), 300);
+    }
 
     // Carrega os dados da nuvem antes de renderizar
     BBM.ready(['mirim_alunos','mirim_turmas'], () => {
@@ -424,7 +498,7 @@
         BBM.toast('Turma de Chapadinha importada para a nuvem.');
       }
       populaSelects();
-      renderAlunos();
+      aplicarFiltros();
       atualizarCards();
     });
   </script>
