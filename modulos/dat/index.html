@@ -171,6 +171,21 @@
       <!-- ===================== HISTÓRICO ===================== -->
       <div id="tabHist" style="display:none">
         <div class="section-label">Documentos Emitidos</div>
+        <div class="hist-controls">
+          <input id="histBusca" type="search" placeholder="🔎 Buscar por nº, responsável, tipo…" oninput="renderHist()"/>
+          <select id="histOrdem" onchange="renderHist()">
+            <option value="num_asc">Nº crescente</option>
+            <option value="num_desc">Nº decrescente</option>
+            <option value="data_desc">Mais recentes</option>
+            <option value="data_asc">Mais antigos</option>
+          </select>
+          <select id="histTipo" onchange="renderHist()">
+            <option value="">Todos os tipos</option>
+            <option value="licenca">Licença</option>
+            <option value="requerimento">Requerimento</option>
+            <option value="baixo">Decl. Baixo Risco</option>
+          </select>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Data</th><th>Tipo de Documento</th><th>Nº</th><th>Responsável pelo Evento</th><th>Responsável pela Emissão</th><th>Ações</th></tr></thead>
@@ -242,7 +257,11 @@
     .doc table.req .band-vermelho { color:#C8102E; }
 
     @media print {
-      @page { size: A4; margin: 0; }                    /* margem 0 -> remove URL/numero do navegador */
+      .hist-controls { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px; }
+    .hist-controls input, .hist-controls select { padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem;background:#fff;color:var(--text); }
+    .hist-controls input { flex:1;min-width:200px; }
+    @media print { .hist-controls { display:none; } }
+    @page { size: A4; margin: 0; }                    /* margem 0 -> remove URL/numero do navegador */
       * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
       /* remove de fato o restante do app (não só esconde) -> sem páginas em branco */
       body > *:not(#docOverlay) { display:none !important; }
@@ -465,10 +484,31 @@
       const titulo = kind==='licenca'?'Reimprimir Licença':(kind==='requerimento'?'Reimprimir Requerimento':'Reimprimir Decl. Baixo Risco');
       return `<button class="action-btn" title="${titulo}" onclick="reabrir('${id}','${kind}')">${PRINTER}<span style="font-size:.6rem;font-weight:700;margin-left:1px">${sigla}</span></button>`;
     }
+    const numVal = d => { const n = parseInt(String(d.numero||'').split('/')[0],10); return isNaN(n)? -1 : n; };
+    const dataVal = d => { const p=String(d.data||'').split(/[\s/:]+/); return p.length>=6 ? new Date(p[2],p[1]-1,p[0],p[3],p[4],p[5]).getTime() : 0; };
     function renderHist(){
       const tb = document.getElementById('tabelaHist');
       if(!emitidos.length){ tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhum documento emitido.</p></div></td></tr>`; return; }
-      tb.innerHTML = [...emitidos].reverse().map(d=>{
+      const busca = (document.getElementById('histBusca')?.value||'').toLowerCase().trim();
+      const ordem = document.getElementById('histOrdem')?.value || 'num_asc';
+      const fTipo = document.getElementById('histTipo')?.value || '';
+      let lista = emitidos.filter(d=>{
+        const docs = d.docs||{};
+        if(fTipo && !docs[fTipo]) return false;
+        if(busca){
+          const blob = [d.numero,d.responsavel,d.emitidoPor,d.identificacao,docs.licenca?'licença':'',docs.requerimento?'requerimento':'',docs.baixo?'baixo risco declaração':''].join(' ').toLowerCase();
+          if(!blob.includes(busca)) return false;
+        }
+        return true;
+      });
+      lista.sort((a,b)=>{
+        if(ordem==='num_asc') return numVal(a)-numVal(b);
+        if(ordem==='num_desc') return numVal(b)-numVal(a);
+        if(ordem==='data_asc') return dataVal(a)-dataVal(b);
+        return dataVal(b)-dataVal(a);
+      });
+      if(!lista.length){ tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhum documento encontrado.</p></div></td></tr>`; return; }
+      tb.innerHTML = lista.map(d=>{
         const docs = d.docs || {};
         const tipos = [];
         if(docs.licenca) tipos.push('Licença');
