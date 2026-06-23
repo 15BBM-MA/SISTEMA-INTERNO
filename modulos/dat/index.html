@@ -343,10 +343,10 @@
       </div>`;
     }
     function rodape(){
-      return `<div style="margin-top:26px;padding-top:8px;border-top:1.2px solid #000;text-align:center;line-height:1.35">
-        <p style="margin:0;font-size:10pt;font-weight:bold">15º Batalhão de Bombeiros Militar — Chapadinha/MA</p>
-        <p style="margin:2px 0 0;font-size:9pt">RODOVIA BR 222, KM 0, S/Nº, BOA VISTA, CHAPADINHA-MA, CEP: 65.500-000</p>
-        <p style="margin:1px 0 0;font-size:9pt">FONE: (98) 98115-1126 / (98) 99193-0106&nbsp;&nbsp;•&nbsp;&nbsp;E-mail: 5cicbma@gmail.com</p>
+      return `<div style="margin-top:26px;padding-top:8px;border-top:1.2px solid #000;line-height:1.35">
+        <p style="margin:0;font-size:10pt;font-weight:bold;text-align:center">15º Batalhão de Bombeiros Militar — Chapadinha/MA</p>
+        <p style="margin:2px 0 0;font-size:9pt;text-align:center">RODOVIA BR 222, KM 0, S/Nº, BOA VISTA, CHAPADINHA-MA, CEP: 65.500-000</p>
+        <p style="margin:1px 0 0;font-size:9pt;text-align:center">FONE: (98) 98115-1126 / (98) 99193-0106&nbsp;&nbsp;•&nbsp;&nbsp;E-mail: <span style="color:#0563C1;text-decoration:underline">5cicbma@gmail.com</span></p>
       </div>`;
     }
 
@@ -378,7 +378,7 @@
         + `<li>O local poderá ser vistoriado no dia do evento pelo Corpo de Bombeiros, e sendo constatada qualquer irregularidade nos dispositivos contra incêndio e pânico, o local poderá ser interditado até a correção da irregularidade.</li></ol>`
         + `<p><i>Obs.: Esta Declaração de Aprovação Provisória terá validade desde que cumpridas todas as exigências do CBMMA em relação à Segurança Contra Incêndio e Pânico.</i></p>`
         + `<p style="text-align:center;margin-top:20px">Quartel do 15º BBM em Chapadinha-MA, ${extenso(val('e_emissao'))||extenso(new Date().toISOString().slice(0,10))}.</p>`
-        + `<div class="sign"><img src="${ASSIN}" class="assin" alt="Assinatura"/><div>Comandante do 15º BBM</div></div>`
+        + `<div class="sign"><img src="${ASSIN}" class="assin" alt="Assinatura"/><div>Kleyton Tavares <span class="b">Martins</span> - MAJ QOCBM</div><div>Comandante do 15º BBM</div></div>`
         + rodape();
       abrirDoc(html, true);
       if(!reimp) salvar('Licença — Evento de Pequeno Porte', num, val('e_estab'), val('e_resp'), coletarEvento());
