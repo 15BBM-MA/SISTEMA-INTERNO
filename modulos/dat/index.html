@@ -267,9 +267,11 @@
       body > *:not(#docOverlay) { display:none !important; }
       .no-print { display:none !important; }
       #docOverlay { position:static !important;display:block !important;background:#fff;overflow:visible; }
-      #docView { margin:10mm !important;max-width:none;box-shadow:none;padding:14px 18px;overflow:hidden; }
+      #docView { margin:7mm !important;max-width:none;box-shadow:none;padding:10px 16px;overflow:hidden; }
       #docView.com-moldura { border:2.5px solid #C8102E; }
       .doc { font-size:11pt;line-height:1.4; }          /* tamanho natural, sem distorção */
+      .doc .sign { margin-top:18px !important; }        /* reduz espaço antes da assinatura na impressão */
+      .doc .p1 { margin-top:14px !important; }          /* reduz margem do 1º parágrafo na impressão */
     }
   </style>
 
