@@ -418,7 +418,7 @@
       // Tenta primeiro nos registros do Supabase
       const doOntem = escalaRegistros.filter(r => r.data === key && !r.joe);
       if (doOntem.length) {
-        const nomes = doOntem.map(r => r.militar).filter(Boolean);
+        const nomes = [...new Set(doOntem.map(r => r.militar).filter(Boolean))];
         document.getElementById('clGuarnicao').value = nomes.join(', ');
         document.getElementById('clGuarnicaoInfo').textContent = `Escala de ${formatBR(key)} (${nomes.length} militares)`;
         return;
@@ -497,8 +497,6 @@
       mudarTab(tab||'paneInfo', document.querySelector(`.dtab:nth-child(${tabIdx})`));
       document.getElementById('detalheOverlay').classList.add('open');
       document.getElementById('detalheOverlay').scrollTop = 0;
-      // auto-preenche guarnição ao abrir o checklist
-      if (tab === 'paneChecklist') setTimeout(autoGuarnicao, 200);
     }
 
     function fecharDetalhe() {
