@@ -136,6 +136,38 @@
     </div>
   </div>
 
+  <!-- MODAL REDEFINIR SENHA -->
+  <div class="modal-overlay" id="modalResetSenha">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header">
+        <span class="modal-title">Redefinir Senha</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalResetSenha')">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:.86rem;color:#374151;margin-bottom:14px">
+          Redefinindo senha de: <strong id="resetNome"></strong><br/>
+          <span style="font-size:.78rem;color:#6b7280">O usuário será obrigado a criar uma nova senha no próximo login.</span>
+        </p>
+        <input type="hidden" id="resetUserId"/>
+        <div class="form-group">
+          <label class="form-label">Nova senha temporária</label>
+          <input class="form-control" id="resetSenha1" type="password" placeholder="mínimo 4 caracteres"
+            onkeydown="if(event.key==='Enter')document.getElementById('resetSenha2').focus()"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Confirmar nova senha</label>
+          <input class="form-control" id="resetSenha2" type="password" placeholder="repita a senha"
+            onkeydown="if(event.key==='Enter')executarReset()"/>
+        </div>
+        <div id="resetErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalResetSenha')">Cancelar</button>
+        <button class="btn btn-primary" id="btnReset" onclick="executarReset()">Redefinir Senha</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL PERMISSÕES -->
   <div class="modal-overlay" id="modalPerm">
     <div class="modal" style="max-width:520px">
@@ -238,10 +270,40 @@
     }
 
     function redefinir(login){
-      alert('Para redefinir a senha de "'+login+'":\n\n'
-        + '• O próprio usuário pode usar "Trocar minha senha" após entrar; ou\n'
-        + '• Você redefine no painel do Supabase: Authentication → Users → '+login+'@15bbm.app → "Reset password".\n\n'
-        + 'Em breve a redefinição direta por aqui será habilitada.');
+      const u = usuarios.find(x => x.login === login);
+      if (!u) return;
+      document.getElementById('resetUserId').value = u.id;
+      document.getElementById('resetNome').textContent = u.nome;
+      document.getElementById('resetSenha1').value = '';
+      document.getElementById('resetSenha2').value = '';
+      document.getElementById('resetErro').style.display = 'none';
+      BBM.openModal('modalResetSenha');
+      setTimeout(() => document.getElementById('resetSenha1').focus(), 200);
+    }
+
+    async function executarReset(){
+      const id    = document.getElementById('resetUserId').value;
+      const s1    = document.getElementById('resetSenha1').value;
+      const s2    = document.getElementById('resetSenha2').value;
+      const erro  = document.getElementById('resetErro');
+      const btn   = document.getElementById('btnReset');
+      erro.style.display = 'none';
+      if (s1.length < 4) { erro.textContent = 'A senha deve ter pelo menos 4 caracteres.'; erro.style.display='block'; return; }
+      if (s1 !== s2)     { erro.textContent = 'As senhas não coincidem.'; erro.style.display='block'; return; }
+      btn.textContent = 'Redefinindo…'; btn.disabled = true;
+      try {
+        const sb = await BBM.sb();
+        const { error } = await sb.rpc('admin_reset_senha', { target_id: id, nova_senha: s1 });
+        if (error) throw error;
+        BBM.closeModal('modalResetSenha');
+        BBM.toast('Senha redefinida. O usuário deverá criar uma nova senha no próximo login.');
+        carregar();
+      } catch(e) {
+        erro.textContent = 'Erro: ' + (e.message || 'falha ao redefinir.');
+        erro.style.display = 'block';
+      } finally {
+        btn.textContent = 'Redefinir Senha'; btn.disabled = false;
+      }
     }
 
     // ---- Novo usuário (requer função admin no servidor — próxima fase) ----
