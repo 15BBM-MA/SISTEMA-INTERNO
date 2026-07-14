@@ -180,6 +180,7 @@ window.BBM = {
     if (key && key.indexOf('dat_') === 0) return { modulo: 'dat', colecao: key.slice(4) };
     if (key && key.indexOf('escala_') === 0) return { modulo: 'escala', colecao: key.slice(7) };
     if (key && key.indexOf('estrutura_') === 0) return { modulo: 'estrutura', colecao: key.slice(10) };
+    if (key && key.indexOf('viaturas_') === 0) return { modulo: 'viaturas', colecao: key.slice(9) };
     return null;
   },
 

@@ -23,6 +23,13 @@
     .vcard-actions { padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; }
     .vcard-actions .btn { flex:1; justify-content:center; font-size:.8rem; padding:7px 0; }
 
+    /* ── Notificação ── */
+    .notif-banner { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 18px; margin-bottom:22px; display:flex; align-items:center; gap:14px; }
+    .notif-count { background:#2563eb; color:#fff; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.95rem; flex-shrink:0; }
+    .notif-body { flex:1; }
+    .notif-body strong { color:#1d4ed8; font-size:.92rem; }
+    .notif-body p { margin:2px 0 0; font-size:.8rem; color:#374151; }
+
     /* ── Overlay ── */
     #detalheOverlay { display:none; position:fixed; inset:0; background:#525659; z-index:300; overflow:auto; }
     #detalheOverlay.open { display:block; }
@@ -60,6 +67,21 @@
     .obs-mini:focus { outline:none; border-color:#C8102E; }
     .cl-section-header td { background:#C8102E!important; color:#fff!important; font-weight:700; font-size:.76rem; text-transform:uppercase; letter-spacing:.06em; padding:4px 10px!important; }
 
+    /* ── Status do checklist ── */
+    .cl-status-badge { padding:2px 9px; border-radius:12px; font-size:.7rem; font-weight:700; white-space:nowrap; }
+    .cl-status-badge.rascunho { background:#fef3c7; color:#92400e; }
+    .cl-status-badge.aguardando { background:#dbeafe; color:#1d4ed8; }
+    .cl-status-badge.finalizado { background:#dcfce7; color:#15803d; }
+
+    /* ── Rascunho banner ── */
+    .rascunho-banner { background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:12px; font-size:.84rem; }
+    .rascunho-banner strong { color:#92400e; }
+
+    /* ── Checklist bloqueado ── */
+    .cl-locked { pointer-events:none; opacity:.65; user-select:none; }
+    .cl-locked-banner { background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:.85rem; color:#15803d; font-weight:600; display:flex; align-items:center; gap:10px; }
+    .cl-locked-banner.aguardando { background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; }
+
     /* ── Fotos de vistoria ── */
     .vistoria-fotos { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
     .vistoria-foto-slot { border:2px dashed #d1d5db; border-radius:8px; overflow:hidden; height:140px; position:relative; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; color:#9ca3af; font-size:.76rem; text-align:center; transition:border-color .2s; }
@@ -68,17 +90,16 @@
     .vistoria-foto-slot .foto-label { position:relative; z-index:1; background:rgba(0,0,0,.45); color:#fff; padding:3px 10px; border-radius:12px; font-size:.72rem; font-weight:600; }
     .vistoria-foto-slot svg { width:28px; height:28px; }
 
-    /* ── Motorista select ── */
-    .motorista-row { display:flex; gap:10px; align-items:flex-end; margin-bottom:16px; }
-    .motorista-row .form-group { margin:0; flex:1; }
+    /* ── Motorista ── */
     .assinado-badge { display:inline-flex; align-items:center; gap:5px; background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:20px; font-size:.78rem; font-weight:700; }
+    .assinado-badge-blue { display:inline-flex; align-items:center; gap:5px; background:#dbeafe; color:#1d4ed8; padding:4px 10px; border-radius:20px; font-size:.78rem; font-weight:700; margin-top:6px; }
 
     /* ── Histórico ── */
     .hist-item { border:1px solid #e5e7eb; border-radius:8px; margin-bottom:10px; overflow:hidden; }
-    .hist-item-head { display:flex; align-items:center; padding:10px 14px; cursor:pointer; gap:12px; background:#f9fafb; }
+    .hist-item-head { display:flex; align-items:center; padding:10px 14px; cursor:pointer; gap:8px; background:#f9fafb; flex-wrap:wrap; }
     .hist-item-head:hover { background:#f3f4f6; }
     .hist-item-date { font-weight:700; font-size:.88rem; color:var(--text); }
-    .hist-item-guard { font-size:.8rem; color:var(--text-light); flex:1; }
+    .hist-item-guard { font-size:.8rem; color:var(--text-light); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .hist-badge-ok  { background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:12px; font-size:.72rem; font-weight:700; }
     .hist-badge-att { background:#fff3cd; color:#92400e; padding:2px 8px; border-radius:12px; font-size:.72rem; font-weight:700; }
     .hist-item-body { display:none; padding:14px; border-top:1px solid #e5e7eb; }
@@ -88,9 +109,8 @@
     .hist-cl-table td { padding:4px 8px; border:1px solid #e5e7eb; }
     .hist-fotos { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
     .hist-fotos img { width:100%; height:80px; object-fit:cover; border-radius:4px; border:1px solid #e5e7eb; }
-
-    /* ── Modal senha ── */
-    #modalSenha .modal { max-width:400px; }
+    .hist-acoes { display:flex; gap:6px; align-items:center; margin-left:4px; }
+    .hist-acoes .btn { font-size:.72rem; padding:3px 10px; }
 
     /* ── Print ── */
     #printOverlay { display:none; position:fixed; inset:0; z-index:500; background:#fff; overflow:auto; padding:20mm 15mm; }
@@ -155,6 +175,16 @@
     </header>
 
     <div class="content">
+      <!-- Banner de notificação para o Chefe de Socorro -->
+      <div id="notifBanner" class="notif-banner" style="display:none">
+        <div class="notif-count" id="notifCount">0</div>
+        <div class="notif-body">
+          <strong>Aguardando sua assinatura</strong>
+          <p id="notifText"></p>
+        </div>
+        <button class="btn btn-primary" style="padding:7px 16px;font-size:.82rem;white-space:nowrap" onclick="irParaHistoricoNotif()">Ver checklists →</button>
+      </div>
+
       <div class="mod-header">
         <div class="mod-title-row">
           <div class="mod-icon" style="background:#fce4e8;color:var(--red)">
@@ -200,7 +230,6 @@
           <img id="fotoPreview" style="display:none"/>
         </div>
         <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="carregarFoto(event)"/>
-
         <div class="info-grid2">
           <div class="form-group"><label class="form-label">Denominação</label><input class="form-control" id="iDenominacao" readonly style="background:#f9fafb"/></div>
           <div class="form-group"><label class="form-label">Tipo</label><input class="form-control" id="iTipo" readonly style="background:#f9fafb"/></div>
@@ -224,13 +253,36 @@
 
       <!-- ── TAB CHECKLIST ── -->
       <div class="dtab-pane" id="paneChecklist">
-        <!-- Cabeçalho -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
-          <div class="form-group" style="margin:0"><label class="form-label">Data</label><input class="form-control" id="clData" type="date"/></div>
-          <div class="form-group" style="margin:0"><label class="form-label">KM no Momento</label><input class="form-control" id="clKm" type="number" placeholder="0"/></div>
-          <div class="form-group" style="margin:0;display:none" id="chefeGrp"><label class="form-label">Chefe de Socorro</label><input class="form-control" id="clChefe" placeholder="Nome do Chefe"/></div>
+
+        <!-- Banner: rascunho existente -->
+        <div id="clRascunhoBanner" class="rascunho-banner" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <div style="flex:1"><strong>Rascunho salvo</strong> — você tem um checklist em andamento para hoje.</div>
+          <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="continuarRascunho()">Continuar</button>
+          <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#dc2626;border-color:#fca5a5" onclick="descartarRascunho()">Descartar</button>
         </div>
 
+        <!-- Banner: checklist bloqueado -->
+        <div id="clLockedBanner" style="display:none" class="cl-locked-banner aguardando">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="clLockedMsg">Checklist bloqueado.</span>
+        </div>
+
+        <!-- Chefe de Socorro -->
+        <div class="form-group" style="margin-bottom:14px" id="clChefeWrap">
+          <label class="form-label">Chefe de Socorro <span style="color:#dc2626">*</span></label>
+          <select class="form-control" id="clChefeSocorro">
+            <option value="">— Selecione o Chefe de Socorro —</option>
+          </select>
+        </div>
+
+        <!-- Data e KM -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="form-group" style="margin:0"><label class="form-label">Data</label><input class="form-control" id="clData" type="date"/></div>
+          <div class="form-group" style="margin:0"><label class="form-label">KM no Momento</label><input class="form-control" id="clKm" type="number" placeholder="0"/></div>
+        </div>
+
+        <!-- Guarnição -->
         <div class="form-group" style="margin-bottom:14px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <label class="form-label" style="margin:0">Guarnição</label>
@@ -289,38 +341,39 @@
             <span class="foto-label" id="vlabel_traseira" style="display:none">Alterar</span>
           </div>
         </div>
-        <!-- input file oculto para fotos de vistoria -->
         <input type="file" id="vistoriaFotoInput" accept="image/*" style="display:none" onchange="carregarFotoVistoria(event)"/>
 
         <!-- Motorista -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-          <div class="form-group" style="margin:0">
-            <label class="form-label">Motorista Responsável</label>
-            <select class="form-control" id="clMotorista">
-              <option value="">— Selecione o motorista —</option>
-              <option value="2º Sgt Ribeiro">2º Sgt Ribeiro</option>
-              <option value="3º Sgt Eliziane">3º Sgt Eliziane</option>
-              <option value="3º Sgt Fernando">3º Sgt Fernando</option>
-              <option value="3º Sgt Lisboa Santos">3º Sgt Lisboa Santos</option>
-              <option value="3º Sgt Igor">3º Sgt Igor</option>
-              <option value="BC Duarte">BC Duarte</option>
-              <option value="BC Eloi Neto">BC Eloi Neto</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label class="form-label">Assinatura CMT de Guarnição</label>
-            <input class="form-control" id="clAssinaturaCMT" placeholder="Nome / Posto"/>
-          </div>
+        <div class="form-group" style="margin-bottom:8px">
+          <label class="form-label">Motorista Responsável</label>
+          <select class="form-control" id="clMotorista">
+            <option value="">— Selecione o motorista —</option>
+            <option value="2º Sgt Ribeiro">2º Sgt Ribeiro</option>
+            <option value="3º Sgt Eliziane">3º Sgt Eliziane</option>
+            <option value="3º Sgt Fernando">3º Sgt Fernando</option>
+            <option value="3º Sgt Lisboa Santos">3º Sgt Lisboa Santos</option>
+            <option value="3º Sgt Igor">3º Sgt Igor</option>
+            <option value="BC Duarte">BC Duarte</option>
+            <option value="BC Eloi Neto">BC Eloi Neto</option>
+          </select>
         </div>
-        <div id="assinadoBadge" style="display:none;margin-bottom:12px">
+        <div id="assinadoMotBadge" style="display:none;margin-bottom:12px">
           <span class="assinado-badge">✓ Assinado digitalmente pelo motorista</span>
         </div>
+        <div id="assinadoOfBadge" style="display:none;margin-bottom:12px">
+          <span class="assinado-badge-blue">✓ Assinado pelo Chefe de Socorro</span>
+        </div>
 
-        <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button class="btn btn-ghost" onclick="limparChecklist()">Limpar</button>
-          <button class="btn btn-primary" onclick="pedirSenhaESalvar()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Salvar e Assinar
+        <!-- Botões -->
+        <div id="clBotoes" style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="btnLimpar" onclick="limparChecklist()">Limpar</button>
+          <button class="btn btn-ghost" id="btnRascunho" onclick="salvarRascunho()" style="border-color:#f59e0b;color:#92400e">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Salvar Rascunho
+          </button>
+          <button class="btn btn-primary" id="btnAssinar" onclick="pedirSenhaESalvar()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            Assinar e Enviar ao Chefe
           </button>
         </div>
       </div>
@@ -333,28 +386,54 @@
     </div>
   </div>
 
-  <!-- ══════════════ MODAL SENHA ══════════════ -->
+  <!-- ══════════════ MODAL — Assinatura do Motorista ══════════════ -->
   <div class="modal-overlay" id="modalSenha">
     <div class="modal" style="max-width:380px">
       <div class="modal-header">
-        <span class="modal-title">Confirmar Assinatura</span>
+        <span class="modal-title">Confirmar Assinatura — Motorista</span>
         <button class="modal-close" onclick="BBM.closeModal('modalSenha')">×</button>
       </div>
       <div class="modal-body">
         <p style="font-size:.88rem;color:#374151;margin-bottom:14px">
-          Motorista selecionado: <strong id="modalMotoristaName"></strong><br/>
-          Digite a senha de acesso ao sistema para assinar digitalmente este checklist.
+          Motorista: <strong id="modalMotoristaName"></strong><br/>
+          <span style="font-size:.8rem;color:#6b7280">Ao assinar, o checklist será enviado ao Chefe de Socorro para revisão e não poderá mais ser editado.</span>
         </p>
         <div class="form-group" style="margin:0">
-          <label class="form-label">Senha</label>
+          <label class="form-label">Senha de acesso</label>
           <input class="form-control" id="modalSenhaInput" type="password" placeholder="••••••••"
             onkeydown="if(event.key==='Enter')confirmarAssinatura()"/>
         </div>
-        <div id="senhaErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none">Senha incorreta. Tente novamente.</div>
+        <div id="senhaErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none">Senha incorreta ou motorista não encontrado.</div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalSenha')">Cancelar</button>
-        <button class="btn btn-primary" id="btnConfirmarAssinatura" onclick="confirmarAssinatura()">Assinar</button>
+        <button class="btn btn-primary" id="btnConfirmarAssinatura" onclick="confirmarAssinatura()">Assinar e Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ MODAL — Assinatura do Oficial ══════════════ -->
+  <div class="modal-overlay" id="modalAssinaturaOficial">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <span class="modal-title">Confirmar Assinatura — Chefe de Socorro</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAssinaturaOficial')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="modalOficialInfo" style="font-size:.84rem;color:#374151;background:#f9fafb;border-radius:6px;padding:10px 12px;margin-bottom:14px;line-height:1.6"></div>
+        <p style="font-size:.84rem;color:#374151;margin-bottom:14px">
+          Ao assinar, o checklist ficará <strong>finalizado e bloqueado</strong> permanentemente.
+        </p>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Sua senha de acesso</label>
+          <input class="form-control" id="modalSenhaOficialInput" type="password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter')confirmarAssinaturaOficial()"/>
+        </div>
+        <div id="senhaOficialErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none">Senha incorreta.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAssinaturaOficial')">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmarOficial" onclick="confirmarAssinaturaOficial()">Assinar e Finalizar</button>
       </div>
     </div>
   </div>
@@ -367,9 +446,9 @@
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/dados-escala.js"></script>
   <script>
-    // ── Dados ─────────────────────────────────────────
+    // ── Chaves e constantes ────────────────────────────────────────
     const KEY_FROTA = 'bbm_viaturas_frota';
-    const KEY_CL    = 'bbm_viaturas_checklist';
+    const KEY_CL    = 'viaturas_checklist'; // BBM cloud key
 
     const ITENS_AR = [
       { grupo:'Elétrica / Iluminação', itens:['Lanternas','Buzina','Luz de Freio','Setas de Direção','Farol Alto/Baixo','Luz de Ré','Luz Interna','Sirenes'] },
@@ -396,26 +475,101 @@
 
     function loadFrota(){ try { const d=JSON.parse(localStorage.getItem(KEY_FROTA)); return d&&d.length?d:DEFAULT_VIATURAS.map(v=>({...v})); } catch { return DEFAULT_VIATURAS.map(v=>({...v})); } }
     function saveFrota(d){ localStorage.setItem(KEY_FROTA, JSON.stringify(d)); }
-    function loadCL(){ try { return JSON.parse(localStorage.getItem(KEY_CL))||[]; } catch { return []; } }
-    function saveCL(d){ localStorage.setItem(KEY_CL, JSON.stringify(d)); }
 
-    let frota      = loadFrota();
-    let checklists = loadCL();
+    let frota        = loadFrota();
+    let checklists   = [];
+    let oficiais     = [];  // {id, nome, posto, login}
     let viaturaAtual = null;
-    let escalaRegistros = []; // carregado do Supabase via BBM.ready
+    let escalaRegistros = [];
+    let _rascunhoId  = null;  // id do rascunho em edição
+    let _dadosPendentes = null;
+    let _clParaAssinar  = null;
 
-    // ── Carrega escala do Supabase ─────────────────────
-    BBM.ready(['escala_registros'], () => {
+    // ── Inicialização: carrega escala + checklists da nuvem ───────
+    BBM.ready(['escala_registros', KEY_CL], () => {
       escalaRegistros = BBM.load('escala_registros');
+
+      // Carrega checklists da nuvem e migra os do localStorage antigo
+      const cloudCL = BBM.load(KEY_CL);
+      try {
+        const oldCL = JSON.parse(localStorage.getItem('bbm_viaturas_checklist')) || [];
+        for (const old of oldCL) {
+          if (!cloudCL.find(c => c.id === old.id)) {
+            cloudCL.push({
+              ...old,
+              status: old.status || (old.assinadoDigitalmente ? 'aguardando_oficial' : 'rascunho'),
+              chefeId: old.chefeId || '',
+              chefeNome: old.chefeNome || old.chefe || '',
+            });
+          }
+        }
+      } catch {}
+      checklists = cloudCL;
+
+      renderCards();
+      checkNotificacoes();
     });
 
-    // ── Guarnição automática (escala do dia anterior) ──
+    // Carrega lista de oficiais (exceto Maj BM = comandante)
+    async function carregarOficiais() {
+      try {
+        const sb = await BBM.sb();
+        const { data } = await sb.from('perfis')
+          .select('id,nome,posto,login')
+          .eq('categoria', 'Oficial')
+          .neq('posto', 'Maj BM')
+          .order('posto');
+        oficiais = data || [];
+        const sel = document.getElementById('clChefeSocorro');
+        if (!sel) return;
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">— Selecione o Chefe de Socorro —</option>'
+          + oficiais.map(o => `<option value="${o.id}" data-nome="${o.nome}" data-login="${o.login}">${o.posto} — ${o.nome}</option>`).join('');
+        if (cur) sel.value = cur;
+      } catch(e) { console.warn('Oficiais:', e); }
+    }
+    carregarOficiais();
+
+    // ── Notificações ──────────────────────────────────────────────
+    function checkNotificacoes() {
+      const user = BBM.currentUser();
+      const banner = document.getElementById('notifBanner');
+      if (!user || !banner) return;
+      const pendentes = checklists.filter(c => c.status === 'aguardando_oficial' && c.chefeId === user.id);
+      if (pendentes.length > 0) {
+        document.getElementById('notifCount').textContent = pendentes.length;
+        const viaturas = [...new Set(pendentes.map(c => c.viaturaNome))].join(', ');
+        document.getElementById('notifText').textContent =
+          `${pendentes.length} checklist(s) aguardando sua assinatura — ${viaturas}`;
+        banner.style.display = 'flex';
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    function irParaHistoricoNotif() {
+      // Abre o primeiro checklist pendente
+      const user = BBM.currentUser();
+      const cl = checklists.find(c => c.status === 'aguardando_oficial' && c.chefeId === user?.id);
+      if (!cl) return;
+      abrirDetalhe(cl.viaturaId, 'paneHistorico');
+    }
+
+    // ── Utilitários ───────────────────────────────────────────────
+    function formatBR(s){ if(!s) return '—'; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+    function slugItem(s){ return s.toLowerCase().replace(/[^a-z0-9]/g,'_'); }
+
+    function badgeStyle(s) {
+      if (s==='Disponível')  return 'background:#dcfce7;color:#15803d';
+      if (s==='Em Operação') return 'background:#dbeafe;color:#1d4ed8';
+      return 'background:#fee2e2;color:#b91c1c';
+    }
+
+    // ── Guarnição automática ──────────────────────────────────────
     function autoGuarnicao() {
       const ontem = new Date();
       ontem.setDate(ontem.getDate() - 1);
       const key = ontem.toISOString().slice(0, 10);
-
-      // Tenta primeiro nos registros do Supabase
       const doOntem = escalaRegistros.filter(r => r.data === key && !r.joe);
       if (doOntem.length) {
         const nomes = [...new Set(doOntem.map(r => r.militar).filter(Boolean))];
@@ -423,44 +577,36 @@
         document.getElementById('clGuarnicaoInfo').textContent = `Escala de ${formatBR(key)} (${nomes.length} militares)`;
         return;
       }
-
-      // Fallback: dados-escala.js (ESCALA_SEED)
       if (window.ESCALA_SEED && ESCALA_SEED.dias && ESCALA_SEED.dias[key]) {
         const nomes = ESCALA_SEED.dias[key].filter(Boolean);
         document.getElementById('clGuarnicao').value = nomes.join(', ');
         document.getElementById('clGuarnicaoInfo').textContent = `Escala de ${formatBR(key)} (dados locais)`;
         return;
       }
-
       BBM.toast('Sem escala registrada para ' + formatBR(key), 'error');
     }
 
-    // ── Cards ──────────────────────────────────────────
-    function badgeStyle(s) {
-      if (s==='Disponível')  return 'background:#dcfce7;color:#15803d';
-      if (s==='Em Operação') return 'background:#dbeafe;color:#1d4ed8';
-      return 'background:#fee2e2;color:#b91c1c';
-    }
-    function formatBR(s){ if(!s) return '—'; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
-
+    // ── Cards ─────────────────────────────────────────────────────
     function renderCards() {
       const hoje = new Date().toISOString().slice(0,10);
-      const checkHoje = checklists.filter(c=>c.data===hoje).map(c=>c.viaturaId);
+      const checkHojeFinalizados = checklists.filter(c => c.data === hoje && c.status !== 'rascunho').map(c => c.viaturaId);
       document.getElementById('totDisp').textContent  = frota.filter(v=>v.status==='Disponível').length;
       document.getElementById('totMaint').textContent = frota.filter(v=>v.status==='Manutenção').length;
       document.getElementById('totOper').textContent  = frota.filter(v=>v.status==='Em Operação').length;
-      document.getElementById('totCheck').textContent = new Set(checkHoje).size;
+      document.getElementById('totCheck').textContent = new Set(checkHojeFinalizados).size;
 
       document.getElementById('viaturaGrid').innerHTML = frota.map(v => {
         const fotoHtml = v.foto
           ? `<img src="${v.foto}" alt="${v.denominacao}"/>`
           : `<div class="no-photo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
-        const temCheck = checkHoje.includes(v.id);
+        const temCheck = checkHojeFinalizados.includes(v.id);
+        const temRascunho = checklists.some(c => c.viaturaId === v.id && c.data === hoje && c.status === 'rascunho');
         return `<div class="vcard">
           <div class="vcard-photo">
             ${fotoHtml}
             <span class="vcard-status-pill" style="${badgeStyle(v.status)}">${v.status}</span>
             ${temCheck ? '<span style="position:absolute;top:10px;left:10px;background:#dcfce7;color:#15803d;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:12px">✓ Checklist hoje</span>' : ''}
+            ${!temCheck && temRascunho ? '<span style="position:absolute;top:10px;left:10px;background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:12px">✏ Rascunho</span>' : ''}
           </div>
           <div class="vcard-body">
             <div class="vcard-name">${v.denominacao}</div>
@@ -480,18 +626,13 @@
       }).join('');
     }
 
-    // ── Overlay ────────────────────────────────────────
+    // ── Overlay ───────────────────────────────────────────────────
     function abrirDetalhe(id, tab) {
       viaturaAtual = frota.find(v=>v.id===id);
       if (!viaturaAtual) return;
       document.getElementById('detTitle').textContent = viaturaAtual.denominacao + ' — ' + viaturaAtual.tipo;
       preencherInfo();
-      construirChecklist();
-      // defaults checklist
-      document.getElementById('clData').value = new Date().toISOString().slice(0,10);
-      document.getElementById('clKm').value   = viaturaAtual.km || '';
-      document.getElementById('clGuarnicaoInfo').textContent = '';
-      document.getElementById('assinadoBadge').style.display = 'none';
+      iniciarChecklist();
       renderHistorico();
       const tabIdx = tab==='paneChecklist' ? 2 : tab==='paneHistorico' ? 3 : 1;
       mudarTab(tab||'paneInfo', document.querySelector(`.dtab:nth-child(${tabIdx})`));
@@ -512,7 +653,7 @@
       if (paneId==='paneChecklist' && !document.getElementById('clGuarnicao').value) autoGuarnicao();
     }
 
-    // ── Info ───────────────────────────────────────────
+    // ── Info ──────────────────────────────────────────────────────
     function preencherInfo() {
       const v = viaturaAtual;
       document.getElementById('iDenominacao').value = v.denominacao;
@@ -530,8 +671,7 @@
     }
 
     function carregarFoto(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+      const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = ev => {
         const prev = document.getElementById('fotoPreview');
@@ -557,18 +697,58 @@
       frota[idx].status         = document.getElementById('iStatus').value;
       frota[idx].obs            = document.getElementById('iObs').value.trim();
       viaturaAtual = frota[idx];
-      saveFrota(frota);
-      renderCards();
-      BBM.toast('Informações salvas.');
+      saveFrota(frota); renderCards(); BBM.toast('Informações salvas.');
     }
 
-    // ── Checklist ──────────────────────────────────────
+    // ── Checklist — inicialização ─────────────────────────────────
+    function iniciarChecklist() {
+      _rascunhoId = null;
+      const hoje = new Date().toISOString().slice(0,10);
+      const rascunho = viaturaAtual
+        ? checklists.find(c => c.viaturaId === viaturaAtual.id && c.data === hoje && c.status === 'rascunho')
+        : null;
+
+      if (rascunho) {
+        _rascunhoId = rascunho.id;
+        document.getElementById('clRascunhoBanner').style.display = '';
+      } else {
+        document.getElementById('clRascunhoBanner').style.display = 'none';
+        construirChecklist();
+        document.getElementById('clData').value = hoje;
+        document.getElementById('clKm').value = viaturaAtual?.km || '';
+        document.getElementById('clGuarnicaoInfo').textContent = '';
+      }
+      document.getElementById('clLockedBanner').style.display = 'none';
+      setChecklistLocked(false);
+    }
+
+    function continuarRascunho() {
+      const rascunho = checklists.find(c => c.id === _rascunhoId);
+      if (!rascunho) return;
+      document.getElementById('clRascunhoBanner').style.display = 'none';
+      construirChecklist();
+      preencherFormChecklist(rascunho);
+      setChecklistLocked(false);
+    }
+
+    function descartarRascunho() {
+      if (!_rascunhoId) return;
+      if (!confirm('Descartar o rascunho atual? Esta ação não pode ser desfeita.')) return;
+      checklists = checklists.filter(c => c.id !== _rascunhoId);
+      BBM.save(KEY_CL, checklists);
+      _rascunhoId = null;
+      document.getElementById('clRascunhoBanner').style.display = 'none';
+      construirChecklist();
+      const hoje = new Date().toISOString().slice(0,10);
+      document.getElementById('clData').value = hoje;
+      document.getElementById('clKm').value = viaturaAtual?.km || '';
+      renderCards();
+      BBM.toast('Rascunho descartado.');
+    }
+
     function construirChecklist() {
-      const isABT = viaturaAtual.checklistTipo === 'ABT';
-      document.getElementById('chefeGrp').style.display = isABT ? '' : 'none';
-      const grupos = isABT ? ITENS_ABT : ITENS_AR;
-      const tbody = document.getElementById('clBody');
-      tbody.innerHTML = grupos.map(g => {
+      const grupos = viaturaAtual?.checklistTipo === 'ABT' ? ITENS_ABT : ITENS_AR;
+      document.getElementById('clBody').innerHTML = grupos.map(g => {
         const headerRow = `<tr class="cl-section-header"><td colspan="3">${g.grupo}</td></tr>`;
         const rows = g.itens.map(item => {
           const key = slugItem(item);
@@ -585,19 +765,59 @@
         }).join('');
         return headerRow + rows;
       }).join('');
-      // limpa fotos de vistoria
+      // Limpa fotos e campos
       ['frente','lat_dir','lat_esq','traseira'].forEach(k => {
         document.getElementById('vfoto_'+k).style.display='none';
         document.getElementById('vlabel_'+k).style.display='none';
+        document.getElementById('vfoto_'+k).src='';
       });
       document.getElementById('clMotorista').value = '';
-      document.getElementById('clAssinaturaCMT').value = '';
       document.getElementById('clAlteracoes').value = '';
-      document.getElementById('clChefe').value = '';
-      document.getElementById('assinadoBadge').style.display = 'none';
+      document.getElementById('clChefeSocorro').value = '';
+      document.getElementById('clGuarnicao').value = '';
+      document.getElementById('assinadoMotBadge').style.display = 'none';
+      document.getElementById('assinadoOfBadge').style.display = 'none';
     }
 
-    function slugItem(s){ return s.toLowerCase().replace(/[^a-z0-9]/g,'_'); }
+    function preencherFormChecklist(cl) {
+      document.getElementById('clData').value = cl.data || '';
+      document.getElementById('clKm').value = cl.km || '';
+      document.getElementById('clGuarnicao').value = cl.guarnicao || '';
+      if (cl.chefeId) document.getElementById('clChefeSocorro').value = cl.chefeId;
+      document.getElementById('clAlteracoes').value = cl.alteracoes || '';
+      document.getElementById('clMotorista').value = cl.motorista || '';
+
+      // Preenche itens
+      Object.entries(cl.itens || {}).forEach(([key, val]) => {
+        if (key.startsWith('obs_')) {
+          const input = document.querySelector(`#clBody .obs-mini[data-key="${key.slice(4)}"]`);
+          if (input) input.value = val;
+        } else {
+          const btn = document.querySelector(`#clBody .sbtn[data-key="${key}"][data-val="${val}"]`);
+          if (btn) { btn.closest('.sbtn-wrap').querySelectorAll('.sbtn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+        }
+      });
+
+      // Fotos
+      if (cl.fotos) {
+        Object.entries(cl.fotos).forEach(([k, src]) => {
+          const img = document.getElementById('vfoto_'+k);
+          const lbl = document.getElementById('vlabel_'+k);
+          if (img && src) { img.src=src; img.style.display='block'; if(lbl) lbl.style.display='block'; }
+        });
+      }
+
+      if (cl.assinadoMotorista) document.getElementById('assinadoMotBadge').style.display = '';
+      if (cl.assinadoOficial)  document.getElementById('assinadoOfBadge').style.display = '';
+    }
+
+    function setChecklistLocked(locked) {
+      const pane = document.getElementById('paneChecklist');
+      const campos = pane.querySelectorAll('select, input, textarea, .sbtn');
+      campos.forEach(el => { el.disabled = locked; });
+      document.getElementById('clBotoes').style.display = locked ? 'none' : '';
+      pane.querySelectorAll('.vistoria-foto-slot').forEach(s => s.style.pointerEvents = locked ? 'none' : '');
+    }
 
     function toggleStatus(btn) {
       btn.closest('.sbtn-wrap').querySelectorAll('.sbtn').forEach(b=>b.classList.remove('sel'));
@@ -611,7 +831,7 @@
       return r;
     }
 
-    // ── Fotos de vistoria ──────────────────────────────
+    // ── Fotos de vistoria ─────────────────────────────────────────
     let _fotoAlvo = null;
     const FOTO_NOMES = { frente:'FRENTE', lat_dir:'LATERAL DIREITA', lat_esq:'LATERAL ESQUERDA', traseira:'TRASEIRA' };
 
@@ -621,8 +841,7 @@
     }
 
     function carregarFotoVistoria(e) {
-      const file = e.target.files[0];
-      if (!file || !_fotoAlvo) return;
+      const file = e.target.files[0]; if (!file || !_fotoAlvo) return;
       const reader = new FileReader();
       reader.onload = ev => {
         const img = document.getElementById('vfoto_'+_fotoAlvo);
@@ -642,36 +861,71 @@
       return r;
     }
 
-    // ── Salvar com assinatura ──────────────────────────
-    let _dadosPendentes = null;
+    // ── Salvar Rascunho ───────────────────────────────────────────
+    function salvarRascunho() {
+      if (!viaturaAtual) return;
+      const data = document.getElementById('clData').value;
+      if (!data) { BBM.toast('Informe a data.', 'error'); return; }
+      const chefeEl = document.getElementById('clChefeSocorro');
+      const cl = {
+        id: _rascunhoId || BBM.generateId(),
+        viaturaId: viaturaAtual.id,
+        viaturaNome: viaturaAtual.denominacao,
+        data,
+        guarnicao: document.getElementById('clGuarnicao').value.trim(),
+        km: document.getElementById('clKm').value,
+        chefeId: chefeEl.value,
+        chefeNome: chefeEl.selectedOptions[0]?.dataset.nome || '',
+        itens: coletarItens(),
+        alteracoes: document.getElementById('clAlteracoes').value.trim(),
+        motorista: document.getElementById('clMotorista').value,
+        tipo: viaturaAtual.checklistTipo,
+        fotos: coletarFotosVistoria(),
+        status: 'rascunho',
+        criadoEm: new Date().toISOString(),
+      };
+      if (_rascunhoId) {
+        const idx = checklists.findIndex(c => c.id === _rascunhoId);
+        if (idx >= 0) checklists[idx] = cl; else checklists.unshift(cl);
+      } else {
+        _rascunhoId = cl.id;
+        checklists.unshift(cl);
+      }
+      BBM.save(KEY_CL, checklists);
+      renderHistorico(); renderCards();
+      BBM.toast('Rascunho salvo.');
+    }
 
+    // ── Assinar (motorista) ───────────────────────────────────────
     function pedirSenhaESalvar() {
       if (!viaturaAtual) return;
       const data      = document.getElementById('clData').value;
       const guarnicao = document.getElementById('clGuarnicao').value.trim();
       const motorista = document.getElementById('clMotorista').value;
-      if (!data || !guarnicao)   { BBM.toast('Preencha data e guarnição.', 'error'); return; }
-      if (!motorista)            { BBM.toast('Selecione o motorista responsável.', 'error'); return; }
+      const chefeEl   = document.getElementById('clChefeSocorro');
+      const chefeId   = chefeEl.value;
+      if (!chefeId)    { BBM.toast('Selecione o Chefe de Socorro.', 'error'); return; }
+      if (!data || !guarnicao) { BBM.toast('Preencha data e guarnição.', 'error'); return; }
+      if (!motorista)  { BBM.toast('Selecione o motorista responsável.', 'error'); return; }
       const itens = coletarItens();
       if (!Object.keys(itens).filter(k=>!k.startsWith('obs_')).length) {
         BBM.toast('Preencha pelo menos um item do checklist.', 'error'); return;
       }
       _dadosPendentes = {
-        id: BBM.generateId(),
+        id: _rascunhoId || BBM.generateId(),
         viaturaId: viaturaAtual.id,
         viaturaNome: viaturaAtual.denominacao,
         data, guarnicao,
         km: document.getElementById('clKm').value,
-        chefe: document.getElementById('clChefe').value.trim(),
+        chefeId,
+        chefeNome: chefeEl.selectedOptions[0]?.dataset.nome || '',
+        chefeLogin: chefeEl.selectedOptions[0]?.dataset.login || '',
         itens,
         alteracoes: document.getElementById('clAlteracoes').value.trim(),
         motorista,
-        cmt: document.getElementById('clAssinaturaCMT').value.trim(),
         tipo: viaturaAtual.checklistTipo,
         fotos: coletarFotosVistoria(),
-        assinadoDigitalmente: false,
       };
-      // Abre modal de senha
       document.getElementById('modalMotoristaName').textContent = motorista;
       document.getElementById('modalSenhaInput').value = '';
       document.getElementById('senhaErro').style.display = 'none';
@@ -681,95 +935,166 @@
 
     async function confirmarAssinatura() {
       const senha = document.getElementById('modalSenhaInput').value;
-      if (!senha) { BBM.toast('Digite a senha.', 'error'); return; }
+      if (!senha) return;
       const btn = document.getElementById('btnConfirmarAssinatura');
       btn.textContent = 'Verificando…'; btn.disabled = true;
       document.getElementById('senhaErro').style.display = 'none';
       try {
         const sb = await BBM.sb();
-        // Salva sessão atual para restaurar depois
         const { data: { session: sessaoAtual } } = await sb.auth.getSession();
-
-        // Descobre o login do motorista pelo nome no perfis
         const nomeSelecionado = _dadosPendentes.motorista;
-        const { data: perfis } = await sb.from('perfis').select('login,nome').ilike('nome', '%' + nomeSelecionado.split(' ').pop() + '%');
+        const { data: perfis } = await sb.from('perfis').select('login,nome')
+          .ilike('nome', '%' + nomeSelecionado.split(' ').pop() + '%');
         const perfil = perfis && perfis.find(p => p.nome === nomeSelecionado || p.nome.includes(nomeSelecionado.split(' ').pop()));
         if (!perfil) throw new Error('Motorista não encontrado no sistema.');
-        const email = perfil.login.trim().toLowerCase() + '@15bbm.app';
-
-        // Verifica senha
-        const { error: errLogin } = await sb.auth.signInWithPassword({ email, password: senha });
+        const { error: errLogin } = await sb.auth.signInWithPassword({
+          email: perfil.login.trim().toLowerCase() + '@15bbm.app', password: senha
+        });
         if (errLogin) throw errLogin;
+        if (sessaoAtual) await sb.auth.setSession({ access_token: sessaoAtual.access_token, refresh_token: sessaoAtual.refresh_token });
 
-        // Restaura sessão original (admin ou quem estava logado)
-        if (sessaoAtual) {
-          await sb.auth.setSession({ access_token: sessaoAtual.access_token, refresh_token: sessaoAtual.refresh_token });
+        // Remove rascunho e salva como aguardando_oficial
+        const cl = {
+          ..._dadosPendentes,
+          status: 'aguardando_oficial',
+          assinadoMotorista: true,
+          assinadoMotoristaEm: new Date().toISOString(),
+        };
+        checklists = checklists.filter(c => c.id !== _rascunhoId && c.id !== cl.id);
+        checklists.unshift(cl);
+        _rascunhoId = null;
+        _dadosPendentes = null;
+        BBM.save(KEY_CL, checklists);
+
+        // Atualiza KM
+        if (cl.km) {
+          const idx = frota.findIndex(v=>v.id===cl.viaturaId);
+          if (idx>=0 && Number(cl.km) > Number(frota[idx].km||0)) {
+            frota[idx].km = cl.km; viaturaAtual = frota[idx]; saveFrota(frota);
+          }
         }
 
-        // Marca como assinado
-        _dadosPendentes.assinadoDigitalmente = true;
-        finalizarSalvarChecklist();
         BBM.closeModal('modalSenha');
+        setChecklistLocked(true);
+        document.getElementById('clLockedBanner').style.display = '';
+        document.getElementById('clLockedMsg').textContent = `✓ Assinado pelo motorista ${cl.motorista}. Aguardando assinatura do Chefe de Socorro: ${cl.chefeNome}.`;
+        document.getElementById('clLockedBanner').className = 'cl-locked-banner aguardando';
+        document.getElementById('assinadoMotBadge').style.display = '';
+        checkNotificacoes(); renderCards(); renderHistorico();
+        BBM.toast('Checklist assinado e enviado ao Chefe de Socorro!');
       } catch (err) {
-        document.getElementById('senhaErro').textContent = 'Senha incorreta ou motorista não encontrado.';
         document.getElementById('senhaErro').style.display = 'block';
       } finally {
-        btn.textContent = 'Assinar'; btn.disabled = false;
+        btn.textContent = 'Assinar e Enviar'; btn.disabled = false;
       }
     }
 
-    function finalizarSalvarChecklist() {
-      if (!_dadosPendentes) return;
-      const cl = _dadosPendentes;
-      _dadosPendentes = null;
-      checklists.unshift(cl);
-      saveCL(checklists);
-      // Atualiza KM na frota se maior
-      if (cl.km) {
-        const idx = frota.findIndex(v=>v.id===cl.viaturaId);
-        if (idx>=0 && Number(cl.km) > Number(frota[idx].km||0)) {
-          frota[idx].km = cl.km; viaturaAtual = frota[idx]; saveFrota(frota);
+    // ── Assinar (oficial) ─────────────────────────────────────────
+    function assinarComoOficial(clId) {
+      _clParaAssinar = clId;
+      const cl = checklists.find(c => c.id === clId);
+      if (!cl) return;
+      document.getElementById('modalOficialInfo').innerHTML =
+        `<b>Viatura:</b> ${cl.viaturaNome}<br>
+         <b>Data:</b> ${formatBR(cl.data)}<br>
+         <b>Motorista:</b> ${cl.motorista}<br>
+         <b>Guarnição:</b> ${cl.guarnicao||'—'}`;
+      document.getElementById('modalSenhaOficialInput').value = '';
+      document.getElementById('senhaOficialErro').style.display = 'none';
+      BBM.openModal('modalAssinaturaOficial');
+      setTimeout(() => document.getElementById('modalSenhaOficialInput').focus(), 200);
+    }
+
+    async function confirmarAssinaturaOficial() {
+      const senha = document.getElementById('modalSenhaOficialInput').value;
+      if (!senha) return;
+      const btn = document.getElementById('btnConfirmarOficial');
+      btn.textContent = 'Verificando…'; btn.disabled = true;
+      document.getElementById('senhaOficialErro').style.display = 'none';
+      try {
+        const sb = await BBM.sb();
+        const user = BBM.currentUser();
+        const { data: { session: sessaoAtual } } = await sb.auth.getSession();
+        const { error } = await sb.auth.signInWithPassword({
+          email: user.login + '@15bbm.app', password: senha
+        });
+        if (error) throw error;
+        if (sessaoAtual) await sb.auth.setSession({ access_token: sessaoAtual.access_token, refresh_token: sessaoAtual.refresh_token });
+
+        const idx = checklists.findIndex(c => c.id === _clParaAssinar);
+        if (idx >= 0) {
+          checklists[idx] = {
+            ...checklists[idx],
+            status: 'finalizado',
+            assinadoOficial: true,
+            assinadoOficialEm: new Date().toISOString(),
+            assinadoOficialNome: user.nome,
+          };
+          BBM.save(KEY_CL, checklists);
         }
+        BBM.closeModal('modalAssinaturaOficial');
+        checkNotificacoes(); renderHistorico(); renderCards();
+        BBM.toast('Checklist finalizado com sua assinatura!');
+      } catch(err) {
+        document.getElementById('senhaOficialErro').textContent = 'Senha incorreta.';
+        document.getElementById('senhaOficialErro').style.display = 'block';
+      } finally {
+        btn.textContent = 'Assinar e Finalizar'; btn.disabled = false;
       }
-      document.getElementById('assinadoBadge').style.display = cl.assinadoDigitalmente ? '' : 'none';
-      renderCards();
-      BBM.toast('Checklist salvo com assinatura digital!');
-      renderHistorico();
-      mudarTab('paneHistorico', document.querySelector('.dtab:nth-child(3)'));
-      imprimirChecklist(cl);
     }
 
     function limparChecklist() {
+      _rascunhoId = null;
+      document.getElementById('clRascunhoBanner').style.display = 'none';
+      document.getElementById('clLockedBanner').style.display = 'none';
+      setChecklistLocked(false);
       construirChecklist();
       document.getElementById('clData').value = new Date().toISOString().slice(0,10);
-      document.getElementById('clKm').value   = viaturaAtual ? viaturaAtual.km||'' : '';
+      document.getElementById('clKm').value = viaturaAtual ? viaturaAtual.km||'' : '';
       document.getElementById('clGuarnicaoInfo').textContent = '';
       autoGuarnicao();
     }
 
-    // ── Histórico ──────────────────────────────────────
+    // ── Histórico ─────────────────────────────────────────────────
     function renderHistorico() {
       if (!viaturaAtual) return;
+      const user = BBM.currentUser();
       const q = (document.getElementById('histSearch').value||'').toLowerCase();
       const lista = checklists.filter(c =>
         c.viaturaId===viaturaAtual.id &&
-        (!q || c.data.includes(q) || (c.guarnicao||'').toLowerCase().includes(q))
+        (!q || c.data.includes(q) || (c.guarnicao||'').toLowerCase().includes(q) || (c.status||'').includes(q))
       );
       const el = document.getElementById('histLista');
       if (!lista.length) {
         el.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:30px 0">Nenhum checklist registrado.</div>'; return;
       }
       el.innerHTML = lista.map(cl => {
-        const temRuim = Object.entries(cl.itens).some(([k,v])=>!k.startsWith('obs_')&&v==='RUIM');
-        const badge = temRuim ? '<span class="hist-badge-att">⚠ Itens com RUIM</span>' : '<span class="hist-badge-ok">✓ Sem Irregularidades</span>';
-        const assBadge = cl.assinadoDigitalmente ? '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:700">✓ Assinado</span>' : '';
+        const temRuim = Object.entries(cl.itens||{}).some(([k,v])=>!k.startsWith('obs_')&&v==='RUIM');
+        const qualBadge = temRuim ? '<span class="hist-badge-att">⚠ Com RUIM</span>' : '<span class="hist-badge-ok">✓ OK</span>';
+        const statusBadge =
+          cl.status === 'rascunho'         ? '<span class="cl-status-badge rascunho">Rascunho</span>' :
+          cl.status === 'aguardando_oficial'? '<span class="cl-status-badge aguardando">⏳ Ag. Chefe</span>' :
+                                             '<span class="cl-status-badge finalizado">✓ Finalizado</span>';
+
+        // Botões de ação
+        let acoes = '';
+        if (cl.status === 'rascunho') {
+          acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px" onclick="event.stopPropagation();abrirRascunhoNoForm('${cl.id}')">✏ Editar</button>
+                   <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px;color:#dc2626;border-color:#fca5a5" onclick="event.stopPropagation();excluirCL('${cl.id}')">🗑</button>`;
+        } else if (cl.status === 'aguardando_oficial' && user && cl.chefeId === user.id) {
+          acoes = `<button class="btn btn-primary" style="font-size:.72rem;padding:3px 12px" onclick="event.stopPropagation();assinarComoOficial('${cl.id}')">✍ Assinar</button>
+                   <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="event.stopPropagation();imprimirChecklist(checklists.find(x=>x.id==='${cl.id}'))">🖨️</button>`;
+        } else {
+          acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="event.stopPropagation();imprimirChecklist(checklists.find(x=>x.id==='${cl.id}'))">🖨️ Imprimir</button>`;
+        }
+
         return `<div class="hist-item">
           <div class="hist-item-head" onclick="toggleHist(this)">
             <span class="hist-item-date">${formatBR(cl.data)}</span>
             <span class="hist-item-guard">Guar.: ${cl.guarnicao||'—'}</span>
-            ${badge} ${assBadge}
+            ${statusBadge} ${qualBadge}
+            <div class="hist-acoes" onclick="event.stopPropagation()">${acoes}</div>
             <span style="color:#9ca3af;font-size:.8rem">▾</span>
-            <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 8px;margin-left:8px" onclick="event.stopPropagation();imprimirChecklist(checklists.find(x=>x.id==='${cl.id}'))">🖨️ Imprimir</button>
           </div>
           <div class="hist-item-body" id="histBody_${cl.id}">
             ${renderHistBody(cl)}
@@ -780,36 +1105,61 @@
 
     function toggleHist(head) { head.nextElementSibling.classList.toggle('open'); }
 
+    function abrirRascunhoNoForm(clId) {
+      _rascunhoId = clId;
+      const cl = checklists.find(c => c.id === clId);
+      if (!cl) return;
+      construirChecklist();
+      preencherFormChecklist(cl);
+      setChecklistLocked(false);
+      document.getElementById('clRascunhoBanner').style.display = 'none';
+      document.getElementById('clLockedBanner').style.display = 'none';
+      mudarTab('paneChecklist', document.querySelector('.dtab:nth-child(2)'));
+      document.getElementById('detalheView').scrollTop = 0;
+    }
+
+    function excluirCL(clId) {
+      if (!confirm('Excluir este rascunho?')) return;
+      checklists = checklists.filter(c => c.id !== clId);
+      BBM.save(KEY_CL, checklists);
+      if (_rascunhoId === clId) { _rascunhoId = null; }
+      renderHistorico(); renderCards(); BBM.toast('Rascunho excluído.');
+    }
+
     function renderHistBody(cl) {
       const grupos = cl.tipo==='ABT' ? ITENS_ABT : ITENS_AR;
       const rows = grupos.flatMap(g=>g.itens).map(item => {
-        const key = slugItem(item), val = cl.itens[key]||'—', obs = cl.itens['obs_'+key]||'';
+        const key = slugItem(item), val = cl.itens?.[key]||'—', obs = cl.itens?.['obs_'+key]||'';
         const cor = val==='BOM'?'color:#15803d;font-weight:700':val==='RUIM'?'color:#b91c1c;font-weight:700':'color:#9ca3af';
         return `<tr><td>${item}</td><td style="${cor};text-align:center">${val}</td><td style="color:#6b7280;font-size:.78rem">${obs}</td></tr>`;
       }).join('');
       const fotosHtml = cl.fotos && Object.keys(cl.fotos).length
         ? `<div class="hist-fotos">${['frente','lat_dir','lat_esq','traseira'].filter(k=>cl.fotos[k]).map(k=>`<img src="${cl.fotos[k]}" title="${FOTO_NOMES[k]}"/>`).join('')}</div>`
         : '';
+      const assinaturas = [
+        cl.assinadoMotorista ? `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:.72rem;font-weight:700">✓ Mot. ${cl.motorista} (${cl.assinadoMotoristaEm ? new Date(cl.assinadoMotoristaEm).toLocaleString('pt-BR') : '—'})</span>` : '',
+        cl.assinadoOficial   ? `<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:.72rem;font-weight:700">✓ Chefe ${cl.assinadoOficialNome||cl.chefeNome} (${cl.assinadoOficialEm ? new Date(cl.assinadoOficialEm).toLocaleString('pt-BR') : '—'})</span>` : '',
+      ].filter(Boolean).join(' ');
       return `<table class="hist-cl-table">
           <thead><tr><th>Item</th><th style="width:80px;text-align:center">Status</th><th>Obs.</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
         ${cl.alteracoes?`<div style="margin-top:10px;padding:8px 12px;background:#fff3cd;border-radius:6px;font-size:.82rem"><b>Alterações:</b> ${cl.alteracoes}</div>`:''}
         ${fotosHtml}
-        <div style="margin-top:8px;font-size:.78rem;color:#6b7280">
-          ${cl.km?`KM: ${Number(cl.km).toLocaleString('pt-BR')} km &nbsp;|&nbsp; `:''}
-          ${cl.chefe?`Chefe: ${cl.chefe} &nbsp;|&nbsp; `:''}
-          Motorista: ${cl.motorista||'—'} ${cl.assinadoDigitalmente?'✓':''}  &nbsp;|&nbsp; CMT: ${cl.cmt||'—'}
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+          ${cl.km?`<span style="font-size:.78rem;color:#6b7280">KM: ${Number(cl.km).toLocaleString('pt-BR')} km</span>`:''}
+          ${cl.chefeNome?`<span style="font-size:.78rem;color:#6b7280">Chefe: ${cl.chefeNome}</span>`:''}
+          ${assinaturas}
         </div>`;
     }
 
-    // ── Impressão ──────────────────────────────────────
+    // ── Impressão ─────────────────────────────────────────────────
     function imprimirChecklist(cl) {
       if (!cl) return;
       const grupos = cl.tipo==='ABT' ? ITENS_ABT : ITENS_AR;
       const todosItens = grupos.flatMap(g=>g.itens);
       const rows = todosItens.map(item => {
-        const key=slugItem(item), val=cl.itens[key]||'', obs=cl.itens['obs_'+key]||'';
+        const key=slugItem(item), val=cl.itens?.[key]||'', obs=cl.itens?.['obs_'+key]||'';
         return `<tr>
           <td style="width:45%">${item}</td>
           <td style="width:11%;text-align:center;font-weight:bold;color:${val==='BOM'?'#166534':'#000'}">${val==='BOM'?'X':''}</td>
@@ -818,12 +1168,13 @@
         </tr>`;
       }).join('');
       const altLinhas = cl.alteracoes ? cl.alteracoes.split('\n').map(l=>`<div>${l}</div>`).join('') : '';
-      const chefeRow = cl.tipo==='ABT'&&cl.chefe ? `<div class="print-sign-item">CHEFE DE SOCORRO:<br/>${cl.chefe}</div>` : '';
-      const assStamp = cl.assinadoDigitalmente ? '<small style="color:#15803d">✓ Assinado digitalmente</small>' : '';
       const fotosHtml = cl.fotos && Object.keys(cl.fotos).length
         ? `<div style="margin-top:10px"><div style="font-weight:bold;font-size:9pt;border-bottom:1px solid #000;margin-bottom:6px;text-align:center">REGISTRO FOTOGRÁFICO</div>
            <div class="print-fotos">${['frente','lat_dir','lat_esq','traseira'].filter(k=>cl.fotos[k]).map(k=>`<figure><img src="${cl.fotos[k]}"/><figcaption>${FOTO_NOMES[k]}</figcaption></figure>`).join('')}</div></div>`
         : '';
+      const motStamp = cl.assinadoMotorista ? `<br/><small style="color:#15803d">✓ Assinado digitalmente em ${new Date(cl.assinadoMotoristaEm).toLocaleString('pt-BR')}</small>` : '';
+      const ofStamp  = cl.assinadoOficial   ? `<br/><small style="color:#1d4ed8">✓ Assinado em ${new Date(cl.assinadoOficialEm).toLocaleString('pt-BR')}</small>` : '<br/><small style="color:#6b7280">Aguardando assinatura</small>';
+
       document.getElementById('printDoc').innerHTML = `
         <div class="print-doc-head">
           CORPO DE BOMBEIROS MILITAR DO MARANHÃO<br/>
@@ -851,16 +1202,15 @@
         ${fotosHtml}
         <div class="print-sign">
           <div class="print-sign-row">
-            ${chefeRow}
-            <div class="print-sign-item">ASSINATURA DO MOTORISTA:<br/>${cl.motorista||''}${assStamp}</div>
-            <div class="print-sign-item">ASSINATURA CMT DE GUARNIÇÃO:<br/>${cl.cmt||''}</div>
+            <div class="print-sign-item">CHEFE DE SOCORRO:<br/>${cl.chefeNome||''}${ofStamp}</div>
+            <div class="print-sign-item">MOTORISTA RESPONSÁVEL:<br/>${cl.motorista||''}${motStamp}</div>
           </div>
         </div>`;
       document.getElementById('printOverlay').style.display = 'block';
       setTimeout(()=>{ window.print(); document.getElementById('printOverlay').style.display='none'; }, 300);
     }
 
-    // ── Init ───────────────────────────────────────────
+    // ── Init ──────────────────────────────────────────────────────
     renderCards();
   </script>
 </body>
