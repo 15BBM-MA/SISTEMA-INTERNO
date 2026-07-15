@@ -65,7 +65,9 @@
           <button class="btn btn-ghost" onclick="mudarDia(1)">Próximo ›</button>
           <button class="btn btn-ghost" onclick="irHoje()">Hoje</button>
           <button class="btn btn-primary" onclick="editarDia()">✎ Editar dia</button>
-          <button class="btn btn-ghost" onclick="reimportar()" title="Reimporta a escala de Junho do PDF (substitui tudo)">🔄 Reimportar PDF</button>
+          <button class="btn btn-primary" id="btnImportPdf" onclick="abrirImportPdf()">📤 Importar PDF</button>
+          <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)"/>
+          <button class="btn btn-ghost" onclick="reimportar()" title="Reimporta dados da escala do arquivo JS">🔄 Seed</button>
         </div>
         <div id="servicoDia"></div>
       </div>
@@ -89,6 +91,34 @@
       </div>
     </div>
   </main>
+
+  <!-- MODAL IMPORTAR PDF -->
+  <div class="modal-overlay" id="modalImportPdf">
+    <div class="modal" style="max-width:680px">
+      <div class="modal-header">
+        <span class="modal-title">Importar Escala do PDF</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalImportPdf')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="importSummary" style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:11px 16px;font-size:.88rem;color:#15803d;font-weight:600;margin-bottom:14px"></div>
+        <div class="table-wrap" style="max-height:260px;overflow:auto;margin-bottom:12px">
+          <table>
+            <thead><tr><th>Data</th><th>Comandante</th><th>Chefe de Linha</th><th>Aux. Chefe</th><th>Motorista</th></tr></thead>
+            <tbody id="importPreviewBody"></tbody>
+          </table>
+        </div>
+        <p id="importPreviewMore" style="display:none;font-size:.8rem;color:#6b7280;text-align:center;margin:4px 0 12px"></p>
+        <label style="display:flex;gap:9px;align-items:center;font-size:.85rem;cursor:pointer;color:var(--text-mid)">
+          <input type="checkbox" id="importManterJoe" checked/>
+          Manter JOEs (serviços extras) já registrados
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalImportPdf')">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarImport()">✓ Importar Escala</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL EDITAR DIA -->
   <div class="modal-overlay" id="modalDia">
@@ -292,6 +322,197 @@
       if(!confirm('Reimportar a escala de Junho do PDF? Isso substitui os lançamentos atuais.')) return;
       seedEscala(); renderDia(); BBM.toast('Escala reimportada (JOE corrigido).');
     }
+
+    // ── Importação de PDF ──────────────────────────────────────
+    function abrirImportPdf() {
+      if (BBM.nivel('escala') !== 'edicao') { BBM.toast('Sem permissão para importar.', 'error'); return; }
+      document.getElementById('pdfInput').click();
+    }
+
+    async function handlePdfUpload(e) {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      const btn = document.getElementById('btnImportPdf');
+      btn.disabled = true; btn.textContent = '⏳ Lendo...';
+      try {
+        const parsed = await parsePdfEscala(file);
+        if (!parsed.length) throw new Error('Nenhuma escala encontrada. Verifique se o PDF está no formato correto.');
+        mostrarPreviewImport(parsed);
+      } catch(err) {
+        BBM.toast(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '📤 Importar PDF';
+      }
+    }
+
+    async function parsePdfEscala(file) {
+      // Carrega PDF.js da CDN se ainda não carregado
+      if (!window.pdfjsLib) {
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+          s.onload = res;
+          s.onerror = () => rej(new Error('Falha ao carregar biblioteca de PDF. Verifique sua conexão.'));
+          document.head.appendChild(s);
+        });
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      }
+
+      const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+
+      // Extrai todos os itens de texto com posição (x, y)
+      const items = [];
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const vp   = page.getViewport({ scale: 1 });
+        (await page.getTextContent()).items.forEach(it => {
+          if (!it.str.trim()) return;
+          items.push({
+            str:  it.str.trim().replace(/°/g, 'º'), // normaliza símbolo de grau → ordinal
+            x:    Math.round(it.transform[4]),
+            y:    Math.round(vp.height - it.transform[5]), // converte para cima→baixo
+            page: p,
+          });
+        });
+      }
+
+      // Ordena: página → y (cima=pequeno) → x (esquerda=pequeno)
+      items.sort((a, b) => a.page - b.page || a.y - b.y || a.x - b.x);
+
+      // Agrupa em linhas por proximidade de y (tolerância 4px por página)
+      const rows = [];
+      for (const it of items) {
+        const r = rows.find(r => r.page === it.page && Math.abs(r.y - it.y) <= 4);
+        if (r) r.items.push(it);
+        else rows.push({ page: it.page, y: it.y, items: [it] });
+      }
+      rows.forEach(r => r.items.sort((a, b) => a.x - b.x));
+
+      return parseEscalaTable(rows);
+    }
+
+    function parseEscalaTable(rows) {
+      const DATE_RE = /\((\d{2})\/(\d{2})\/(\d{4})\)/;
+      // Ordem importa: checar "AUXILIAR DO CHEFE DE LINHA" antes de "CHEFE DE LINHA"
+      const FUNC_LABELS = [
+        ['AUXILIAR DO CHEFE DE LINHA', 'Auxiliar do Chefe de Linha'],
+        ['COMANDANTE DE GUARNIÇÃO',    'Comandante de Guarnição'],
+        ['CHEFE DE LINHA',             'Chefe de Linha'],
+        ['MOTORISTA',                  'Motorista'],
+      ];
+
+      const result = [];
+      let dateCols = null; // [{date:'YYYY-MM-DD', x:number}]
+
+      for (const row of rows) {
+        const texts = row.items.map(i => i.str);
+
+        // ── Linha de datas: contém 2+ itens com "(DD/MM/AAAA)" ──
+        const dateItems = row.items.filter(i => DATE_RE.test(i.str));
+        if (dateItems.length >= 2) {
+          dateCols = dateItems.map(i => {
+            const [, d, m, y] = i.str.match(DATE_RE);
+            return { date: `${y}-${m}-${d}`, x: i.x };
+          });
+          continue;
+        }
+        if (!dateCols) continue;
+
+        // ── Linha de função ──
+        const rowFull = texts.join(' ').toUpperCase();
+        let funcName = null;
+        for (const [label, name] of FUNC_LABELS) {
+          if (rowFull.includes(label)) { funcName = name; break; }
+        }
+        if (!funcName) continue;
+
+        // Itens de nome: à direita do mínimo X das colunas de data (−15px de margem)
+        const xMinData = Math.min(...dateCols.map(d => d.x)) - 15;
+        const nameItems = row.items.filter(i => i.x >= xMinData);
+
+        // Atribui cada item ao coluna de data mais próxima por X
+        const colTexts = dateCols.map(() => []);
+        for (const ni of nameItems) {
+          let bestCol = 0, bestDist = Infinity;
+          dateCols.forEach((d, i) => {
+            const dist = Math.abs(ni.x - d.x);
+            if (dist < bestDist) { bestDist = dist; bestCol = i; }
+          });
+          if (bestDist < 130) colTexts[bestCol].push(ni.str);
+        }
+
+        // Adiciona registros
+        dateCols.forEach((d, i) => {
+          const nome = colTexts[i].join(' ').replace(/\s+/g, ' ').trim();
+          if (nome) result.push({ date: d.date, funcao: funcName, militar: nome });
+        });
+      }
+
+      return result;
+    }
+
+    function mostrarPreviewImport(parsed) {
+      const datas = [...new Set(parsed.map(r => r.date))].sort();
+      const meses = [...new Set(datas.map(d => {
+        const [y, m] = d.split('-');
+        return new Date(Number(y), Number(m)-1).toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+      }))];
+
+      document.getElementById('importSummary').textContent =
+        `✓ Encontrado: ${parsed.length} registros · ${datas.length} dias · ${meses.join(', ')}`;
+
+      const get = (d, f) => parsed.find(r => r.date === d && r.funcao === f)?.militar || '—';
+      const PREVIEW_MAX = 8;
+      document.getElementById('importPreviewBody').innerHTML = datas.slice(0, PREVIEW_MAX).map(d =>
+        `<tr>
+          <td><strong>${BBM.formatDate(d)}</strong><br><small style="color:#6b7280">${diaSemana(d).split('-')[0]}</small></td>
+          <td>${get(d,'Comandante de Guarnição')}</td>
+          <td>${get(d,'Chefe de Linha')}</td>
+          <td>${get(d,'Auxiliar do Chefe de Linha')}</td>
+          <td>${get(d,'Motorista')}</td>
+        </tr>`
+      ).join('');
+
+      const more = document.getElementById('importPreviewMore');
+      if (datas.length > PREVIEW_MAX) {
+        more.textContent = `… e mais ${datas.length - PREVIEW_MAX} dias`;
+        more.style.display = '';
+      } else {
+        more.style.display = 'none';
+      }
+
+      window._importParsed = parsed;
+      BBM.openModal('modalImportPdf');
+    }
+
+    function confirmarImport() {
+      const parsed = window._importParsed;
+      if (!parsed) return;
+      const manterJoe = document.getElementById('importManterJoe').checked;
+
+      const novos = parsed.map(r => ({
+        id:      BBM.generateId(),
+        data:    r.date,
+        funcao:  r.funcao,
+        militar: r.militar,
+        joe:     false,
+      }));
+
+      if (manterJoe) {
+        registros.filter(r => r.joe).forEach(j => novos.push(j));
+      }
+
+      registros = novos;
+      BBM.save('escala_registros', registros);
+      BBM.closeModal('modalImportPdf');
+      window._importParsed = null;
+      renderDia();
+      const datas = [...new Set(novos.filter(r=>!r.joe).map(r=>r.data))].length;
+      BBM.toast(`Escala importada: ${datas} dias registrados.`);
+    }
+    // ── fim importação PDF ──────────────────────────────────────
 
     document.getElementById('diaData').value = diaSel;
     BBM.ready(['escala_registros'], async ()=>{
