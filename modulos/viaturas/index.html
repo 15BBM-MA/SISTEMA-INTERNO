@@ -540,7 +540,9 @@
     }
 
     // Cache local: renderiza instantaneamente sem esperar o Supabase
-    const _CACHE_KEY = 'bbm_v_cache';
+    const _CACHE_KEY    = 'bbm_v_cache';
+    const _CACHE_CL_KEY = 'bbm_v_cl_cache';
+
     function loadFrota(){
       // 1) cache rápido da última sessão (tem fotos)
       try { const c=JSON.parse(localStorage.getItem(_CACHE_KEY)); if(c&&c.length) return c; } catch {}
@@ -557,8 +559,18 @@
       BBM.save(KEY_FROTA, d);                              // sincroniza com Supabase
     }
 
+    function loadChecklistsCache(){
+      try { const c=JSON.parse(localStorage.getItem(_CACHE_CL_KEY)); if(c&&Array.isArray(c)) return c; } catch {}
+      return [];
+    }
+
+    function saveChecklists(lista){
+      localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(lista)); // cache local imediato
+      BBM.save(KEY_CL, lista);                                     // sincroniza com Supabase
+    }
+
     let frota        = loadFrota();
-    let checklists   = [];
+    let checklists   = loadChecklistsCache();
     let oficiais     = [];  // {id, nome, posto, login}
     let viaturaAtual = null;
     let escalaRegistros = [];
@@ -600,6 +612,7 @@
         }
       } catch {}
       checklists = cloudCL;
+      localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(checklists)); // atualiza cache com dados frescos
 
       renderCards();
       checkNotificacoes();
@@ -937,7 +950,7 @@
       if (!_rascunhoId) return;
       if (!confirm('Descartar o rascunho atual? Esta ação não pode ser desfeita.')) return;
       checklists = checklists.filter(c => c.id !== _rascunhoId);
-      BBM.save(KEY_CL, checklists);
+      saveChecklists(checklists);
       _rascunhoId = null;
       document.getElementById('clRascunhoBanner').style.display = 'none';
       construirChecklist();
@@ -1092,7 +1105,7 @@
         _rascunhoId = cl.id;
         checklists.unshift(cl);
       }
-      BBM.save(KEY_CL, checklists);
+      saveChecklists(checklists);
       renderHistorico(); renderCards();
       BBM.toast('Rascunho salvo.');
     }
@@ -1170,7 +1183,7 @@
         checklists.unshift(cl);
         _rascunhoId = null;
         _dadosPendentes = null;
-        BBM.save(KEY_CL, checklists);
+        saveChecklists(checklists);
 
         // KM atual é calculado dinamicamente dos checklists (kmAtualViatura)
 
@@ -1230,7 +1243,7 @@
             assinadoOficialEm: new Date().toISOString(),
             assinadoOficialNome: user.nome,
           };
-          BBM.save(KEY_CL, checklists);
+          saveChecklists(checklists);
         }
         BBM.closeModal('modalAssinaturaOficial');
         checkNotificacoes(); renderHistorico(); renderCards();
@@ -1344,7 +1357,7 @@
     function excluirCL(clId) {
       if (!confirm('Excluir este rascunho?')) return;
       checklists = checklists.filter(c => c.id !== clId);
-      BBM.save(KEY_CL, checklists);
+      saveChecklists(checklists);
       if (_rascunhoId === clId) { _rascunhoId = null; }
       renderHistorico(); renderCards(); BBM.toast('Rascunho excluído.');
     }
