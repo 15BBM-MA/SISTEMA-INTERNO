@@ -112,6 +112,25 @@
     .hist-acoes { display:flex; gap:6px; align-items:center; margin-left:4px; }
     .hist-acoes .btn { font-size:.72rem; padding:3px 10px; }
 
+    /* ── Alerta de troca de óleo ── */
+    .vcard-alerta-oleo { display:flex; align-items:center; gap:6px; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:5px 10px; margin-bottom:10px; font-size:.75rem; font-weight:700; color:#92400e; }
+    .vcard-alerta-oleo.critico { background:#fee2e2; border-color:#dc2626; color:#b91c1c; }
+    .vcard-km-row { display:flex; align-items:baseline; gap:6px; margin-bottom:4px; }
+    .vcard-km-valor { font-size:1.1rem; font-weight:800; color:var(--text); }
+    .vcard-km-label { font-size:.7rem; color:var(--text-light); }
+
+    /* ── Responsividade mobile ── */
+    @media(max-width:600px){
+      #detalheView { margin:58px 0 0; border-radius:0; padding:18px 14px; min-height:calc(100vh - 58px); }
+      .det-bar { padding:8px 12px; flex-wrap:wrap; gap:6px; }
+      .det-bar-title { font-size:.88rem; width:100%; }
+      .dtab { padding:8px 14px; font-size:.8rem; }
+      .cl-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .hist-fotos { grid-template-columns:repeat(2,1fr); }
+      .vistoria-fotos { grid-template-columns:1fr 1fr; }
+      .print-sign-row { flex-direction:column; gap:16px; }
+    }
+
     /* ── Print ── */
     #printOverlay { display:none; position:fixed; inset:0; z-index:500; background:#fff; overflow:auto; padding:20mm 15mm; }
     .print-doc { font-family:'Times New Roman',serif; font-size:11pt; line-height:1.4; color:#000; max-width:180mm; margin:0 auto; }
@@ -235,8 +254,8 @@
           <div class="form-group"><label class="form-label">Tipo</label><input class="form-control" id="iTipo" readonly style="background:#f9fafb"/></div>
           <div class="form-group"><label class="form-label">Placa</label><input class="form-control" id="iPlaca" placeholder="AAA-0000"/></div>
           <div class="form-group"><label class="form-label">Ano de Fabricação</label><input class="form-control" id="iAno" type="number" placeholder="2020"/></div>
-          <div class="form-group"><label class="form-label">KM Atual</label><input class="form-control" id="iKm" type="number" placeholder="0"/></div>
-          <div class="form-group"><label class="form-label">Última Troca de Óleo</label><input class="form-control" id="iOleo" type="date"/></div>
+          <div class="form-group"><label class="form-label">KM na Últ. Troca de Óleo</label><input class="form-control" id="iKm" type="number" placeholder="0"/></div>
+          <div class="form-group"><label class="form-label">Data da Últ. Troca de Óleo</label><input class="form-control" id="iOleo" type="date"/></div>
           <div class="form-group"><label class="form-label">Status Operacional</label>
             <select class="form-control" id="iStatus">
               <option value="Disponível">Disponível</option>
@@ -293,6 +312,7 @@
         </div>
 
         <!-- Itens -->
+        <div class="cl-table-wrap">
         <table class="cl-table" id="clTabela">
           <thead>
             <tr>
@@ -303,6 +323,7 @@
           </thead>
           <tbody id="clBody"></tbody>
         </table>
+        </div>
 
         <!-- Alterações -->
         <div class="form-group">
@@ -447,7 +468,7 @@
   <script src="../../assets/js/dados-escala.js"></script>
   <script>
     // ── Chaves e constantes ────────────────────────────────────────
-    const KEY_FROTA = 'bbm_viaturas_frota';
+    const KEY_FROTA = 'viaturas_frota'; // BBM cloud key (sem fotos)
     const KEY_CL    = 'viaturas_checklist'; // BBM cloud key
 
     const ITENS_AR = [
@@ -468,13 +489,36 @@
     ];
 
     const DEFAULT_VIATURAS = [
-      { id:'ar61',  denominacao:'AR 61',  tipo:'Pickup',            checklistTipo:'AR',  placa:'', ano:'', foto:null, km:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
-      { id:'ar75',  denominacao:'AR 75',  tipo:'Pickup',            checklistTipo:'AR',  placa:'', ano:'', foto:null, km:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
-      { id:'abt15', denominacao:'ABT 15', tipo:'Auto Bomba Tanque', checklistTipo:'ABT', placa:'', ano:'', foto:null, km:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
+      { id:'ar61',  denominacao:'AR 61',  tipo:'Pickup',            checklistTipo:'AR',  placa:'', ano:'', foto:null, kmTrocaOleo:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
+      { id:'ar75',  denominacao:'AR 75',  tipo:'Pickup',            checklistTipo:'AR',  placa:'', ano:'', foto:null, kmTrocaOleo:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
+      { id:'abt15', denominacao:'ABT 15', tipo:'Auto Bomba Tanque', checklistTipo:'ABT', placa:'', ano:'', foto:null, kmTrocaOleo:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
     ];
 
-    function loadFrota(){ try { const d=JSON.parse(localStorage.getItem(KEY_FROTA)); return d&&d.length?d:DEFAULT_VIATURAS.map(v=>({...v})); } catch { return DEFAULT_VIATURAS.map(v=>({...v})); } }
-    function saveFrota(d){ localStorage.setItem(KEY_FROTA, JSON.stringify(d)); }
+    // Fotos ficam localmente (base64 pesado demais para nuvem)
+    function _getFotos(){ try { return JSON.parse(localStorage.getItem('bbm_v_fotos')||'{}'); } catch { return {}; } }
+    function _saveFotos(f){ localStorage.setItem('bbm_v_fotos', JSON.stringify(f)); }
+
+    function _mergeFotos(dados){ const f=_getFotos(); return dados.map(v=>({...v, foto:f[v.id]||null})); }
+
+    function loadFrota(){
+      const fotos = _getFotos();
+      try {
+        const old=JSON.parse(localStorage.getItem('bbm_viaturas_frota'));
+        if(old&&old.length) return old.map(v=>({
+          ...v,
+          kmTrocaOleo: v.kmTrocaOleo || v.km || '',  // migração do campo antigo
+          foto: v.foto || fotos[v.id] || null
+        }));
+      } catch {}
+      return DEFAULT_VIATURAS.map(v=>({...v, foto: fotos[v.id]||null}));
+    }
+
+    function saveFrota(d){
+      // Fotos salvam local; metadados vão para a nuvem
+      const fotos={}; d.forEach(v=>{ if(v.foto) fotos[v.id]=v.foto; }); _saveFotos(fotos);
+      const meta=d.map(({foto,...rest})=>rest);
+      BBM.save(KEY_FROTA, meta);
+    }
 
     let frota        = loadFrota();
     let checklists   = [];
@@ -485,9 +529,32 @@
     let _dadosPendentes = null;
     let _clParaAssinar  = null;
 
-    // ── Inicialização: carrega escala + checklists da nuvem ───────
-    BBM.ready(['escala_registros', KEY_CL], () => {
+    // ── Inicialização: carrega escala + checklists + frota da nuvem ─
+    BBM.ready(['escala_registros', KEY_CL, KEY_FROTA], () => {
       escalaRegistros = BBM.load('escala_registros');
+
+      // Carrega frota da nuvem; migra fotos e dados do localStorage antigo
+      const cloudFrota = BBM.load(KEY_FROTA);
+      if (cloudFrota && cloudFrota.length) {
+        frota = _mergeFotos(cloudFrota);
+      } else {
+        // Primeira vez: sobe dados locais para a nuvem
+        const localFrota = frota;
+        saveFrota(localFrota);
+        frota = localFrota;
+      }
+      // Atualiza viaturaAtual se overlay estiver aberta (evita referência stale)
+      if (viaturaAtual) {
+        const atualizado = frota.find(v => v.id === viaturaAtual.id);
+        if (atualizado) viaturaAtual = {...atualizado, foto: viaturaAtual.foto || atualizado.foto};
+      }
+      // Migra fotos embutidas no localStorage legado
+      try {
+        const old = JSON.parse(localStorage.getItem('bbm_viaturas_frota')||'[]');
+        const fotos = _getFotos(); let mudou = false;
+        old.forEach(v=>{ if(v.foto && !fotos[v.id]){ fotos[v.id]=v.foto; mudou=true; } });
+        if (mudou) _saveFotos(fotos);
+      } catch {}
 
       // Carrega checklists da nuvem e migra os do localStorage antigo
       const cloudCL = BBM.load(KEY_CL);
@@ -586,6 +653,37 @@
       BBM.toast('Sem escala registrada para ' + formatBR(key), 'error');
     }
 
+    // ── Helpers de alerta de óleo ─────────────────────────────────
+    function kmAtualViatura(vId) {
+      const cls = checklists.filter(c => c.viaturaId === vId && c.km && c.status !== 'rascunho');
+      if (!cls.length) return null;
+      return Math.max(...cls.map(c => Number(c.km)));
+    }
+
+    function alertaOleo(v) {
+      const kmAtual = kmAtualViatura(v.id);
+      const kmOleo  = Number(v.kmTrocaOleo || v.km || 0);
+      const dataOleo = v.ultimaTrocaOleo ? new Date(v.ultimaTrocaOleo) : null;
+      const hoje     = new Date();
+
+      let meses = null;
+      if (dataOleo) meses = (hoje - dataOleo) / (1000*60*60*24*30.44);
+
+      const porKm   = kmAtual && kmOleo && (kmAtual - kmOleo) > 10000;
+      const porData = meses !== null && meses > 6;
+
+      if (!porKm && !porData) return '';
+
+      const motivos = [];
+      if (porKm)   motivos.push(`+${Math.round((kmAtual-kmOleo)/1000)}k km desde últ. troca`);
+      if (porData) motivos.push(`${Math.round(meses)} meses sem trocar`);
+      const critico = (kmAtual && kmOleo && (kmAtual-kmOleo) > 15000) || (meses !== null && meses > 9);
+      return `<div class="vcard-alerta-oleo${critico?' critico':''}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Troca de óleo: ${motivos.join(' · ')}
+      </div>`;
+    }
+
     // ── Cards ─────────────────────────────────────────────────────
     function renderCards() {
       const hoje = new Date().toISOString().slice(0,10);
@@ -596,11 +694,15 @@
       document.getElementById('totCheck').textContent = new Set(checkHojeFinalizados).size;
 
       document.getElementById('viaturaGrid').innerHTML = frota.map(v => {
-        const fotoHtml = v.foto
-          ? `<img src="${v.foto}" alt="${v.denominacao}"/>`
+        const foto = v.foto || _getFotos()[v.id] || null;
+        const fotoHtml = foto
+          ? `<img src="${foto}" alt="${v.denominacao}"/>`
           : `<div class="no-photo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
         const temCheck = checkHojeFinalizados.includes(v.id);
         const temRascunho = checklists.some(c => c.viaturaId === v.id && c.data === hoje && c.status === 'rascunho');
+        const kmAtual = kmAtualViatura(v.id);
+        const kmDisplay = kmAtual ? Number(kmAtual).toLocaleString('pt-BR') + ' km' : (v.kmTrocaOleo ? Number(v.kmTrocaOleo).toLocaleString('pt-BR') + ' km*' : '—');
+        const alerta = alertaOleo(v);
         return `<div class="vcard">
           <div class="vcard-photo">
             ${fotoHtml}
@@ -610,13 +712,15 @@
           </div>
           <div class="vcard-body">
             <div class="vcard-name">${v.denominacao}</div>
-            <div class="vcard-tipo">${v.tipo}</div>
-            <div class="vcard-infos">
-              <div class="vcard-info"><div class="vcard-info-label">KM Atual</div><div class="vcard-info-value">${v.km?Number(v.km).toLocaleString('pt-BR')+' km':'—'}</div></div>
-              <div class="vcard-info"><div class="vcard-info-label">Últ. Troca Óleo</div><div class="vcard-info-value">${formatBR(v.ultimaTrocaOleo)}</div></div>
-              <div class="vcard-info"><div class="vcard-info-label">Placa</div><div class="vcard-info-value">${v.placa||'—'}</div></div>
-              <div class="vcard-info"><div class="vcard-info-label">Ano</div><div class="vcard-info-value">${v.ano||'—'}</div></div>
+            <div class="vcard-tipo">${v.tipo}${v.placa ? ' · ' + v.placa : ''}${v.ano ? ' · ' + v.ano : ''}</div>
+            <div class="vcard-km-row">
+              <span class="vcard-km-valor">${kmDisplay}</span>
+              <span class="vcard-km-label">KM atual</span>
             </div>
+            <div style="font-size:.75rem;color:var(--text-light);margin-bottom:10px">
+              Troca de óleo: ${v.ultimaTrocaOleo ? formatBR(v.ultimaTrocaOleo) + (v.kmTrocaOleo ? ' · ' + Number(v.kmTrocaOleo).toLocaleString('pt-BR') + ' km' : '') : '—'}
+            </div>
+            ${alerta}
           </div>
           <div class="vcard-actions">
             <button class="btn btn-ghost" onclick="abrirDetalhe('${v.id}','paneChecklist')">📋 Checklist</button>
@@ -660,7 +764,7 @@
       document.getElementById('iTipo').value        = v.tipo;
       document.getElementById('iPlaca').value       = v.placa||'';
       document.getElementById('iAno').value         = v.ano||'';
-      document.getElementById('iKm').value          = v.km||'';
+      document.getElementById('iKm').value          = v.kmTrocaOleo||v.km||'';
       document.getElementById('iOleo').value        = v.ultimaTrocaOleo||'';
       document.getElementById('iStatus').value      = v.status||'Disponível';
       document.getElementById('iObs').value         = v.obs||'';
@@ -674,13 +778,14 @@
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = ev => {
+        const src = ev.target.result;
         const prev = document.getElementById('fotoPreview');
-        prev.src = ev.target.result; prev.style.display='block';
+        prev.src = src; prev.style.display='block';
         document.getElementById('photoLabel').textContent = 'Clique para trocar a foto';
         if (viaturaAtual) {
-          viaturaAtual.foto = ev.target.result;
+          viaturaAtual.foto = src;
           const idx = frota.findIndex(v=>v.id===viaturaAtual.id);
-          if (idx>=0) { frota[idx]=viaturaAtual; saveFrota(frota); renderCards(); }
+          if (idx>=0) { frota[idx].foto = src; saveFrota(frota); renderCards(); }
         }
       };
       reader.readAsDataURL(file);
@@ -692,12 +797,16 @@
       if (idx<0) return;
       frota[idx].placa          = document.getElementById('iPlaca').value.trim();
       frota[idx].ano            = document.getElementById('iAno').value;
-      frota[idx].km             = document.getElementById('iKm').value;
+      frota[idx].kmTrocaOleo    = document.getElementById('iKm').value;
       frota[idx].ultimaTrocaOleo= document.getElementById('iOleo').value;
       frota[idx].status         = document.getElementById('iStatus').value;
       frota[idx].obs            = document.getElementById('iObs').value.trim();
+      frota[idx].foto           = viaturaAtual.foto || frota[idx].foto; // preserva foto
       viaturaAtual = frota[idx];
-      saveFrota(frota); renderCards(); BBM.toast('Informações salvas.');
+      saveFrota(frota);
+      fecharDetalhe();
+      renderCards();
+      BBM.toast('Informações salvas com sucesso.');
     }
 
     // ── Checklist — inicialização ─────────────────────────────────
@@ -882,6 +991,7 @@
         tipo: viaturaAtual.checklistTipo,
         fotos: coletarFotosVistoria(),
         status: 'rascunho',
+        criadorId: BBM.currentUser()?.id || null,
         criadoEm: new Date().toISOString(),
       };
       if (_rascunhoId) {
@@ -966,13 +1076,7 @@
         _dadosPendentes = null;
         BBM.save(KEY_CL, checklists);
 
-        // Atualiza KM
-        if (cl.km) {
-          const idx = frota.findIndex(v=>v.id===cl.viaturaId);
-          if (idx>=0 && Number(cl.km) > Number(frota[idx].km||0)) {
-            frota[idx].km = cl.km; viaturaAtual = frota[idx]; saveFrota(frota);
-          }
-        }
+        // KM atual é calculado dinamicamente dos checklists (kmAtualViatura)
 
         BBM.closeModal('modalSenha');
         setChecklistLocked(true);
@@ -1079,8 +1183,13 @@
         // Botões de ação
         let acoes = '';
         if (cl.status === 'rascunho') {
-          acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px" onclick="event.stopPropagation();abrirRascunhoNoForm('${cl.id}')">✏ Editar</button>
-                   <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px;color:#dc2626;border-color:#fca5a5" onclick="event.stopPropagation();excluirCL('${cl.id}')">🗑</button>`;
+          const isCriador = !cl.criadorId || (user && cl.criadorId === user.id);
+          if (isCriador) {
+            acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px" onclick="event.stopPropagation();abrirRascunhoNoForm('${cl.id}')">✏ Editar</button>
+                     <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px;color:#dc2626;border-color:#fca5a5" onclick="event.stopPropagation();excluirCL('${cl.id}')">🗑</button>`;
+          } else {
+            acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px" onclick="event.stopPropagation();visualizarRascunho('${cl.id}')">👁 Visualizar</button>`;
+          }
         } else if (cl.status === 'aguardando_oficial' && user && cl.chefeId === user.id) {
           acoes = `<button class="btn btn-primary" style="font-size:.72rem;padding:3px 12px" onclick="event.stopPropagation();assinarComoOficial('${cl.id}')">✍ Assinar</button>
                    <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="event.stopPropagation();imprimirChecklist(checklists.find(x=>x.id==='${cl.id}'))">🖨️</button>`;
@@ -1088,11 +1197,14 @@
           acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="event.stopPropagation();imprimirChecklist(checklists.find(x=>x.id==='${cl.id}'))">🖨️ Imprimir</button>`;
         }
 
+        const motoristaInfo = cl.status === 'rascunho' && cl.motorista
+          ? `<span style="font-size:.72rem;color:#92400e;font-weight:600;background:#fef3c7;padding:1px 7px;border-radius:10px">Mot.: ${cl.motorista}</span>`
+          : '';
         return `<div class="hist-item">
           <div class="hist-item-head" onclick="toggleHist(this)">
             <span class="hist-item-date">${formatBR(cl.data)}</span>
             <span class="hist-item-guard">Guar.: ${cl.guarnicao||'—'}</span>
-            ${statusBadge} ${qualBadge}
+            ${motoristaInfo} ${statusBadge} ${qualBadge}
             <div class="hist-acoes" onclick="event.stopPropagation()">${acoes}</div>
             <span style="color:#9ca3af;font-size:.8rem">▾</span>
           </div>
@@ -1114,6 +1226,21 @@
       setChecklistLocked(false);
       document.getElementById('clRascunhoBanner').style.display = 'none';
       document.getElementById('clLockedBanner').style.display = 'none';
+      mudarTab('paneChecklist', document.querySelector('.dtab:nth-child(2)'));
+      document.getElementById('detalheView').scrollTop = 0;
+    }
+
+    function visualizarRascunho(clId) {
+      const cl = checklists.find(c => c.id === clId);
+      if (!cl) return;
+      construirChecklist();
+      preencherFormChecklist(cl);
+      setChecklistLocked(true);
+      document.getElementById('clRascunhoBanner').style.display = 'none';
+      document.getElementById('clLockedBanner').style.display = '';
+      document.getElementById('clLockedBanner').className = 'cl-locked-banner aguardando';
+      document.getElementById('clLockedMsg').textContent =
+        `Rascunho de ${cl.motorista||'motorista não informado'} — somente o responsável pode editar.`;
       mudarTab('paneChecklist', document.querySelector('.dtab:nth-child(2)'));
       document.getElementById('detalheView').scrollTop = 0;
     }
