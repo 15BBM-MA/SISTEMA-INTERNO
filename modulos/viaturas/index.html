@@ -570,9 +570,16 @@
       return [];
     }
 
-    function saveChecklists(lista){
+    async function saveChecklists(lista, { toast } = {}) {
       localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(lista)); // cache local imediato
-      BBM.save(KEY_CL, lista);                                     // sincroniza com Supabase
+      const res = await BBM.save(KEY_CL, lista);                  // sincroniza com Supabase
+      if (toast) {
+        if (!res || res.ok) {
+          BBM.toast(toast);
+        } else {
+          BBM.toast('Rascunho salvo localmente. Falha na sincronização com a nuvem — verifique a conexão.', 'error');
+        }
+      }
     }
 
     let frota        = loadFrota();
@@ -1120,6 +1127,7 @@
       if (!viaturaAtual) return;
       const data = document.getElementById('clData').value;
       if (!data) { BBM.toast('Informe a data.', 'error'); return; }
+      const motoristaVal = document.getElementById('clMotorista').value;
       const cl = {
         id: _rascunhoId || BBM.generateId(),
         viaturaId: viaturaAtual.id,
@@ -1131,7 +1139,8 @@
         chefeNome: '',
         itens: coletarItens(),
         alteracoes: document.getElementById('clAlteracoes').value.trim(),
-        motorista: document.getElementById('clMotorista').value,
+        motorista: motoristaVal,
+        motoristaNome: motoristaVal,
         tipo: viaturaAtual.checklistTipo,
         fotos: coletarFotosVistoria(),
         status: 'rascunho',
@@ -1145,9 +1154,8 @@
         _rascunhoId = cl.id;
         checklists.unshift(cl);
       }
-      saveChecklists(checklists);
+      saveChecklists(checklists, { toast: '✅ Rascunho salvo com sucesso!' });
       renderHistorico(); renderCards();
-      BBM.toast('Rascunho salvo.');
     }
 
     // ── Assinar (motorista) ───────────────────────────────────────

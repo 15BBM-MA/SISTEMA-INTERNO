@@ -211,12 +211,12 @@ window.BBM = {
     if (!map || this._cloudFail[key]) {
       localStorage.setItem('bbm_' + key, JSON.stringify(data));
       if (map) this._cache[key] = data;
-      return;
+      return Promise.resolve({ ok: false, local: true });
     }
     const prev = this._cache[key] || [];
     this._cache[key] = data;
-    // sincroniza com a nuvem (sem travar a interface)
-    this._sync(map, prev, data).catch(() => {});
+    // sincroniza com a nuvem; retorna promise para o chamador tratar erros
+    return this._sync(map, prev, data).then(() => ({ ok: true })).catch(e => ({ ok: false, error: e }));
   },
 
   async _sync(map, prev, data) {
@@ -225,7 +225,7 @@ window.BBM = {
     const rows = data.map(x => ({ modulo: map.modulo, colecao: map.colecao, item_id: x.id, dados: x, atualizado: new Date().toISOString() }));
     if (rows.length) {
       const { error } = await sb.from('app_dados').upsert(rows, { onConflict: 'modulo,colecao,item_id' });
-      if (error) { this.toast('Falha ao salvar na nuvem: ' + error.message, 'error'); throw error; }
+      if (error) throw error;
     }
     const remover = prev.map(x => x.id).filter(id => !novoIds.has(id));
     for (const id of remover) {
