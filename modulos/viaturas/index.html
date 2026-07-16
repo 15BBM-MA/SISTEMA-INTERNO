@@ -690,7 +690,7 @@
       document.getElementById('totCheck').textContent = new Set(checkHojeFinalizados).size;
 
       document.getElementById('viaturaGrid').innerHTML = frota.map(v => {
-        const foto = v.foto || _getFotos()[v.id] || null;
+        const foto = v.foto || null;
         const fotoHtml = foto
           ? `<img src="${foto}" alt="${v.denominacao}"/>`
           : `<div class="no-photo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
