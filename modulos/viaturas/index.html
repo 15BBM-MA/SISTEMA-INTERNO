@@ -494,31 +494,36 @@
       { id:'abt15', denominacao:'ABT 15', tipo:'Auto Bomba Tanque', checklistTipo:'ABT', placa:'', ano:'', foto:null, kmTrocaOleo:'', ultimaTrocaOleo:'', status:'Disponível', obs:'' },
     ];
 
-    // Fotos ficam localmente (base64 pesado demais para nuvem)
-    function _getFotos(){ try { return JSON.parse(localStorage.getItem('bbm_v_fotos')||'{}'); } catch { return {}; } }
-    function _saveFotos(f){ localStorage.setItem('bbm_v_fotos', JSON.stringify(f)); }
-
-    function _mergeFotos(dados){ const f=_getFotos(); return dados.map(v=>({...v, foto:f[v.id]||null})); }
+    // Comprime imagem antes de salvar (reduz para max 800px, qualidade 0.75)
+    function compressImg(src, cb) {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else       { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        cb(c.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = src;
+    }
 
     function loadFrota(){
-      const fotos = _getFotos();
       try {
-        const old=JSON.parse(localStorage.getItem('bbm_viaturas_frota'));
-        if(old&&old.length) return old.map(v=>({
-          ...v,
-          kmTrocaOleo: v.kmTrocaOleo || v.km || '',  // migração do campo antigo
-          foto: v.foto || fotos[v.id] || null
+        const old = JSON.parse(localStorage.getItem('bbm_viaturas_frota'));
+        if (old && old.length) return old.map(v => ({
+          ...v, kmTrocaOleo: v.kmTrocaOleo || v.km || ''
         }));
       } catch {}
-      return DEFAULT_VIATURAS.map(v=>({...v, foto: fotos[v.id]||null}));
+      return DEFAULT_VIATURAS.map(v=>({...v}));
     }
 
-    function saveFrota(d){
-      // Fotos salvam local; metadados vão para a nuvem
-      const fotos={}; d.forEach(v=>{ if(v.foto) fotos[v.id]=v.foto; }); _saveFotos(fotos);
-      const meta=d.map(({foto,...rest})=>rest);
-      BBM.save(KEY_FROTA, meta);
-    }
+    // Foto vai para a nuvem (comprimida) — compartilhada entre todos os usuários
+    function saveFrota(d){ BBM.save(KEY_FROTA, d); }
 
     let frota        = loadFrota();
     let checklists   = [];
@@ -536,25 +541,16 @@
       // Carrega frota da nuvem; migra fotos e dados do localStorage antigo
       const cloudFrota = BBM.load(KEY_FROTA);
       if (cloudFrota && cloudFrota.length) {
-        frota = _mergeFotos(cloudFrota);
+        frota = cloudFrota;
       } else {
         // Primeira vez: sobe dados locais para a nuvem
-        const localFrota = frota;
-        saveFrota(localFrota);
-        frota = localFrota;
+        saveFrota(frota);
       }
       // Atualiza viaturaAtual se overlay estiver aberta (evita referência stale)
       if (viaturaAtual) {
         const atualizado = frota.find(v => v.id === viaturaAtual.id);
         if (atualizado) viaturaAtual = {...atualizado, foto: viaturaAtual.foto || atualizado.foto};
       }
-      // Migra fotos embutidas no localStorage legado
-      try {
-        const old = JSON.parse(localStorage.getItem('bbm_viaturas_frota')||'[]');
-        const fotos = _getFotos(); let mudou = false;
-        old.forEach(v=>{ if(v.foto && !fotos[v.id]){ fotos[v.id]=v.foto; mudou=true; } });
-        if (mudou) _saveFotos(fotos);
-      } catch {}
 
       // Carrega checklists da nuvem e migra os do localStorage antigo
       const cloudCL = BBM.load(KEY_CL);
@@ -712,13 +708,24 @@
           </div>
           <div class="vcard-body">
             <div class="vcard-name">${v.denominacao}</div>
-            <div class="vcard-tipo">${v.tipo}${v.placa ? ' · ' + v.placa : ''}${v.ano ? ' · ' + v.ano : ''}</div>
-            <div class="vcard-km-row">
-              <span class="vcard-km-valor">${kmDisplay}</span>
-              <span class="vcard-km-label">KM atual</span>
-            </div>
-            <div style="font-size:.75rem;color:var(--text-light);margin-bottom:10px">
-              Troca de óleo: ${v.ultimaTrocaOleo ? formatBR(v.ultimaTrocaOleo) + (v.kmTrocaOleo ? ' · ' + Number(v.kmTrocaOleo).toLocaleString('pt-BR') + ' km' : '') : '—'}
+            <div class="vcard-tipo">${v.tipo}</div>
+            <div class="vcard-infos">
+              <div class="vcard-info">
+                <div class="vcard-info-label">KM Atual</div>
+                <div class="vcard-info-value">${kmDisplay}</div>
+              </div>
+              <div class="vcard-info">
+                <div class="vcard-info-label">Ano</div>
+                <div class="vcard-info-value">${v.ano || '—'}</div>
+              </div>
+              <div class="vcard-info">
+                <div class="vcard-info-label">Placa</div>
+                <div class="vcard-info-value">${v.placa || '—'}</div>
+              </div>
+              <div class="vcard-info">
+                <div class="vcard-info-label">Últ. Troca de Óleo</div>
+                <div class="vcard-info-value">${v.ultimaTrocaOleo ? formatBR(v.ultimaTrocaOleo) : '—'}</div>
+              </div>
             </div>
             ${alerta}
           </div>
@@ -778,15 +785,16 @@
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = ev => {
-        const src = ev.target.result;
-        const prev = document.getElementById('fotoPreview');
-        prev.src = src; prev.style.display='block';
-        document.getElementById('photoLabel').textContent = 'Clique para trocar a foto';
-        if (viaturaAtual) {
-          viaturaAtual.foto = src;
-          const idx = frota.findIndex(v=>v.id===viaturaAtual.id);
-          if (idx>=0) { frota[idx].foto = src; saveFrota(frota); renderCards(); }
-        }
+        compressImg(ev.target.result, src => {
+          const prev = document.getElementById('fotoPreview');
+          prev.src = src; prev.style.display='block';
+          document.getElementById('photoLabel').textContent = 'Clique para trocar a foto';
+          if (viaturaAtual) {
+            viaturaAtual.foto = src;
+            const idx = frota.findIndex(v=>v.id===viaturaAtual.id);
+            if (idx>=0) { frota[idx].foto = src; saveFrota(frota); renderCards(); }
+          }
+        });
       };
       reader.readAsDataURL(file);
     }
