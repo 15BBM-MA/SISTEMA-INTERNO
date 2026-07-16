@@ -241,7 +241,14 @@ window.BBM = {
   async _sync(map, prev, data) {
     const sb = await this.sb();
     const novoIds = new Set(data.map(x => x.id));
-    const rows = data.map(x => ({ modulo: map.modulo, colecao: map.colecao, item_id: x.id, dados: x, atualizado: new Date().toISOString() }));
+    // Envia só o que mudou. Reenviar a coleção inteira a cada gravação faz o
+    // request crescer com o total de dados — um único registro grande (uma
+    // foto pesada, p.ex.) estoura o limite e derruba TODAS as gravações,
+    // inclusive as de quem não tem nada a ver com ele.
+    const antes = new Map(prev.map(x => [x.id, JSON.stringify(x)]));
+    const rows = data
+      .filter(x => antes.get(x.id) !== JSON.stringify(x))
+      .map(x => ({ modulo: map.modulo, colecao: map.colecao, item_id: x.id, dados: x, atualizado: new Date().toISOString() }));
     if (rows.length) {
       const { error } = await sb.from('app_dados').upsert(rows, { onConflict: 'modulo,colecao,item_id' });
       if (error) throw error;

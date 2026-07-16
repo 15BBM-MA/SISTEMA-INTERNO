@@ -75,6 +75,8 @@
     .cl-status-badge.rascunho { background:#fef3c7; color:#92400e; }
     .cl-status-badge.aguardando { background:#dbeafe; color:#1d4ed8; }
     .cl-status-badge.finalizado { background:#dcfce7; color:#15803d; }
+    .hist-mot { font-size:.72rem; font-weight:600; color:#475569; background:#f1f5f9; padding:1px 7px; border-radius:10px; white-space:nowrap; }
+    .hist-mot.rascunho { color:#92400e; background:#fef3c7; }
 
     /* ── Rascunho banner ── */
     .rascunho-banner { background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:12px; font-size:.84rem; }
@@ -1359,7 +1361,6 @@
         checklists.unshift(cl);
         _rascunhoId = null;
         _dadosPendentes = null;
-        saveChecklists(checklists);
 
         // KM atual é calculado dinamicamente dos checklists (kmAtualViatura)
 
@@ -1370,7 +1371,14 @@
         document.getElementById('clLockedBanner').className = 'cl-locked-banner aguardando';
         document.getElementById('assinadoMotBadge').style.display = '';
         checkNotificacoes(); renderCards(); renderHistorico();
-        BBM.toast('Checklist assinado e enviado ao Chefe de Socorro!');
+
+        // Só avisa que foi enviado depois que a nuvem confirmar: sem o await
+        // o aviso aparecia mesmo quando a gravação falhava, e o chefe nunca
+        // recebia o checklist.
+        await saveChecklists(checklists, {
+          toast: 'Checklist assinado e enviado ao Chefe de Socorro!',
+          erro:  'Assinatura registrada só neste aparelho — o Chefe de Socorro NÃO recebeu. Verifique a conexão e salve novamente.',
+        });
       } catch (err) {
         document.getElementById('senhaErro').style.display = 'block';
       } finally {
@@ -1411,6 +1419,7 @@
         if (sessaoAtual) await sb.auth.setSession({ access_token: sessaoAtual.access_token, refresh_token: sessaoAtual.refresh_token });
 
         const idx = checklists.findIndex(c => c.id === _clParaAssinar);
+        BBM.closeModal('modalAssinaturaOficial');
         if (idx >= 0) {
           checklists[idx] = {
             ...checklists[idx],
@@ -1419,11 +1428,13 @@
             assinadoOficialEm: new Date().toISOString(),
             assinadoOficialNome: user.nome,
           };
-          saveChecklists(checklists);
+          checkNotificacoes(); renderHistorico(); renderCards();
+          // Mesma correção da assinatura do motorista: confirmar só após a nuvem.
+          await saveChecklists(checklists, {
+            toast: 'Checklist finalizado com sua assinatura!',
+            erro:  'Assinatura registrada só neste aparelho — o checklist continua pendente para os demais. Verifique a conexão.',
+          });
         }
-        BBM.closeModal('modalAssinaturaOficial');
-        checkNotificacoes(); renderHistorico(); renderCards();
-        BBM.toast('Checklist finalizado com sua assinatura!');
       } catch(err) {
         document.getElementById('senhaOficialErro').textContent = 'Senha incorreta.';
         document.getElementById('senhaOficialErro').style.display = 'block';
@@ -1460,10 +1471,13 @@
       el.innerHTML = lista.map(cl => {
         const temRuim = Object.entries(cl.itens||{}).some(([k,v])=>!k.startsWith('obs_')&&v==='RUIM');
         const qualBadge = temRuim ? '<span class="hist-badge-att">⚠ Com RUIM</span>' : '<span class="hist-badge-ok">✓ OK</span>';
+        // Na pendência, dizer de quem se está esperando — "Ag. Chefe" não
+        // informa a quem cobrar a assinatura.
         const statusBadge =
-          cl.status === 'rascunho'         ? '<span class="cl-status-badge rascunho">Rascunho</span>' :
-          cl.status === 'aguardando_oficial'? '<span class="cl-status-badge aguardando">⏳ Ag. Chefe</span>' :
-                                             '<span class="cl-status-badge finalizado">✓ Finalizado</span>';
+          cl.status === 'rascunho'          ? '<span class="cl-status-badge rascunho">Rascunho</span>' :
+          cl.status === 'aguardando_oficial'? '<span class="cl-status-badge aguardando">⏳ Aguardando assinatura'
+                                              + (cl.chefeNome ? ' de ' + esc(cl.chefeNome) : ' do chefe') + '</span>' :
+                                              '<span class="cl-status-badge finalizado">✓ Finalizado</span>';
 
         // Botões de ação
         let acoes = '';
@@ -1481,8 +1495,10 @@
           acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="event.stopPropagation();imprimirChecklist(checklists.find(x=>x.id==='${cl.id}'))">🖨️ Imprimir</button>`;
         }
 
-        const motoristaInfo = cl.status === 'rascunho' && cl.motorista
-          ? `<span style="font-size:.72rem;color:#92400e;font-weight:600;background:#fef3c7;padding:1px 7px;border-radius:10px">Mot.: ${cl.motorista}</span>`
+        // O motorista aparece em qualquer status: quem assinou é a informação
+        // mais útil do item, não só no rascunho.
+        const motoristaInfo = cl.motorista
+          ? `<span class="hist-mot${cl.status==='rascunho'?' rascunho':''}">Mot.: ${esc(cl.motorista)}</span>`
           : '';
         return `<div class="hist-item">
           <div class="hist-item-head" onclick="toggleHist(this)">
