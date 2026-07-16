@@ -304,20 +304,7 @@
           <span id="clLockedMsg">Checklist bloqueado.</span>
         </div>
 
-        <!-- Chefe de Socorro -->
-        <div class="form-group" style="margin-bottom:14px" id="clChefeWrap">
-          <label class="form-label">Chefe de Socorro <span style="color:#dc2626">*</span></label>
-          <div class="chefe-grid" id="clChefeGrid"></div>
-          <div class="chefe-selecionado" id="clChefeSelecionado" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span id="clChefeNomeDisplay"></span>
-            <button type="button" style="margin-left:auto;font-size:.75rem;color:#6b7280;background:none;border:none;cursor:pointer" onclick="limparChefe()">Trocar</button>
-          </div>
-          <!-- campos ocultos para compatibilidade com o restante do código -->
-          <input type="hidden" id="clChefeSocorro" value=""/>
-          <input type="hidden" id="clChefeNome" value=""/>
-          <input type="hidden" id="clChefeLogin" value=""/>
-        </div>
+        <!-- Chefe de Socorro é selecionado na tela de assinatura -->
 
         <!-- Data e KM -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
@@ -433,18 +420,34 @@
 
   <!-- ══════════════ MODAL — Assinatura do Motorista ══════════════ -->
   <div class="modal-overlay" id="modalSenha">
-    <div class="modal" style="max-width:380px">
+    <div class="modal" style="max-width:520px">
       <div class="modal-header">
-        <span class="modal-title">Confirmar Assinatura — Motorista</span>
+        <span class="modal-title">Assinar e Enviar ao Chefe de Socorro</span>
         <button class="modal-close" onclick="BBM.closeModal('modalSenha')">×</button>
       </div>
       <div class="modal-body">
-        <p style="font-size:.88rem;color:#374151;margin-bottom:14px">
+        <p style="font-size:.85rem;color:#374151;margin-bottom:16px">
           Motorista: <strong id="modalMotoristaName"></strong><br/>
-          <span style="font-size:.8rem;color:#6b7280">Ao assinar, o checklist será enviado ao Chefe de Socorro para revisão e não poderá mais ser editado.</span>
+          <span style="font-size:.78rem;color:#6b7280">Após assinar, o checklist não poderá mais ser editado.</span>
         </p>
+
+        <!-- Seleção do Chefe de Socorro -->
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Chefe de Socorro <span style="color:#dc2626">*</span></label>
+          <div class="chefe-grid" id="modalChefeGrid"></div>
+          <div class="chefe-selecionado" id="modalChefeSelecionado" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="modalChefeNomeDisplay"></span>
+            <button type="button" style="margin-left:auto;font-size:.75rem;color:#6b7280;background:none;border:none;cursor:pointer" onclick="limparChefeModal()">Trocar</button>
+          </div>
+          <input type="hidden" id="modalChefeSocorro" value=""/>
+          <input type="hidden" id="modalChefeNome" value=""/>
+          <input type="hidden" id="modalChefeLogin" value=""/>
+          <div id="chefeErro" style="color:#dc2626;font-size:.78rem;margin-top:4px;display:none">Selecione o Chefe de Socorro.</div>
+        </div>
+
         <div class="form-group" style="margin:0">
-          <label class="form-label">Senha de acesso</label>
+          <label class="form-label">Sua senha de acesso</label>
           <input class="form-control" id="modalSenhaInput" type="password" placeholder="••••••••"
             onkeydown="if(event.key==='Enter')confirmarAssinatura()"/>
         </div>
@@ -607,7 +610,7 @@
     async function carregarOficiais() {
       if (_carregandoOficiais) return;
       _carregandoOficiais = true;
-      const grid = document.getElementById('clChefeGrid');
+      const grid = document.getElementById('modalChefeGrid');
       if (grid && !oficiais.length) {
         grid.innerHTML = '<div class="chefe-loading">⏳ Carregando oficiais...</div>';
       }
@@ -623,7 +626,7 @@
         renderChefeGrid();
       } catch(e) {
         console.warn('Oficiais:', e);
-        const grid2 = document.getElementById('clChefeGrid');
+        const grid2 = document.getElementById('modalChefeGrid');
         if (grid2) grid2.innerHTML =
           '<div class="chefe-erro"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
           'Erro ao carregar. <button type="button" onclick="recarregarOficiais()" style="margin-left:4px;font-weight:700;text-decoration:underline;background:none;border:none;cursor:pointer;color:#b91c1c">Tentar novamente</button></div>';
@@ -637,9 +640,9 @@
     carregarOficiais();
 
     function renderChefeGrid() {
-      const grid = document.getElementById('clChefeGrid');
+      const grid = document.getElementById('modalChefeGrid');
       if (!grid) return;
-      const cur = document.getElementById('clChefeSocorro').value;
+      const cur = document.getElementById('modalChefeSocorro').value;
       grid.innerHTML = oficiais.map(o => `
         <button type="button" class="chefe-btn${cur===o.id?' sel':''}" data-id="${o.id}"
           onclick="selecionarChefe('${o.id}','${o.nome.replace(/'/g,"\\'")}','${o.login}','${o.posto.replace(/'/g,"\\'")}')">
@@ -649,23 +652,23 @@
     }
 
     function selecionarChefe(id, nome, login, posto) {
-      document.getElementById('clChefeSocorro').value = id;
-      document.getElementById('clChefeNome').value    = nome;
-      document.getElementById('clChefeLogin').value   = login;
-      document.querySelectorAll('.chefe-btn').forEach(b => b.classList.toggle('sel', b.dataset.id===id));
-      const disp = document.getElementById('clChefeSelecionado');
-      document.getElementById('clChefeNomeDisplay').textContent = posto + ' — ' + nome;
-      disp.style.display = 'flex';
-      document.getElementById('clChefeGrid').style.display = 'none';
+      document.getElementById('modalChefeSocorro').value = id;
+      document.getElementById('modalChefeNome').value    = nome;
+      document.getElementById('modalChefeLogin').value   = login;
+      document.querySelectorAll('#modalChefeGrid .chefe-btn').forEach(b => b.classList.toggle('sel', b.dataset.id===id));
+      document.getElementById('modalChefeNomeDisplay').textContent = posto + ' — ' + nome;
+      document.getElementById('modalChefeSelecionado').style.display = 'flex';
+      document.getElementById('modalChefeGrid').style.display = 'none';
+      document.getElementById('chefeErro').style.display = 'none';
     }
 
-    function limparChefe() {
-      document.getElementById('clChefeSocorro').value = '';
-      document.getElementById('clChefeNome').value    = '';
-      document.getElementById('clChefeLogin').value   = '';
-      document.querySelectorAll('.chefe-btn').forEach(b => b.classList.remove('sel'));
-      document.getElementById('clChefeSelecionado').style.display = 'none';
-      document.getElementById('clChefeGrid').style.display = '';
+    function limparChefeModal() {
+      document.getElementById('modalChefeSocorro').value = '';
+      document.getElementById('modalChefeNome').value    = '';
+      document.getElementById('modalChefeLogin').value   = '';
+      document.querySelectorAll('#modalChefeGrid .chefe-btn').forEach(b => b.classList.remove('sel'));
+      document.getElementById('modalChefeSelecionado').style.display = 'none';
+      document.getElementById('modalChefeGrid').style.display = '';
     }
 
     // ── Notificações ──────────────────────────────────────────────
@@ -900,8 +903,11 @@
     function iniciarChecklist() {
       _rascunhoId = null;
       const hoje = new Date().toISOString().slice(0,10);
+      // Busca qualquer rascunho desta viatura (não só de hoje) — o mais recente
       const rascunho = viaturaAtual
-        ? checklists.find(c => c.viaturaId === viaturaAtual.id && c.data === hoje && c.status === 'rascunho')
+        ? checklists
+            .filter(c => c.viaturaId === viaturaAtual.id && c.status === 'rascunho')
+            .sort((a,b) => (b.criadoEm||'').localeCompare(a.criadoEm||''))[0] || null
         : null;
 
       if (rascunho) {
@@ -970,7 +976,6 @@
       document.getElementById('clMotorista').value = '';
       document.getElementById('clAlteracoes').value = '';
       document.getElementById('clGuarnicao').value = '';
-      limparChefe();
       document.getElementById('assinadoMotBadge').style.display = 'none';
       document.getElementById('assinadoOfBadge').style.display = 'none';
     }
@@ -979,15 +984,7 @@
       document.getElementById('clData').value = cl.data || '';
       document.getElementById('clKm').value = cl.km || '';
       document.getElementById('clGuarnicao').value = cl.guarnicao || '';
-      if (cl.chefeId) {
-        const of = oficiais.find(o => o.id === cl.chefeId);
-        if (of) selecionarChefe(of.id, of.nome, of.login, of.posto);
-        else {
-          // oficial não está na lista em memória ainda — preenche os campos ocultos manualmente
-          document.getElementById('clChefeSocorro').value = cl.chefeId;
-          document.getElementById('clChefeNome').value    = cl.chefeNome || '';
-        }
-      }
+      // chefe é selecionado apenas na tela de assinatura
       document.getElementById('clAlteracoes').value = cl.alteracoes || '';
       document.getElementById('clMotorista').value = cl.motorista || '';
 
@@ -1077,8 +1074,8 @@
         data,
         guarnicao: document.getElementById('clGuarnicao').value.trim(),
         km: document.getElementById('clKm').value,
-        chefeId: document.getElementById('clChefeSocorro').value,
-        chefeNome: document.getElementById('clChefeNome').value,
+        chefeId: '',
+        chefeNome: '',
         itens: coletarItens(),
         alteracoes: document.getElementById('clAlteracoes').value.trim(),
         motorista: document.getElementById('clMotorista').value,
@@ -1106,8 +1103,6 @@
       const data      = document.getElementById('clData').value;
       const guarnicao = document.getElementById('clGuarnicao').value.trim();
       const motorista = document.getElementById('clMotorista').value;
-      const chefeId   = document.getElementById('clChefeSocorro').value;
-      if (!chefeId)    { BBM.toast('Selecione o Chefe de Socorro.', 'error'); return; }
       if (!data || !guarnicao) { BBM.toast('Preencha data e guarnição.', 'error'); return; }
       if (!motorista)  { BBM.toast('Selecione o motorista responsável.', 'error'); return; }
       const itens = coletarItens();
@@ -1120,9 +1115,6 @@
         viaturaNome: viaturaAtual.denominacao,
         data, guarnicao,
         km: document.getElementById('clKm').value,
-        chefeId,
-        chefeNome: document.getElementById('clChefeNome').value,
-        chefeLogin: document.getElementById('clChefeLogin').value,
         itens,
         alteracoes: document.getElementById('clAlteracoes').value.trim(),
         motorista,
@@ -1132,13 +1124,21 @@
       document.getElementById('modalMotoristaName').textContent = motorista;
       document.getElementById('modalSenhaInput').value = '';
       document.getElementById('senhaErro').style.display = 'none';
+      // Prepara grade de chefes no modal
+      limparChefeModal();
+      if (!oficiais.length) carregarOficiais(); else renderChefeGrid();
       BBM.openModal('modalSenha');
       setTimeout(() => document.getElementById('modalSenhaInput').focus(), 200);
     }
 
     async function confirmarAssinatura() {
+      const chefeId = document.getElementById('modalChefeSocorro').value;
+      if (!chefeId) {
+        document.getElementById('chefeErro').style.display = 'block';
+        return;
+      }
       const senha = document.getElementById('modalSenhaInput').value;
-      if (!senha) return;
+      if (!senha) { document.getElementById('modalSenhaInput').focus(); return; }
       const btn = document.getElementById('btnConfirmarAssinatura');
       btn.textContent = 'Verificando…'; btn.disabled = true;
       document.getElementById('senhaErro').style.display = 'none';
@@ -1159,6 +1159,9 @@
         // Remove rascunho e salva como aguardando_oficial
         const cl = {
           ..._dadosPendentes,
+          chefeId:    document.getElementById('modalChefeSocorro').value,
+          chefeNome:  document.getElementById('modalChefeNome').value,
+          chefeLogin: document.getElementById('modalChefeLogin').value,
           status: 'aguardando_oficial',
           assinadoMotorista: true,
           assinadoMotoristaEm: new Date().toISOString(),
