@@ -132,6 +132,12 @@
     /* ── Alerta de troca de óleo ── */
     .vcard-alerta-oleo { display:flex; align-items:center; gap:6px; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:5px 10px; margin-bottom:10px; font-size:.75rem; font-weight:700; color:#92400e; }
     .vcard-alerta-oleo.critico { background:#fee2e2; border-color:#dc2626; color:#b91c1c; }
+    .vcard-ultimo-cl { margin-top:10px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:var(--surface); }
+    .vcard-ultimo-cl-vazio { font-size:.75rem; color:#9ca3af; text-align:center; padding:8px 12px; }
+    .vcard-ultimo-cl-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+    .vcard-ultimo-cl-label { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6b7280; }
+    .vcard-ultimo-cl-info { font-size:.78rem; color:var(--text-secondary); display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+    .vcard-ultimo-cl-btn { width:100%; justify-content:center; font-size:.78rem; padding:5px 0; margin-top:2px; }
     .vcard-km-row { display:flex; align-items:baseline; gap:6px; margin-bottom:4px; }
     .vcard-km-valor { font-size:1.1rem; font-weight:800; color:var(--text); }
     .vcard-km-label { font-size:.7rem; color:var(--text-light); }
@@ -772,6 +778,13 @@
     }
 
     // ── Cards ─────────────────────────────────────────────────────
+    function ultimoChecklistViatura(vId) {
+      const finalizados = checklists
+        .filter(c => c.viaturaId === vId && c.status !== 'rascunho')
+        .sort((a,b) => (b.criadoEm||b.data||'').localeCompare(a.criadoEm||a.data||''));
+      return finalizados[0] || null;
+    }
+
     function renderCards() {
       const hoje = new Date().toISOString().slice(0,10);
       const checkHojeFinalizados = checklists.filter(c => c.data === hoje && c.status !== 'rascunho').map(c => c.viaturaId);
@@ -790,6 +803,26 @@
         const kmAtual = kmAtualViatura(v.id);
         const kmDisplay = kmAtual ? Number(kmAtual).toLocaleString('pt-BR') + ' km' : (v.kmTrocaOleo ? Number(v.kmTrocaOleo).toLocaleString('pt-BR') + ' km*' : '—');
         const alerta = alertaOleo(v);
+
+        // Último checklist finalizado
+        const ulCl = ultimoChecklistViatura(v.id);
+        const statusLabel = { aguardando_oficial: 'Ag. Oficial', finalizado: 'Finalizado' };
+        const statusColor = { aguardando_oficial: '#92400e', finalizado: '#15803d' };
+        const statusBg    = { aguardando_oficial: '#fef3c7', finalizado: '#dcfce7' };
+        const ulClHtml = ulCl ? `
+          <div class="vcard-ultimo-cl">
+            <div class="vcard-ultimo-cl-header">
+              <span class="vcard-ultimo-cl-label">Último checklist</span>
+              <span style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;background:${statusBg[ulCl.status]||'#f1f5f9'};color:${statusColor[ulCl.status]||'#475569'}">${statusLabel[ulCl.status]||ulCl.status}</span>
+            </div>
+            <div class="vcard-ultimo-cl-info">
+              <span>${formatBR(ulCl.data)}</span>
+              ${ulCl.motoristaNome ? `<span>· ${ulCl.motoristaNome}</span>` : ''}
+              ${ulCl.km ? `<span>· ${Number(ulCl.km).toLocaleString('pt-BR')} km</span>` : ''}
+            </div>
+            <button class="btn btn-ghost vcard-ultimo-cl-btn" onclick="event.stopPropagation();abrirChecklistDireto('${ulCl.id}','${v.id}')">📄 Abrir checklist</button>
+          </div>` : `<div class="vcard-ultimo-cl vcard-ultimo-cl-vazio">Nenhum checklist registrado</div>`;
+
         return `<div class="vcard">
           <div class="vcard-photo">
             ${fotoHtml}
@@ -819,6 +852,7 @@
               </div>
             </div>
             ${alerta}
+            ${ulClHtml}
           </div>
           <div class="vcard-actions">
             <button class="btn btn-ghost" onclick="abrirDetalhe('${v.id}','paneChecklist')">📋 Checklist</button>
@@ -826,6 +860,12 @@
           </div>
         </div>`;
       }).join('');
+    }
+
+    function abrirChecklistDireto(clId, viaturaId) {
+      abrirDetalhe(viaturaId, 'paneHistorico');
+      // pequeno delay para o overlay renderizar antes de abrir o modal do checklist
+      setTimeout(() => verChecklist(clId), 150);
     }
 
     // ── Overlay ───────────────────────────────────────────────────
