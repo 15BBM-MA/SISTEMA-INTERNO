@@ -552,6 +552,8 @@
     // Cache local: renderiza instantaneamente sem esperar o Supabase
     const _CACHE_KEY    = 'bbm_v_cache';
     const _CACHE_CL_KEY     = 'bbm_v_cl_cache';
+    const LEGADO_CL         = 'bbm_viaturas_checklist'; // chave pré-nuvem
+    const FLAG_MIGRADO_CL   = 'bbm_v_cl_migrado';       // migração legada já feita
     const _MEUS_RASCUNHOS   = 'bbm_v_meus_rasc'; // IDs de rascunhos criados neste navegador
 
     function registrarRascunhoLocal(id) {
@@ -594,14 +596,28 @@
     }
 
     function saveFrota(d){
-      localStorage.setItem(_CACHE_KEY, JSON.stringify(d)); // atualiza cache local imediatamente
-      BBM.save(KEY_FROTA, d);                              // sincroniza com Supabase
+      cacheSet(_CACHE_KEY, d);  // atualiza cache local imediatamente
+      BBM.save(KEY_FROTA, d);   // sincroniza com Supabase
     }
 
     function loadChecklistsCache(){
       try { const c=JSON.parse(localStorage.getItem(_CACHE_CL_KEY)); if(c&&Array.isArray(c)) return c; } catch {}
       return [];
     }
+
+    // O cache serve só para a tela abrir instantaneamente. As fotos são
+    // pesadas e podem estourar a cota do localStorage; se isso acontecer,
+    // seguimos sem cache — nunca deixando a exceção abortar o salvamento
+    // na nuvem, que é o que de fato importa.
+    function cacheSet(key, valor){
+      try {
+        localStorage.setItem(key, JSON.stringify(valor));
+      } catch(e) {
+        try { localStorage.removeItem(key); } catch {}
+        console.warn('Cache "'+key+'" desativado (cota do localStorage):', e.name);
+      }
+    }
+    function cacheChecklists(lista){ cacheSet(_CACHE_CL_KEY, lista); }
 
     // Distingue falta de permissão (RLS) de falha de rede — os dois
     // sintomas são iguais para o usuário, mas a solução é bem diferente.
@@ -614,8 +630,16 @@
     }
 
     async function saveChecklists(lista, { toast, erro } = {}) {
-      localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(lista)); // cache local imediato
-      const res = await BBM.save(KEY_CL, lista);                  // sincroniza com Supabase
+      cacheChecklists(lista); // cache local imediato (nunca lança)
+      let res;
+      try {
+        res = await BBM.save(KEY_CL, lista); // sincroniza com Supabase
+      } catch(e) {
+        // Nenhuma falha aqui pode passar em silêncio: o usuário precisa
+        // saber que o registro não subiu.
+        console.error('saveChecklists:', e);
+        res = { ok: false, error: e };
+      }
       const ok = !res || res.ok;
       if (ok) {
         if (toast) BBM.toast(toast);
@@ -645,7 +669,7 @@
       const cloudFrota = BBM.load(KEY_FROTA);
       if (cloudFrota && cloudFrota.length) {
         frota = cloudFrota;
-        localStorage.setItem(_CACHE_KEY, JSON.stringify(frota)); // atualiza cache com dados frescos
+        cacheSet(_CACHE_KEY, frota); // atualiza cache com dados frescos
       } else {
         saveFrota(frota); // primeira vez: sobe para a nuvem
       }
@@ -655,23 +679,36 @@
         if (atualizado) viaturaAtual = {...atualizado, foto: viaturaAtual.foto || atualizado.foto};
       }
 
-      // Carrega checklists da nuvem e migra os do localStorage antigo
+      // Carrega checklists da nuvem. A migração do localStorage antigo roda
+      // UMA ÚNICA VEZ: antes ela rodava a cada carga da página e reinseria
+      // tudo que estivesse na chave legada e não na nuvem — inclusive
+      // rascunhos já excluídos, que voltavam a cada F5. Depois de migrar,
+      // a chave legada é apagada para não ressuscitar nada de novo.
       const cloudCL = BBM.load(KEY_CL);
-      try {
-        const oldCL = JSON.parse(localStorage.getItem('bbm_viaturas_checklist')) || [];
-        for (const old of oldCL) {
-          if (!cloudCL.find(c => c.id === old.id)) {
-            cloudCL.push({
-              ...old,
-              status: old.status || (old.assinadoDigitalmente ? 'aguardando_oficial' : 'rascunho'),
-              chefeId: old.chefeId || '',
-              chefeNome: old.chefeNome || old.chefe || '',
-            });
+      if (!localStorage.getItem(FLAG_MIGRADO_CL)) {
+        try {
+          const oldCL = JSON.parse(localStorage.getItem(LEGADO_CL)) || [];
+          let migrou = false;
+          for (const old of oldCL) {
+            if (!cloudCL.find(c => c.id === old.id)) {
+              cloudCL.push({
+                ...old,
+                status: old.status || (old.assinadoDigitalmente ? 'aguardando_oficial' : 'rascunho'),
+                chefeId: old.chefeId || '',
+                chefeNome: old.chefeNome || old.chefe || '',
+              });
+              migrou = true;
+            }
           }
-        }
-      } catch {}
+          if (migrou) BBM.save(KEY_CL, cloudCL); // sobe o que era só local
+        } catch {}
+        try {
+          localStorage.setItem(FLAG_MIGRADO_CL, '1');
+          localStorage.removeItem(LEGADO_CL);
+        } catch {}
+      }
       checklists = cloudCL;
-      localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(checklists)); // atualiza cache com dados frescos
+      cacheChecklists(checklists); // atualiza cache com dados frescos
 
       renderCards();
       checkNotificacoes();
@@ -941,7 +978,7 @@
       // para saber o que apagar na nuvem. Consultar o Supabase direto aqui
       // deixaria o cache defasado e as exclusões não persistiriam.
       checklists = await BBM.refresh(KEY_CL);
-      localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(checklists));
+      cacheChecklists(checklists);
     }
 
     function abrirDetalhe(id, tab) {
@@ -1184,11 +1221,16 @@
 
     function carregarFotoVistoria(e) {
       const file = e.target.files[0]; if (!file || !_fotoAlvo) return;
+      const alvo = _fotoAlvo; // o usuário pode clicar em outro slot antes do onload
       const reader = new FileReader();
       reader.onload = ev => {
-        const img = document.getElementById('vfoto_'+_fotoAlvo);
-        const lbl = document.getElementById('vlabel_'+_fotoAlvo);
-        img.src = ev.target.result; img.style.display='block'; lbl.style.display='block';
+        // Sem comprimir, cada foto vai crua da câmera (~3 MB em base64) e um
+        // checklist com as 4 passa de 14 MB — estoura a cota do localStorage.
+        compressImg(ev.target.result, src => {
+          const img = document.getElementById('vfoto_'+alvo);
+          const lbl = document.getElementById('vlabel_'+alvo);
+          img.src = src; img.style.display='block'; lbl.style.display='block';
+        });
       };
       reader.readAsDataURL(file);
       e.target.value = '';
