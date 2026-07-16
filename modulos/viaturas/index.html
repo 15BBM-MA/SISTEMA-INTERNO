@@ -114,6 +114,9 @@
 
     /* ── Modais sobre o overlay de detalhe ── */
     #modalSenha, #modalAssinaturaOficial { z-index: 400 !important; }
+    #modalSenha .modal, #modalAssinaturaOficial .modal { display:flex; flex-direction:column; max-height:92vh; max-height:92dvh; }
+    #modalSenha .modal-body, #modalAssinaturaOficial .modal-body { overflow-y:auto; -webkit-overflow-scrolling:touch; }
+    @media(max-width:520px){ #modalSenha .modal { max-width:100% !important; border-radius:16px 16px 0 0; } }
 
     /* ── Seleção visual do Chefe de Socorro ── */
     /* Grade de chefes — 2 colunas fixas (compatível com Android antigo) */
@@ -565,7 +568,7 @@
       } catch {}
     }
     function euCriei(cl) {
-      // 1) sessão ativa com mesmo id
+      // 1) sessão ativa com id correspondente
       const user = BBM.currentUser();
       if (user && cl.criadorId && user.id === cl.criadorId) return true;
       // 2) fallback: id gravado no localStorage deste navegador (sessão expirada)
@@ -573,6 +576,8 @@
         const ids = JSON.parse(localStorage.getItem(_MEUS_RASCUNHOS)||'[]');
         if (ids.includes(cl.id)) return true;
       } catch {}
+      // 3) rascunho sem criadorId (criado sem sessão ativa) — nenhum outro pode reivindicar
+      if (!cl.criadorId) return true;
       return false;
     }
 
@@ -903,6 +908,18 @@
     }
 
     // ── Overlay ───────────────────────────────────────────────────
+    async function recarregarChecklists() {
+      try {
+        const sb = await BBM.sb();
+        const { data, error } = await sb.from('app_dados').select('dados')
+          .eq('modulo','viaturas').eq('colecao','checklist');
+        if (!error && data) {
+          checklists = data.map(r => r.dados);
+          localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(checklists));
+        }
+      } catch {}
+    }
+
     function abrirDetalhe(id, tab) {
       viaturaAtual = frota.find(v=>v.id===id);
       if (!viaturaAtual) return;
@@ -914,6 +931,12 @@
       mudarTab(tab||'paneInfo', document.querySelector(`.dtab:nth-child(${tabIdx})`));
       document.getElementById('detalheOverlay').classList.add('open');
       document.getElementById('detalheOverlay').scrollTop = 0;
+      // Atualiza histórico com dados frescos da nuvem em background
+      recarregarChecklists().then(() => {
+        iniciarChecklist();
+        renderHistorico();
+        renderCards();
+      });
     }
 
     function fecharDetalhe() {
