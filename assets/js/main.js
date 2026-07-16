@@ -206,6 +206,25 @@ window.BBM = {
     if (cb) cb();
   },
 
+  // rebusca uma coleção da nuvem e mantém o cache coerente.
+  // usar sempre que a página precisar de dados frescos — nunca consultar
+  // o Supabase por fora, senão _cache fica defasado e o _sync deixa de apagar.
+  async refresh(key) {
+    const map = this._keyMap(key);
+    if (!map) return this.load(key);
+    try {
+      const sb = await this.sb();
+      const { data, error } = await sb.from('app_dados').select('dados')
+        .eq('modulo', map.modulo).eq('colecao', map.colecao);
+      if (error) throw error;
+      this._cache[key] = (data || []).map(r => r.dados);
+      delete this._cloudFail[key]; // nuvem respondeu: volta a sincronizar
+      return this._cache[key];
+    } catch (e) {
+      return this.load(key);
+    }
+  },
+
   save(key, data) {
     const map = this._keyMap(key);
     if (!map || this._cloudFail[key]) {

@@ -602,16 +602,13 @@
       return [];
     }
 
-    async function saveChecklists(lista, { toast } = {}) {
+    async function saveChecklists(lista, { toast, erro } = {}) {
       localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(lista)); // cache local imediato
       const res = await BBM.save(KEY_CL, lista);                  // sincroniza com Supabase
-      if (toast) {
-        if (!res || res.ok) {
-          BBM.toast(toast);
-        } else {
-          BBM.toast('Rascunho salvo localmente. Falha na sincronização com a nuvem — verifique a conexão.', 'error');
-        }
-      }
+      const ok = !res || res.ok;
+      if (toast && ok) BBM.toast(toast);
+      if (!ok) BBM.toast(erro || 'Falha ao sincronizar com a nuvem — verifique a conexão.', 'error');
+      return ok;
     }
 
     let frota        = loadFrota();
@@ -909,15 +906,11 @@
 
     // ── Overlay ───────────────────────────────────────────────────
     async function recarregarChecklists() {
-      try {
-        const sb = await BBM.sb();
-        const { data, error } = await sb.from('app_dados').select('dados')
-          .eq('modulo','viaturas').eq('colecao','checklist');
-        if (!error && data) {
-          checklists = data.map(r => r.dados);
-          localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(checklists));
-        }
-      } catch {}
+      // BBM.refresh mantém o _cache interno em dia — é ele que o _sync usa
+      // para saber o que apagar na nuvem. Consultar o Supabase direto aqui
+      // deixaria o cache defasado e as exclusões não persistiriam.
+      checklists = await BBM.refresh(KEY_CL);
+      localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(checklists));
     }
 
     function abrirDetalhe(id, tab) {
@@ -1048,11 +1041,13 @@
       if (!confirm('Descartar o rascunho atual? Esta ação não pode ser desfeita.')) return;
       const id = _rascunhoId;
       checklists = checklists.filter(c => c.id !== id);
-      saveChecklists(checklists);
       removerRascunhoLocal(id);
       iniciarChecklist();
       renderHistorico(); renderCards();
-      BBM.toast('Rascunho descartado.');
+      saveChecklists(checklists, {
+        toast: 'Rascunho descartado.',
+        erro:  'Não foi possível excluir na nuvem — o rascunho voltará ao recarregar. Verifique a conexão.',
+      });
     }
 
     function construirChecklist() {
@@ -1202,7 +1197,10 @@
         checklists.unshift(cl);
       }
       registrarRascunhoLocal(cl.id);
-      saveChecklists(checklists, { toast: '✅ Rascunho salvo com sucesso!' });
+      saveChecklists(checklists, {
+        toast: '✅ Rascunho salvo com sucesso!',
+        erro:  'Rascunho salvo apenas neste aparelho. Falha na sincronização — verifique a conexão.',
+      });
       renderHistorico(); renderCards();
     }
 
@@ -1449,13 +1447,16 @@
       document.getElementById('detalheView').scrollTop = 0;
     }
 
-    function excluirCL(clId) {
+    async function excluirCL(clId) {
       if (!confirm('Excluir este rascunho?')) return;
       checklists = checklists.filter(c => c.id !== clId);
-      saveChecklists(checklists);
       removerRascunhoLocal(clId);
       iniciarChecklist(); // limpa o banner e reseta o formulário
-      renderHistorico(); renderCards(); BBM.toast('Rascunho excluído.');
+      renderHistorico(); renderCards();
+      await saveChecklists(checklists, {
+        toast: 'Rascunho excluído.',
+        erro:  'Não foi possível excluir na nuvem — o rascunho voltará ao recarregar. Verifique a conexão.',
+      });
     }
 
     function renderHistBody(cl) {
