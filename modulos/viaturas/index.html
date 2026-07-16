@@ -547,7 +547,36 @@
 
     // Cache local: renderiza instantaneamente sem esperar o Supabase
     const _CACHE_KEY    = 'bbm_v_cache';
-    const _CACHE_CL_KEY = 'bbm_v_cl_cache';
+    const _CACHE_CL_KEY     = 'bbm_v_cl_cache';
+    const _MEUS_RASCUNHOS   = 'bbm_v_meus_rasc'; // IDs de rascunhos criados neste navegador
+
+    function registrarRascunhoLocal(id) {
+      try {
+        const set = new Set(JSON.parse(localStorage.getItem(_MEUS_RASCUNHOS)||'[]'));
+        set.add(id);
+        localStorage.setItem(_MEUS_RASCUNHOS, JSON.stringify([...set]));
+      } catch {}
+    }
+    function removerRascunhoLocal(id) {
+      try {
+        const set = new Set(JSON.parse(localStorage.getItem(_MEUS_RASCUNHOS)||'[]'));
+        set.delete(id);
+        localStorage.setItem(_MEUS_RASCUNHOS, JSON.stringify([...set]));
+      } catch {}
+    }
+    function euCriei(cl) {
+      // 1) sessão ativa com mesmo id
+      const user = BBM.currentUser();
+      if (user && cl.criadorId && user.id === cl.criadorId) return true;
+      // 2) rascunho sem criadorId (criado sem sessão) → qualquer um pode
+      if (!cl.criadorId) return true;
+      // 3) fallback: id gravado no localStorage deste navegador
+      try {
+        const ids = JSON.parse(localStorage.getItem(_MEUS_RASCUNHOS)||'[]');
+        if (ids.includes(cl.id)) return true;
+      } catch {}
+      return false;
+    }
 
     function loadFrota(){
       // 1) cache rápido da última sessão (tem fotos)
@@ -1154,6 +1183,7 @@
         _rascunhoId = cl.id;
         checklists.unshift(cl);
       }
+      registrarRascunhoLocal(cl.id);
       saveChecklists(checklists, { toast: '✅ Rascunho salvo com sucesso!' });
       renderHistorico(); renderCards();
     }
@@ -1340,8 +1370,7 @@
         // Botões de ação
         let acoes = '';
         if (cl.status === 'rascunho') {
-          const isCriador = !cl.criadorId || (user && cl.criadorId === user.id);
-          if (isCriador) {
+          if (euCriei(cl)) {
             acoes = `<button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px" onclick="event.stopPropagation();abrirRascunhoNoForm('${cl.id}')">✏ Editar</button>
                      <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px;color:#dc2626;border-color:#fca5a5" onclick="event.stopPropagation();excluirCL('${cl.id}')">🗑</button>`;
           } else {
@@ -1406,6 +1435,7 @@
       if (!confirm('Excluir este rascunho?')) return;
       checklists = checklists.filter(c => c.id !== clId);
       saveChecklists(checklists);
+      removerRascunhoLocal(clId);
       if (_rascunhoId === clId) { _rascunhoId = null; }
       renderHistorico(); renderCards(); BBM.toast('Rascunho excluído.');
     }
