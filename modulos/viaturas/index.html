@@ -112,6 +112,20 @@
     .hist-acoes { display:flex; gap:6px; align-items:center; margin-left:4px; }
     .hist-acoes .btn { font-size:.72rem; padding:3px 10px; }
 
+    /* ── Modais sobre o overlay de detalhe ── */
+    #modalSenha, #modalAssinaturaOficial { z-index: 400 !important; }
+
+    /* ── Seleção visual do Chefe de Socorro ── */
+    .chefe-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px; margin-top:6px; }
+    .chefe-btn { border:2px solid var(--border); border-radius:8px; padding:10px 14px; background:var(--surface); cursor:pointer; text-align:left; transition:all .15s; width:100%; }
+    .chefe-btn:hover { border-color:#C8102E; background:#fff1f2; }
+    .chefe-btn.sel { border-color:#C8102E; background:#fff1f2; }
+    .chefe-btn-posto { font-size:.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
+    .chefe-btn-nome { font-size:.88rem; font-weight:600; color:var(--text); }
+    .chefe-btn.sel .chefe-btn-nome { color:#C8102E; }
+    .chefe-selecionado { display:flex; align-items:center; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:.84rem; color:#1d4ed8; font-weight:600; }
+    @media(max-width:600px){ .chefe-grid { grid-template-columns:1fr 1fr; } }
+
     /* ── Alerta de troca de óleo ── */
     .vcard-alerta-oleo { display:flex; align-items:center; gap:6px; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:5px 10px; margin-bottom:10px; font-size:.75rem; font-weight:700; color:#92400e; }
     .vcard-alerta-oleo.critico { background:#fee2e2; border-color:#dc2626; color:#b91c1c; }
@@ -290,9 +304,16 @@
         <!-- Chefe de Socorro -->
         <div class="form-group" style="margin-bottom:14px" id="clChefeWrap">
           <label class="form-label">Chefe de Socorro <span style="color:#dc2626">*</span></label>
-          <select class="form-control" id="clChefeSocorro">
-            <option value="">— Selecione o Chefe de Socorro —</option>
-          </select>
+          <div class="chefe-grid" id="clChefeGrid"></div>
+          <div class="chefe-selecionado" id="clChefeSelecionado" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="clChefeNomeDisplay"></span>
+            <button type="button" style="margin-left:auto;font-size:.75rem;color:#6b7280;background:none;border:none;cursor:pointer" onclick="limparChefe()">Trocar</button>
+          </div>
+          <!-- campos ocultos para compatibilidade com o restante do código -->
+          <input type="hidden" id="clChefeSocorro" value=""/>
+          <input type="hidden" id="clChefeNome" value=""/>
+          <input type="hidden" id="clChefeLogin" value=""/>
         </div>
 
         <!-- Data e KM -->
@@ -512,18 +533,23 @@
       img.src = src;
     }
 
+    // Cache local: renderiza instantaneamente sem esperar o Supabase
+    const _CACHE_KEY = 'bbm_v_cache';
     function loadFrota(){
+      // 1) cache rápido da última sessão (tem fotos)
+      try { const c=JSON.parse(localStorage.getItem(_CACHE_KEY)); if(c&&c.length) return c; } catch {}
+      // 2) localStorage legado (migração)
       try {
-        const old = JSON.parse(localStorage.getItem('bbm_viaturas_frota'));
-        if (old && old.length) return old.map(v => ({
-          ...v, kmTrocaOleo: v.kmTrocaOleo || v.km || ''
-        }));
+        const old=JSON.parse(localStorage.getItem('bbm_viaturas_frota'));
+        if(old&&old.length) return old.map(v=>({...v, kmTrocaOleo:v.kmTrocaOleo||v.km||''}));
       } catch {}
       return DEFAULT_VIATURAS.map(v=>({...v}));
     }
 
-    // Foto vai para a nuvem (comprimida) — compartilhada entre todos os usuários
-    function saveFrota(d){ BBM.save(KEY_FROTA, d); }
+    function saveFrota(d){
+      localStorage.setItem(_CACHE_KEY, JSON.stringify(d)); // atualiza cache local imediatamente
+      BBM.save(KEY_FROTA, d);                              // sincroniza com Supabase
+    }
 
     let frota        = loadFrota();
     let checklists   = [];
@@ -542,9 +568,9 @@
       const cloudFrota = BBM.load(KEY_FROTA);
       if (cloudFrota && cloudFrota.length) {
         frota = cloudFrota;
+        localStorage.setItem(_CACHE_KEY, JSON.stringify(frota)); // atualiza cache com dados frescos
       } else {
-        // Primeira vez: sobe dados locais para a nuvem
-        saveFrota(frota);
+        saveFrota(frota); // primeira vez: sobe para a nuvem
       }
       // Atualiza viaturaAtual se overlay estiver aberta (evita referência stale)
       if (viaturaAtual) {
@@ -573,7 +599,7 @@
       checkNotificacoes();
     });
 
-    // Carrega lista de oficiais (exceto Maj BM = comandante)
+    // Carrega lista de oficiais e renderiza botões de seleção
     async function carregarOficiais() {
       try {
         const sb = await BBM.sb();
@@ -583,15 +609,42 @@
           .neq('posto', 'Maj BM')
           .order('posto');
         oficiais = data || [];
-        const sel = document.getElementById('clChefeSocorro');
-        if (!sel) return;
-        const cur = sel.value;
-        sel.innerHTML = '<option value="">— Selecione o Chefe de Socorro —</option>'
-          + oficiais.map(o => `<option value="${o.id}" data-nome="${o.nome}" data-login="${o.login}">${o.posto} — ${o.nome}</option>`).join('');
-        if (cur) sel.value = cur;
+        renderChefeGrid();
       } catch(e) { console.warn('Oficiais:', e); }
     }
     carregarOficiais();
+
+    function renderChefeGrid() {
+      const grid = document.getElementById('clChefeGrid');
+      if (!grid) return;
+      const cur = document.getElementById('clChefeSocorro').value;
+      grid.innerHTML = oficiais.map(o => `
+        <button type="button" class="chefe-btn${cur===o.id?' sel':''}" data-id="${o.id}"
+          onclick="selecionarChefe('${o.id}','${o.nome.replace(/'/g,"\\'")}','${o.login}','${o.posto.replace(/'/g,"\\'")}')">
+          <div class="chefe-btn-posto">${o.posto}</div>
+          <div class="chefe-btn-nome">${o.nome}</div>
+        </button>`).join('');
+    }
+
+    function selecionarChefe(id, nome, login, posto) {
+      document.getElementById('clChefeSocorro').value = id;
+      document.getElementById('clChefeNome').value    = nome;
+      document.getElementById('clChefeLogin').value   = login;
+      document.querySelectorAll('.chefe-btn').forEach(b => b.classList.toggle('sel', b.dataset.id===id));
+      const disp = document.getElementById('clChefeSelecionado');
+      document.getElementById('clChefeNomeDisplay').textContent = posto + ' — ' + nome;
+      disp.style.display = 'flex';
+      document.getElementById('clChefeGrid').style.display = 'none';
+    }
+
+    function limparChefe() {
+      document.getElementById('clChefeSocorro').value = '';
+      document.getElementById('clChefeNome').value    = '';
+      document.getElementById('clChefeLogin').value   = '';
+      document.querySelectorAll('.chefe-btn').forEach(b => b.classList.remove('sel'));
+      document.getElementById('clChefeSelecionado').style.display = 'none';
+      document.getElementById('clChefeGrid').style.display = '';
+    }
 
     // ── Notificações ──────────────────────────────────────────────
     function checkNotificacoes() {
@@ -890,8 +943,8 @@
       });
       document.getElementById('clMotorista').value = '';
       document.getElementById('clAlteracoes').value = '';
-      document.getElementById('clChefeSocorro').value = '';
       document.getElementById('clGuarnicao').value = '';
+      limparChefe();
       document.getElementById('assinadoMotBadge').style.display = 'none';
       document.getElementById('assinadoOfBadge').style.display = 'none';
     }
@@ -900,7 +953,15 @@
       document.getElementById('clData').value = cl.data || '';
       document.getElementById('clKm').value = cl.km || '';
       document.getElementById('clGuarnicao').value = cl.guarnicao || '';
-      if (cl.chefeId) document.getElementById('clChefeSocorro').value = cl.chefeId;
+      if (cl.chefeId) {
+        const of = oficiais.find(o => o.id === cl.chefeId);
+        if (of) selecionarChefe(of.id, of.nome, of.login, of.posto);
+        else {
+          // oficial não está na lista em memória ainda — preenche os campos ocultos manualmente
+          document.getElementById('clChefeSocorro').value = cl.chefeId;
+          document.getElementById('clChefeNome').value    = cl.chefeNome || '';
+        }
+      }
       document.getElementById('clAlteracoes').value = cl.alteracoes || '';
       document.getElementById('clMotorista').value = cl.motorista || '';
 
@@ -983,7 +1044,6 @@
       if (!viaturaAtual) return;
       const data = document.getElementById('clData').value;
       if (!data) { BBM.toast('Informe a data.', 'error'); return; }
-      const chefeEl = document.getElementById('clChefeSocorro');
       const cl = {
         id: _rascunhoId || BBM.generateId(),
         viaturaId: viaturaAtual.id,
@@ -991,8 +1051,8 @@
         data,
         guarnicao: document.getElementById('clGuarnicao').value.trim(),
         km: document.getElementById('clKm').value,
-        chefeId: chefeEl.value,
-        chefeNome: chefeEl.selectedOptions[0]?.dataset.nome || '',
+        chefeId: document.getElementById('clChefeSocorro').value,
+        chefeNome: document.getElementById('clChefeNome').value,
         itens: coletarItens(),
         alteracoes: document.getElementById('clAlteracoes').value.trim(),
         motorista: document.getElementById('clMotorista').value,
@@ -1020,8 +1080,7 @@
       const data      = document.getElementById('clData').value;
       const guarnicao = document.getElementById('clGuarnicao').value.trim();
       const motorista = document.getElementById('clMotorista').value;
-      const chefeEl   = document.getElementById('clChefeSocorro');
-      const chefeId   = chefeEl.value;
+      const chefeId   = document.getElementById('clChefeSocorro').value;
       if (!chefeId)    { BBM.toast('Selecione o Chefe de Socorro.', 'error'); return; }
       if (!data || !guarnicao) { BBM.toast('Preencha data e guarnição.', 'error'); return; }
       if (!motorista)  { BBM.toast('Selecione o motorista responsável.', 'error'); return; }
@@ -1036,8 +1095,8 @@
         data, guarnicao,
         km: document.getElementById('clKm').value,
         chefeId,
-        chefeNome: chefeEl.selectedOptions[0]?.dataset.nome || '',
-        chefeLogin: chefeEl.selectedOptions[0]?.dataset.login || '',
+        chefeNome: document.getElementById('clChefeNome').value,
+        chefeLogin: document.getElementById('clChefeLogin').value,
         itens,
         alteracoes: document.getElementById('clAlteracoes').value.trim(),
         motorista,
