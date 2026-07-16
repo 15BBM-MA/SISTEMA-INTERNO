@@ -568,9 +568,7 @@
       // 1) sessão ativa com mesmo id
       const user = BBM.currentUser();
       if (user && cl.criadorId && user.id === cl.criadorId) return true;
-      // 2) rascunho sem criadorId (criado sem sessão) → qualquer um pode
-      if (!cl.criadorId) return true;
-      // 3) fallback: id gravado no localStorage deste navegador
+      // 2) fallback: id gravado no localStorage deste navegador (sessão expirada)
       try {
         const ids = JSON.parse(localStorage.getItem(_MEUS_RASCUNHOS)||'[]');
         if (ids.includes(cl.id)) return true;
