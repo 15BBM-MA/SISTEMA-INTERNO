@@ -1046,15 +1046,12 @@
     function descartarRascunho() {
       if (!_rascunhoId) return;
       if (!confirm('Descartar o rascunho atual? Esta ação não pode ser desfeita.')) return;
-      checklists = checklists.filter(c => c.id !== _rascunhoId);
+      const id = _rascunhoId;
+      checklists = checklists.filter(c => c.id !== id);
       saveChecklists(checklists);
-      _rascunhoId = null;
-      document.getElementById('clRascunhoBanner').style.display = 'none';
-      construirChecklist();
-      const hoje = new Date().toISOString().slice(0,10);
-      document.getElementById('clData').value = hoje;
-      document.getElementById('clKm').value = viaturaAtual?.km || '';
-      renderCards();
+      removerRascunhoLocal(id);
+      iniciarChecklist();
+      renderHistorico(); renderCards();
       BBM.toast('Rascunho descartado.');
     }
 
@@ -1457,7 +1454,7 @@
       checklists = checklists.filter(c => c.id !== clId);
       saveChecklists(checklists);
       removerRascunhoLocal(clId);
-      if (_rascunhoId === clId) { _rascunhoId = null; }
+      iniciarChecklist(); // limpa o banner e reseta o formulário
       renderHistorico(); renderCards(); BBM.toast('Rascunho excluído.');
     }
 
