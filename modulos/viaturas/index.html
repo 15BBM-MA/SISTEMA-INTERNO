@@ -671,11 +671,9 @@
       }
       try {
         const sb = await BBM.sb();
-        const { data, error } = await sb.from('perfis')
-          .select('id,nome,posto,login')
-          .eq('categoria', 'Oficial')
-          .neq('posto', 'Maj BM')
-          .order('posto');
+        // RPC (security definer): consultar 'perfis' direto devolve lista
+        // vazia para BC/Praça, pois o RLS só libera o próprio perfil.
+        const { data, error } = await sb.rpc('listar_oficiais');
         if (error) throw error;
         oficiais = data || [];
         renderChefeSelect();
