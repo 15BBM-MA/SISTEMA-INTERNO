@@ -59,6 +59,9 @@
     .cl-table th { background:#f9fafb; padding:7px 10px; text-align:left; font-weight:700; color:#374151; border:1px solid #e5e7eb; }
     .cl-table td { padding:5px 8px; border:1px solid #e5e7eb; vertical-align:middle; }
     .cl-table tbody tr:nth-child(even) td { background:#fafafa; }
+    .cl-marcar-todos { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:8px; padding:8px 10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; }
+    .cl-marcar-todos-label { font-size:.76rem; font-weight:600; color:#6b7280; margin-right:2px; }
+    .cl-marcar-todos .sbtn { padding:5px 14px; }
     .sbtn-wrap { display:flex; gap:5px; }
     .sbtn { padding:3px 10px; border-radius:4px; border:1.5px solid #d1d5db; background:#fff; cursor:pointer; font-size:.76rem; font-weight:700; color:#9ca3af; user-select:none; transition:all .1s; }
     .sbtn.bom.sel { background:#dcfce7; border-color:#16a34a; color:#15803d; }
@@ -330,6 +333,12 @@
         </div>
 
         <!-- Itens -->
+        <div class="cl-marcar-todos" id="clMarcarTodos">
+          <span class="cl-marcar-todos-label">Marcar todos os itens:</span>
+          <button type="button" class="sbtn bom" onclick="marcarTodos('BOM')">BOM</button>
+          <button type="button" class="sbtn ruim" onclick="marcarTodos('RUIM')">RUIM</button>
+          <button type="button" class="sbtn" onclick="marcarTodos(null)">Limpar</button>
+        </div>
         <div class="cl-table-wrap">
         <table class="cl-table" id="clTabela">
           <thead>
@@ -594,12 +603,28 @@
       return [];
     }
 
+    // Distingue falta de permissão (RLS) de falha de rede — os dois
+    // sintomas são iguais para o usuário, mas a solução é bem diferente.
+    function semPermissao(err) {
+      if (!err) return false;
+      const cod = String(err.code || '');
+      const msg = String(err.message || '').toLowerCase();
+      return cod === '42501' || cod === 'PGRST301' ||
+             msg.includes('row-level security') || msg.includes('violates row-level');
+    }
+
     async function saveChecklists(lista, { toast, erro } = {}) {
       localStorage.setItem(_CACHE_CL_KEY, JSON.stringify(lista)); // cache local imediato
       const res = await BBM.save(KEY_CL, lista);                  // sincroniza com Supabase
       const ok = !res || res.ok;
-      if (toast && ok) BBM.toast(toast);
-      if (!ok) BBM.toast(erro || 'Falha ao sincronizar com a nuvem — verifique a conexão.', 'error');
+      if (ok) {
+        if (toast) BBM.toast(toast);
+      } else if (semPermissao(res.error)) {
+        BBM.toast('Seu usuário não tem permissão de edição em Viaturas. '
+                + 'O registro ficou salvo só neste aparelho — peça ao administrador para liberar o acesso.', 'error');
+      } else {
+        BBM.toast(erro || 'Falha ao sincronizar com a nuvem — verifique a conexão.', 'error');
+      }
       return ok;
     }
 
@@ -1125,12 +1150,20 @@
       const campos = pane.querySelectorAll('select, input, textarea, .sbtn');
       campos.forEach(el => { el.disabled = locked; });
       document.getElementById('clBotoes').style.display = locked ? 'none' : '';
+      document.getElementById('clMarcarTodos').style.display = locked ? 'none' : '';
       pane.querySelectorAll('.vistoria-foto-slot').forEach(s => s.style.pointerEvents = locked ? 'none' : '');
     }
 
     function toggleStatus(btn) {
       btn.closest('.sbtn-wrap').querySelectorAll('.sbtn').forEach(b=>b.classList.remove('sel'));
       btn.classList.add('sel');
+    }
+
+    // Marca todos os itens de uma vez. val = 'BOM' | 'RUIM' | null (limpa).
+    function marcarTodos(val) {
+      document.querySelectorAll('#clBody .sbtn').forEach(b => {
+        b.classList.toggle('sel', val !== null && b.dataset.val === val);
+      });
     }
 
     function coletarItens() {
