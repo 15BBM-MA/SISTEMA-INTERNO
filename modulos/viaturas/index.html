@@ -120,17 +120,15 @@
 
     /* ── Seleção visual do Chefe de Socorro ── */
     /* Grade de chefes — 2 colunas fixas (compatível com Android antigo) */
-    .chefe-grid { display:-ms-grid; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
-    @media(max-width:360px){ .chefe-grid { grid-template-columns:1fr; } }
-    .chefe-btn { border:2px solid var(--border); border-radius:8px; padding:10px 14px; background:var(--surface); cursor:pointer; text-align:left; -webkit-transition:all .15s; transition:all .15s; width:100%; -webkit-tap-highlight-color:transparent; }
-    .chefe-btn:active, .chefe-btn:hover { border-color:#C8102E; background:#fff1f2; }
-    .chefe-btn.sel { border-color:#C8102E; background:#fff1f2; }
-    .chefe-btn-posto { font-size:.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
-    .chefe-btn-nome { font-size:.85rem; font-weight:600; color:var(--text); line-height:1.2; }
-    .chefe-btn.sel .chefe-btn-nome { color:#C8102E; }
-    .chefe-selecionado { display:-webkit-box; display:flex; -webkit-box-align:center; align-items:center; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:.84rem; color:#1d4ed8; font-weight:600; }
-    .chefe-loading { padding:12px; text-align:center; color:#9ca3af; font-size:.82rem; }
-    .chefe-erro { padding:10px; background:#fff1f2; border:1px solid #fca5a5; border-radius:8px; font-size:.82rem; color:#b91c1c; display:-webkit-box; display:flex; -webkit-box-align:center; align-items:center; gap:8px; }
+    /* Seleção do Chefe de Socorro — <select> nativo (usa o seletor do próprio
+       Android/iOS, sem depender de grid/flex do WebView). */
+    #modalChefeSelect { width:100%; -webkit-appearance:none; -moz-appearance:none; appearance:none;
+      background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 10px center; background-size:18px;
+      padding-right:36px; font-size:16px; /* 16px evita zoom automático no iOS/Android */ }
+    #modalChefeSelect:disabled { background-color:#f9fafb; color:#9ca3af; }
+    .chefe-erro { padding:10px; margin-top:8px; background:#fff1f2; border:1px solid #fca5a5; border-radius:8px; font-size:.82rem; color:#b91c1c; }
+    .chefe-erro button { font-weight:700; text-decoration:underline; background:none; border:none; cursor:pointer; color:#b91c1c; padding:0; }
 
     /* ── Alerta de troca de óleo ── */
     .vcard-alerta-oleo { display:flex; align-items:center; gap:6px; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:5px 10px; margin-bottom:10px; font-size:.75rem; font-weight:700; color:#92400e; }
@@ -442,17 +440,11 @@
 
         <!-- Seleção do Chefe de Socorro -->
         <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Chefe de Socorro <span style="color:#dc2626">*</span></label>
-          <div class="chefe-grid" id="modalChefeGrid"></div>
-          <div class="chefe-selecionado" id="modalChefeSelecionado" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span id="modalChefeNomeDisplay"></span>
-            <button type="button" style="margin-left:auto;font-size:.75rem;color:#6b7280;background:none;border:none;cursor:pointer" onclick="limparChefeModal()">Trocar</button>
-          </div>
-          <input type="hidden" id="modalChefeSocorro" value=""/>
-          <input type="hidden" id="modalChefeNome" value=""/>
-          <input type="hidden" id="modalChefeLogin" value=""/>
-          <div id="chefeErro" style="color:#dc2626;font-size:.78rem;margin-top:4px;display:none">Selecione o Chefe de Socorro.</div>
+          <label class="form-label" for="modalChefeSelect">Chefe de Socorro <span style="color:#dc2626">*</span></label>
+          <select class="form-control" id="modalChefeSelect" onchange="onChefeSelecionado()">
+            <option value="">— Selecione o Chefe de Socorro —</option>
+          </select>
+          <div id="chefeErro" style="color:#dc2626;font-size:.78rem;margin-top:6px;display:none">Selecione o Chefe de Socorro.</div>
         </div>
 
         <div class="form-group" style="margin:0">
@@ -660,14 +652,22 @@
       checkNotificacoes();
     });
 
-    // Carrega lista de oficiais e renderiza botões de seleção
+    // ── Chefe de Socorro (lista suspensa nativa) ──────────────────
     let _carregandoOficiais = false;
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"]/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+    }
+
     async function carregarOficiais() {
       if (_carregandoOficiais) return;
       _carregandoOficiais = true;
-      const grid = document.getElementById('modalChefeGrid');
-      if (grid && !oficiais.length) {
-        grid.innerHTML = '<div class="chefe-loading">⏳ Carregando oficiais...</div>';
+      const sel = document.getElementById('modalChefeSelect');
+      const erro = document.getElementById('chefeErro');
+      if (sel && !oficiais.length) {
+        sel.innerHTML = '<option value="">⏳ Carregando oficiais…</option>';
+        sel.disabled = true;
       }
       try {
         const sb = await BBM.sb();
@@ -678,13 +678,19 @@
           .order('posto');
         if (error) throw error;
         oficiais = data || [];
-        renderChefeGrid();
+        renderChefeSelect();
       } catch(e) {
         console.warn('Oficiais:', e);
-        const grid2 = document.getElementById('modalChefeGrid');
-        if (grid2) grid2.innerHTML =
-          '<div class="chefe-erro"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
-          'Erro ao carregar. <button type="button" onclick="recarregarOficiais()" style="margin-left:4px;font-weight:700;text-decoration:underline;background:none;border:none;cursor:pointer;color:#b91c1c">Tentar novamente</button></div>';
+        if (sel) {
+          sel.innerHTML = '<option value="">— Não foi possível carregar —</option>';
+          sel.disabled = true;
+        }
+        if (erro) {
+          erro.className = 'chefe-erro';
+          erro.innerHTML = 'Erro ao carregar a lista de oficiais. ' +
+            '<button type="button" onclick="recarregarOficiais()">Tentar novamente</button>';
+          erro.style.display = 'block';
+        }
       } finally {
         _carregandoOficiais = false;
       }
@@ -692,39 +698,41 @@
 
     function recarregarOficiais() { _carregandoOficiais = false; carregarOficiais(); }
 
-    carregarOficiais();
-
-    function renderChefeGrid() {
-      const grid = document.getElementById('modalChefeGrid');
-      if (!grid) return;
-      const cur = document.getElementById('modalChefeSocorro').value;
-      grid.innerHTML = oficiais.map(o => `
-        <button type="button" class="chefe-btn${cur===o.id?' sel':''}" data-id="${o.id}"
-          onclick="selecionarChefe('${o.id}','${o.nome.replace(/'/g,"\\'")}','${o.login}','${o.posto.replace(/'/g,"\\'")}')">
-          <div class="chefe-btn-posto">${o.posto}</div>
-          <div class="chefe-btn-nome">${o.nome}</div>
-        </button>`).join('');
+    // Monta as opções do select preservando a seleção atual, se houver.
+    function renderChefeSelect() {
+      const sel = document.getElementById('modalChefeSelect');
+      if (!sel) return;
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">— Selecione o Chefe de Socorro —</option>' +
+        oficiais.map(o => `<option value="${o.id}">${esc(o.posto)} — ${esc(o.nome)}</option>`).join('');
+      sel.disabled = !oficiais.length;
+      if (cur && oficiais.some(o => o.id === cur)) sel.value = cur;
     }
 
-    function selecionarChefe(id, nome, login, posto) {
-      document.getElementById('modalChefeSocorro').value = id;
-      document.getElementById('modalChefeNome').value    = nome;
-      document.getElementById('modalChefeLogin').value   = login;
-      document.querySelectorAll('#modalChefeGrid .chefe-btn').forEach(b => b.classList.toggle('sel', b.dataset.id===id));
-      document.getElementById('modalChefeNomeDisplay').textContent = posto + ' — ' + nome;
-      document.getElementById('modalChefeSelecionado').style.display = 'flex';
-      document.getElementById('modalChefeGrid').style.display = 'none';
-      document.getElementById('chefeErro').style.display = 'none';
+    function onChefeSelecionado() {
+      const erro = document.getElementById('chefeErro');
+      if (document.getElementById('modalChefeSelect').value && erro) erro.style.display = 'none';
+    }
+
+    // Devolve {id, nome, login, posto} do chefe escolhido, ou null.
+    function chefeSelecionado() {
+      const id = document.getElementById('modalChefeSelect').value;
+      return id ? (oficiais.find(o => o.id === id) || null) : null;
     }
 
     function limparChefeModal() {
-      document.getElementById('modalChefeSocorro').value = '';
-      document.getElementById('modalChefeNome').value    = '';
-      document.getElementById('modalChefeLogin').value   = '';
-      document.querySelectorAll('#modalChefeGrid .chefe-btn').forEach(b => b.classList.remove('sel'));
-      document.getElementById('modalChefeSelecionado').style.display = 'none';
-      document.getElementById('modalChefeGrid').style.display = '';
+      const sel = document.getElementById('modalChefeSelect');
+      const erro = document.getElementById('chefeErro');
+      if (sel) sel.value = '';
+      if (erro) {
+        erro.style.display = 'none';
+        erro.className = '';
+        erro.style.cssText = 'color:#dc2626;font-size:.78rem;margin-top:6px;display:none';
+        erro.textContent = 'Selecione o Chefe de Socorro.';
+      }
     }
+
+    carregarOficiais();
 
     // ── Notificações ──────────────────────────────────────────────
     function checkNotificacoes() {
@@ -1231,17 +1239,18 @@
       document.getElementById('modalMotoristaName').textContent = motorista;
       document.getElementById('modalSenhaInput').value = '';
       document.getElementById('senhaErro').style.display = 'none';
-      // Prepara grade de chefes no modal
+      // Prepara a lista de chefes no modal
       limparChefeModal();
-      if (!oficiais.length) carregarOficiais(); else renderChefeGrid();
+      if (!oficiais.length) carregarOficiais(); else renderChefeSelect();
       BBM.openModal('modalSenha');
       setTimeout(() => document.getElementById('modalSenhaInput').focus(), 200);
     }
 
     async function confirmarAssinatura() {
-      const chefeId = document.getElementById('modalChefeSocorro').value;
-      if (!chefeId) {
+      const chefe = chefeSelecionado();
+      if (!chefe) {
         document.getElementById('chefeErro').style.display = 'block';
+        document.getElementById('modalChefeSelect').focus();
         return;
       }
       const senha = document.getElementById('modalSenhaInput').value;
@@ -1266,9 +1275,9 @@
         // Remove rascunho e salva como aguardando_oficial
         const cl = {
           ..._dadosPendentes,
-          chefeId:    document.getElementById('modalChefeSocorro').value,
-          chefeNome:  document.getElementById('modalChefeNome').value,
-          chefeLogin: document.getElementById('modalChefeLogin').value,
+          chefeId:    chefe.id,
+          chefeNome:  chefe.nome,
+          chefeLogin: chefe.login,
           status: 'aguardando_oficial',
           assinadoMotorista: true,
           assinadoMotoristaEm: new Date().toISOString(),
