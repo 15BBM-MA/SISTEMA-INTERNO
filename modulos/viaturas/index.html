@@ -116,15 +116,18 @@
     #modalSenha, #modalAssinaturaOficial { z-index: 400 !important; }
 
     /* ── Seleção visual do Chefe de Socorro ── */
-    .chefe-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px; margin-top:6px; }
-    .chefe-btn { border:2px solid var(--border); border-radius:8px; padding:10px 14px; background:var(--surface); cursor:pointer; text-align:left; transition:all .15s; width:100%; }
-    .chefe-btn:hover { border-color:#C8102E; background:#fff1f2; }
+    /* Grade de chefes — 2 colunas fixas (compatível com Android antigo) */
+    .chefe-grid { display:-ms-grid; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+    @media(max-width:360px){ .chefe-grid { grid-template-columns:1fr; } }
+    .chefe-btn { border:2px solid var(--border); border-radius:8px; padding:10px 14px; background:var(--surface); cursor:pointer; text-align:left; -webkit-transition:all .15s; transition:all .15s; width:100%; -webkit-tap-highlight-color:transparent; }
+    .chefe-btn:active, .chefe-btn:hover { border-color:#C8102E; background:#fff1f2; }
     .chefe-btn.sel { border-color:#C8102E; background:#fff1f2; }
-    .chefe-btn-posto { font-size:.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
-    .chefe-btn-nome { font-size:.88rem; font-weight:600; color:var(--text); }
+    .chefe-btn-posto { font-size:.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
+    .chefe-btn-nome { font-size:.85rem; font-weight:600; color:var(--text); line-height:1.2; }
     .chefe-btn.sel .chefe-btn-nome { color:#C8102E; }
-    .chefe-selecionado { display:flex; align-items:center; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:.84rem; color:#1d4ed8; font-weight:600; }
-    @media(max-width:600px){ .chefe-grid { grid-template-columns:1fr 1fr; } }
+    .chefe-selecionado { display:-webkit-box; display:flex; -webkit-box-align:center; align-items:center; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:.84rem; color:#1d4ed8; font-weight:600; }
+    .chefe-loading { padding:12px; text-align:center; color:#9ca3af; font-size:.82rem; }
+    .chefe-erro { padding:10px; background:#fff1f2; border:1px solid #fca5a5; border-radius:8px; font-size:.82rem; color:#b91c1c; display:-webkit-box; display:flex; -webkit-box-align:center; align-items:center; gap:8px; }
 
     /* ── Alerta de troca de óleo ── */
     .vcard-alerta-oleo { display:flex; align-items:center; gap:6px; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:5px 10px; margin-bottom:10px; font-size:.75rem; font-weight:700; color:#92400e; }
@@ -600,18 +603,37 @@
     });
 
     // Carrega lista de oficiais e renderiza botões de seleção
+    let _carregandoOficiais = false;
     async function carregarOficiais() {
+      if (_carregandoOficiais) return;
+      _carregandoOficiais = true;
+      const grid = document.getElementById('clChefeGrid');
+      if (grid && !oficiais.length) {
+        grid.innerHTML = '<div class="chefe-loading">⏳ Carregando oficiais...</div>';
+      }
       try {
         const sb = await BBM.sb();
-        const { data } = await sb.from('perfis')
+        const { data, error } = await sb.from('perfis')
           .select('id,nome,posto,login')
           .eq('categoria', 'Oficial')
           .neq('posto', 'Maj BM')
           .order('posto');
+        if (error) throw error;
         oficiais = data || [];
         renderChefeGrid();
-      } catch(e) { console.warn('Oficiais:', e); }
+      } catch(e) {
+        console.warn('Oficiais:', e);
+        const grid2 = document.getElementById('clChefeGrid');
+        if (grid2) grid2.innerHTML =
+          '<div class="chefe-erro"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          'Erro ao carregar. <button type="button" onclick="recarregarOficiais()" style="margin-left:4px;font-weight:700;text-decoration:underline;background:none;border:none;cursor:pointer;color:#b91c1c">Tentar novamente</button></div>';
+      } finally {
+        _carregandoOficiais = false;
+      }
     }
+
+    function recarregarOficiais() { _carregandoOficiais = false; carregarOficiais(); }
+
     carregarOficiais();
 
     function renderChefeGrid() {
@@ -814,7 +836,11 @@
       document.querySelectorAll('.dtab-pane').forEach(p=>p.classList.remove('active'));
       if (el) el.classList.add('active');
       document.getElementById(paneId).classList.add('active');
-      if (paneId==='paneChecklist' && !document.getElementById('clGuarnicao').value) autoGuarnicao();
+      if (paneId==='paneChecklist') {
+        if (!document.getElementById('clGuarnicao').value) autoGuarnicao();
+        // Re-tenta carregar oficiais se a lista ainda estiver vazia
+        if (!oficiais.length) carregarOficiais();
+      }
     }
 
     // ── Info ──────────────────────────────────────────────────────
