@@ -597,9 +597,29 @@
       return DEFAULT_VIATURAS.map(v=>({...v}));
     }
 
-    function saveFrota(d){
-      cacheSet(_CACHE_KEY, d);  // atualiza cache local imediatamente
-      BBM.save(KEY_FROTA, d);   // sincroniza com Supabase
+    // silencioso: para gravações de fundo (ex.: bootstrap da frota), que não
+    // devem incomodar o usuário com erro a cada carregamento da página.
+    async function saveFrota(d, { toast, erro, silencioso } = {}){
+      cacheSet(_CACHE_KEY, d); // cache local imediato (nunca lança)
+      let res;
+      try {
+        res = await BBM.save(KEY_FROTA, d); // sincroniza com Supabase
+      } catch(e) {
+        console.error('saveFrota:', e);
+        res = { ok: false, error: e };
+      }
+      const ok = !res || res.ok;
+      if (ok) {
+        if (toast) BBM.toast(toast);
+      } else if (silencioso) {
+        console.warn('saveFrota (silencioso) falhou:', res.error);
+      } else if (semPermissao(res.error)) {
+        BBM.toast('Seu usuário não tem permissão de edição em Viaturas. '
+                + 'As alterações ficaram só neste aparelho — peça ao administrador para liberar o acesso.', 'error');
+      } else {
+        BBM.toast(erro || 'Falha ao sincronizar com a nuvem — verifique a conexão.', 'error');
+      }
+      return ok;
     }
 
     function loadChecklistsCache(){
@@ -673,7 +693,7 @@
         frota = cloudFrota;
         cacheSet(_CACHE_KEY, frota); // atualiza cache com dados frescos
       } else {
-        saveFrota(frota); // primeira vez: sobe para a nuvem
+        saveFrota(frota, { silencioso: true }); // primeira vez: sobe para a nuvem
       }
       // Atualiza viaturaAtual se overlay estiver aberta (evita referência stale)
       if (viaturaAtual) {
@@ -1047,14 +1067,18 @@
           if (viaturaAtual) {
             viaturaAtual.foto = src;
             const idx = frota.findIndex(v=>v.id===viaturaAtual.id);
-            if (idx>=0) { frota[idx].foto = src; saveFrota(frota); renderCards(); }
+            if (idx>=0) {
+              frota[idx].foto = src;
+              renderCards();
+              saveFrota(frota, { toast: 'Foto atualizada.' }); // avisa se não subir
+            }
           }
         });
       };
       reader.readAsDataURL(file);
     }
 
-    function salvarInfo() {
+    async function salvarInfo() {
       if (!viaturaAtual) return;
       const idx = frota.findIndex(v=>v.id===viaturaAtual.id);
       if (idx<0) return;
@@ -1066,10 +1090,14 @@
       frota[idx].obs            = document.getElementById('iObs').value.trim();
       frota[idx].foto           = viaturaAtual.foto || frota[idx].foto; // preserva foto
       viaturaAtual = frota[idx];
-      saveFrota(frota);
       fecharDetalhe();
       renderCards();
-      BBM.toast('Informações salvas com sucesso.');
+      // Só confirma depois que a nuvem aceitar: sem o await o aviso de
+      // sucesso aparecia mesmo quando o RLS recusava a gravação.
+      await saveFrota(frota, {
+        toast: 'Informações salvas com sucesso.',
+        erro:  'Alterações salvas só neste aparelho — os demais usuários não vão vê-las. Verifique a conexão.',
+      });
     }
 
     // ── Checklist — inicialização ─────────────────────────────────
