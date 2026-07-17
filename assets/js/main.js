@@ -173,6 +173,15 @@ window.BBM = {
   // ---------- CAMADA DE DADOS (localStorage + nuvem) ----------
   _cache: {},                 // cache em memória das coleções na nuvem
   _cloudFail: {},             // coleções que caíram para localStorage (tabela ausente/erro)
+  // Retrato (id -> JSON) do que já está na nuvem. Guardado como texto de
+  // propósito: load() e refresh() devolvem o próprio array do _cache, então
+  // quem altera um item no lugar (lista[i] = {...}) altera o cache junto —
+  // comparar referências não detectaria mudança nenhuma.
+  _snap: {},
+
+  _snapDe(lista) {
+    return new Map((lista || []).map(x => [x.id, JSON.stringify(x)]));
+  },
 
   // mapeia a chave do app para (módulo, coleção) na nuvem; null = fica no localStorage
   _keyMap(key) {
@@ -196,11 +205,13 @@ window.BBM = {
           .eq('modulo', map.modulo).eq('colecao', map.colecao);
         if (error) throw error;
         this._cache[k] = (data || []).map(r => r.dados);
+        this._snap[k] = this._snapDe(this._cache[k]);
       } catch (e) {
         // tabela ainda não criada ou sem acesso → usa localStorage para não quebrar
         this._cloudFail[k] = true;
         try { this._cache[k] = JSON.parse(localStorage.getItem('bbm_' + k)) || []; }
         catch { this._cache[k] = []; }
+        this._snap[k] = new Map(); // nada confirmado na nuvem
       }
     }
     if (cb) cb();
@@ -218,6 +229,7 @@ window.BBM = {
         .eq('modulo', map.modulo).eq('colecao', map.colecao);
       if (error) throw error;
       this._cache[key] = (data || []).map(r => r.dados);
+      this._snap[key] = this._snapDe(this._cache[key]);
       delete this._cloudFail[key]; // nuvem respondeu: volta a sincronizar
       return this._cache[key];
     } catch (e) {
@@ -232,31 +244,38 @@ window.BBM = {
       if (map) this._cache[key] = data;
       return Promise.resolve({ ok: false, local: true });
     }
-    const prev = this._cache[key] || [];
     this._cache[key] = data;
     // sincroniza com a nuvem; retorna promise para o chamador tratar erros
-    return this._sync(map, prev, data).then(() => ({ ok: true })).catch(e => ({ ok: false, error: e }));
+    return this._sync(key, map, data)
+      .then(() => ({ ok: true }))
+      .catch(e => ({ ok: false, error: e }));
   },
 
-  async _sync(map, prev, data) {
+  async _sync(key, map, data) {
     const sb = await this.sb();
+    const antes = this._snap[key] || new Map();
     const novoIds = new Set(data.map(x => x.id));
     // Envia só o que mudou. Reenviar a coleção inteira a cada gravação faz o
     // request crescer com o total de dados — um único registro grande (uma
     // foto pesada, p.ex.) estoura o limite e derruba TODAS as gravações,
     // inclusive as de quem não tem nada a ver com ele.
-    const antes = new Map(prev.map(x => [x.id, JSON.stringify(x)]));
-    const rows = data
-      .filter(x => antes.get(x.id) !== JSON.stringify(x))
-      .map(x => ({ modulo: map.modulo, colecao: map.colecao, item_id: x.id, dados: x, atualizado: new Date().toISOString() }));
+    const alterados = data.filter(x => antes.get(x.id) !== JSON.stringify(x));
+    const rows = alterados.map(x => ({
+      modulo: map.modulo, colecao: map.colecao, item_id: x.id,
+      dados: x, atualizado: new Date().toISOString(),
+    }));
     if (rows.length) {
       const { error } = await sb.from('app_dados').upsert(rows, { onConflict: 'modulo,colecao,item_id' });
       if (error) throw error;
     }
-    const remover = prev.map(x => x.id).filter(id => !novoIds.has(id));
+    const remover = [...antes.keys()].filter(id => !novoIds.has(id));
     for (const id of remover) {
-      await sb.from('app_dados').delete().eq('modulo', map.modulo).eq('colecao', map.colecao).eq('item_id', id);
+      const { error } = await sb.from('app_dados').delete()
+        .eq('modulo', map.modulo).eq('colecao', map.colecao).eq('item_id', id);
+      if (error) throw error;
     }
+    // só depois da nuvem confirmar o retrato passa a valer
+    this._snap[key] = this._snapDe(data);
   },
 
   load(key) {
