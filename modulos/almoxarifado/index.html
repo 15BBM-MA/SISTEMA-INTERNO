@@ -48,23 +48,23 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           </div>
           <div>
-            <div class="mod-title">Almoxarifado</div>
-            <div class="mod-subtitle">Controle de estoque, EPIs e materiais operacionais</div>
+            <div class="mod-title">Almoxarifado &amp; Patrimônio</div>
+            <div class="mod-subtitle">Controle de materiais do quartel por ambiente</div>
           </div>
         </div>
         <div style="display:flex;gap:10px">
-          <button class="btn btn-ghost" onclick="populaSelectItens();BBM.openModal('modalMovimento')">
+          <button class="btn btn-ghost" onclick="abrirMovimento()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
             Movimentação
           </button>
-          <button class="btn btn-primary" onclick="BBM.openModal('modalItem')">
+          <button class="btn btn-primary" onclick="novoItem()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Novo Item
           </button>
         </div>
       </div>
 
-      <div class="status-grid" style="margin-bottom:28px">
+      <div class="status-grid" style="margin-bottom:24px">
         <div class="status-card"><div class="status-value" id="totItens">0</div><div class="status-label">Itens Cadastrados</div></div>
         <div class="status-card"><div class="status-value" id="totBaixo">0</div><div class="status-label">Estoque Baixo</div></div>
         <div class="status-card"><div class="status-value" id="totZero">0</div><div class="status-label">Sem Estoque</div></div>
@@ -78,23 +78,26 @@
       </div>
 
       <div id="tabEstoque">
-        <div class="section-label">Inventário</div>
+        <!-- Cartões de ambiente -->
+        <div class="section-label">Ambientes</div>
+        <div class="amb-grid" id="ambGrid"></div>
+
+        <div class="section-label" style="margin-top:26px" id="lblInventario">Inventário — Todos os ambientes</div>
         <div class="table-wrap">
           <div class="table-toolbar">
             <div class="search-input">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input id="searchItem" type="text" placeholder="Pesquisar item…"/>
             </div>
+            <select class="form-control" id="filterAmb" style="width:auto;padding:7px 12px"></select>
             <select class="form-control" id="filterCat" style="width:auto;padding:7px 12px">
               <option value="">Todas as categorias</option>
-              <option>EPI</option><option>Ferramenta</option><option>Material de Escritório</option>
-              <option>Equipamento</option><option>Combustível</option><option>Outros</option>
             </select>
           </div>
           <table>
             <thead>
               <tr>
-                <th>Item</th><th>Categoria</th><th>Unidade</th>
+                <th>Item</th><th>Ambiente</th><th>Categoria</th><th>Unidade</th>
                 <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Situação</th><th>Ações</th>
               </tr>
             </thead>
@@ -108,7 +111,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Data</th><th>Item</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Observação</th></tr>
+              <tr><th>Data</th><th>Item</th><th>Ambiente</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Observação</th></tr>
             </thead>
             <tbody id="tabelaMovimentos"></tbody>
           </table>
@@ -127,28 +130,28 @@
       <div class="modal-body">
         <input type="hidden" id="itemId"/>
         <div class="form-group"><label class="form-label">Nome do Item *</label><input class="form-control" id="iNome" placeholder="Ex: Capacete de incêndio"/></div>
+        <div class="form-group"><label class="form-label">Ambiente *</label>
+          <select class="form-control" id="iAmbiente"></select>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Categoria</label>
-            <select class="form-control" id="iCategoria">
-              <option>EPI</option><option>Ferramenta</option><option>Material de Escritório</option>
-              <option>Equipamento</option><option>Combustível</option><option>Outros</option>
-            </select>
+            <select class="form-control" id="iCategoria"></select>
           </div>
           <div class="form-group"><label class="form-label">Unidade</label>
-            <select class="form-control" id="iUnidade"><option>unidade</option><option>par</option><option>litro</option><option>kg</option><option>metro</option><option>caixa</option></select>
+            <select class="form-control" id="iUnidade"><option>unidade</option><option>par</option><option>litro</option><option>kg</option><option>metro</option><option>caixa</option><option>conjunto</option></select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Qtd. Atual</label><input class="form-control" id="iQtd" type="number" placeholder="0" min="0"/></div>
           <div class="form-group"><label class="form-label">Qtd. Mínima</label><input class="form-control" id="iMin" type="number" placeholder="0" min="0"/></div>
         </div>
-        <div class="form-group"><label class="form-label">Localização</label><input class="form-control" id="iLocal" placeholder="Ex: Prateleira A2"/></div>
+        <div class="form-group"><label class="form-label">Localização (dentro do ambiente)</label><input class="form-control" id="iLocal" placeholder="Ex: Prateleira A2, armário 3"/></div>
         <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="iObs" rows="2"></textarea></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalItem')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarItem()">Salvar</button>
+        <button class="btn btn-primary" id="btnSalvarItem" onclick="salvarItem()">Salvar</button>
       </div>
     </div>
   </div>
@@ -175,7 +178,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalMovimento')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarMovimento()">Registrar</button>
+        <button class="btn btn-primary" id="btnSalvarMov" onclick="salvarMovimento()">Registrar</button>
       </div>
     </div>
   </div>
@@ -184,14 +187,53 @@
     .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
     .tab-btn.active { color:var(--red);border-bottom-color:var(--red); }
     .tab-btn:hover { color:var(--text); }
+    .amb-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
+    .amb-card { border:1px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; background:var(--surface); transition:all .15s; text-align:left; -webkit-tap-highlight-color:transparent; }
+    .amb-card:hover { border-color:var(--orange); box-shadow:0 4px 14px rgba(0,0,0,.06); }
+    .amb-card.sel { border-color:var(--orange); background:var(--orange-light); }
+    .amb-card-nome { font-size:.9rem; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+    .amb-card-ico { width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--orange-light);color:var(--orange);flex-shrink:0; }
+    .amb-card.sel .amb-card-ico { background:#fff; }
+    .amb-card-meta { font-size:.76rem; color:var(--text-light); margin-top:8px; display:flex; gap:10px; }
+    .amb-card-meta b { color:var(--text); font-weight:700; }
+    .amb-card-alerta { color:var(--red); }
+    @media(max-width:520px){ .amb-grid { grid-template-columns:1fr 1fr; } }
   </style>
 
   <script src="../../assets/js/main.js"></script>
   <script>
     const KEY_I = 'almoxarifado_itens';
     const KEY_M = 'almoxarifado_movimentos';
-    let itens = BBM.load(KEY_I);
-    let movimentos = BBM.load(KEY_M);
+
+    // Ambientes do quartel. O almoxarifado é apenas um deles.
+    const AMBIENTES = [
+      'Almoxarifado', 'Administrativo', 'Em Operação', 'Sala do Comando',
+      'Cozinha', 'Alojamento dos Praças', 'Alojamento dos Oficiais', 'Alojamento Feminino',
+    ];
+    const CATEGORIAS = ['EPI','Ferramenta','Material de Escritório','Equipamento','Mobiliário','Eletrodoméstico','Cama/Enxoval','Limpeza','Combustível','Outros'];
+
+    let itens = [], movimentos = [];
+    let ambienteAtivo = ''; // '' = todos
+
+    // popula selects estáticos
+    (function initSelects(){
+      const optsAmb = AMBIENTES.map(a=>`<option>${a}</option>`).join('');
+      document.getElementById('iAmbiente').innerHTML = optsAmb;
+      document.getElementById('iCategoria').innerHTML = CATEGORIAS.map(c=>`<option>${c}</option>`).join('');
+      document.getElementById('filterAmb').innerHTML =
+        '<option value="">Todos os ambientes</option>' + optsAmb;
+      document.getElementById('filterCat').innerHTML =
+        '<option value="">Todas as categorias</option>' + CATEGORIAS.map(c=>`<option>${c}</option>`).join('');
+    })();
+
+    // ── Carga inicial (nuvem, compartilhada entre todos) ──────────
+    BBM.ready([KEY_I, KEY_M], () => {
+      itens = (BBM.load(KEY_I) || []).map(i => ({ ...i, ambiente: i.ambiente || 'Almoxarifado' }));
+      movimentos = BBM.load(KEY_M) || [];
+      renderAmbientes();
+      renderItens();
+      atualizarCards();
+    });
 
     function showTab(id, btn) {
       ['tabEstoque','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
@@ -207,13 +249,58 @@
       return ['Regular','badge-ok'];
     }
 
-    function renderItens(lista = itens) {
+    // ── Cartões de ambiente ───────────────────────────────────────
+    function renderAmbientes() {
+      const grid = document.getElementById('ambGrid');
+      const card = (nome, count, baixo, sel) => `
+        <button type="button" class="amb-card${sel?' sel':''}" onclick="selecionarAmbiente(${JSON.stringify(nome).replace(/"/g,'&quot;')})">
+          <div class="amb-card-nome"><span class="amb-card-ico">${iconeAmb(nome)}</span>${nome}</div>
+          <div class="amb-card-meta"><span><b>${count}</b> itens</span>${baixo?`<span class="amb-card-alerta">⚠ ${baixo} em falta/baixo</span>`:''}</div>
+        </button>`;
+      const totalBaixo = itens.filter(i=>i.qtd<=i.min).length;
+      let html = card('Todos os ambientes', itens.length, totalBaixo, ambienteAtivo==='');
+      html += AMBIENTES.map(a => {
+        const doAmb = itens.filter(i=>i.ambiente===a);
+        return card(a, doAmb.length, doAmb.filter(i=>i.qtd<=i.min).length, ambienteAtivo===a);
+      }).join('');
+      grid.innerHTML = html;
+    }
+
+    function iconeAmb(nome) {
+      const box = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+      return box; // ícone genérico; mantém a grade leve e consistente
+    }
+
+    function selecionarAmbiente(nome) {
+      ambienteAtivo = (nome === 'Todos os ambientes') ? '' : nome;
+      document.getElementById('filterAmb').value = ambienteAtivo;
+      document.getElementById('lblInventario').textContent =
+        'Inventário — ' + (ambienteAtivo || 'Todos os ambientes');
+      renderAmbientes();
+      aplicarFiltros();
+    }
+
+    // ── Tabela de itens ───────────────────────────────────────────
+    function itensFiltrados() {
+      const q = document.getElementById('searchItem').value.toLowerCase();
+      const c = document.getElementById('filterCat').value;
+      return itens.filter(i =>
+        (!ambienteAtivo || i.ambiente===ambienteAtivo) &&
+        (!c || i.categoria===c) &&
+        (!q || i.nome.toLowerCase().includes(q))
+      );
+    }
+
+    function aplicarFiltros() { renderItens(itensFiltrados()); }
+
+    function renderItens(lista = itensFiltrados()) {
       const tbody = document.getElementById('tabelaItens');
-      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><p>Nenhum item cadastrado.</p></div></td></tr>`; return; }
+      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><p>Nenhum item neste filtro.</p></div></td></tr>`; return; }
       tbody.innerHTML = lista.map(i => {
         const [sit,cls] = situacao(i);
         return `<tr>
           <td><strong>${i.nome}</strong></td>
+          <td>${i.ambiente || '—'}</td>
           <td>${i.categoria}</td>
           <td>${i.unidade}</td>
           <td>${i.qtd}</td>
@@ -226,16 +313,16 @@
           </td>
         </tr>`;
       }).join('');
-      atualizarCards();
     }
 
     function renderMovimentos() {
       const tbody = document.getElementById('tabelaMovimentos');
-      if (!movimentos.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><p>Nenhuma movimentação registrada.</p></div></td></tr>`; return; }
+      if (!movimentos.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><p>Nenhuma movimentação registrada.</p></div></td></tr>`; return; }
       tbody.innerHTML = [...movimentos].reverse().map(m => `
         <tr>
           <td>${m.data}</td>
           <td>${m.itemNome}</td>
+          <td>${m.ambiente || '—'}</td>
           <td><span class="badge ${m.tipo==='Entrada'?'badge-ok':'badge-info'}">${m.tipo}</span></td>
           <td>${m.qtd}</td>
           <td>${m.resp || '—'}</td>
@@ -250,59 +337,101 @@
       document.getElementById('totMov').textContent   = movimentos.length;
     }
 
-    function populaSelectItens() {
-      const sel = document.getElementById('mItem');
-      sel.innerHTML = itens.length
-        ? itens.map(i=>`<option value="${i.id}">${i.nome} (${i.qtd} ${i.unidade})</option>`).join('')
-        : '<option>Nenhum item cadastrado</option>';
+    // ── Salvamento (com aviso real de sucesso/erro) ───────────────
+    function semPermissao(err) {
+      if (!err) return false;
+      const cod = String(err.code || '');
+      const msg = String(err.message || '').toLowerCase();
+      return cod === '42501' || cod === 'PGRST301' || msg.includes('row-level security');
     }
 
-    function salvarItem() {
+    async function salvar(key, lista, { sucesso } = {}) {
+      let res;
+      try { res = await BBM.save(key, lista); }
+      catch(e) { console.error('salvar:', e); res = { ok:false, error:e }; }
+      const ok = !res || res.ok;
+      if (ok) { if (sucesso) BBM.toast(sucesso); }
+      else if (semPermissao(res.error)) {
+        BBM.toast('Seu usuário não tem permissão de edição no Almoxarifado. '
+                + 'Peça ao administrador para liberar o acesso.', 'error');
+      } else {
+        BBM.toast('Falha ao sincronizar com a nuvem — verifique a conexão.', 'error');
+      }
+      return ok;
+    }
+
+    function novoItem() {
+      document.getElementById('itemId').value='';
+      document.getElementById('iNome').value='';
+      document.getElementById('iAmbiente').value = ambienteAtivo || 'Almoxarifado';
+      document.getElementById('iCategoria').value = CATEGORIAS[0];
+      document.getElementById('iUnidade').value = 'unidade';
+      document.getElementById('iQtd').value='';
+      document.getElementById('iMin').value='';
+      document.getElementById('iLocal').value='';
+      document.getElementById('iObs').value='';
+      document.getElementById('modalItemTitle').textContent = 'Novo Item';
+      BBM.openModal('modalItem');
+    }
+
+    async function salvarItem() {
       const id   = document.getElementById('itemId').value;
       const nome = document.getElementById('iNome').value.trim();
       if (!nome) { BBM.toast('Informe o nome do item.','error'); return; }
       const obj = {
         id: id || BBM.generateId(),
-        nome, categoria: document.getElementById('iCategoria').value,
-        unidade: document.getElementById('iUnidade').value,
+        nome,
+        ambiente:  document.getElementById('iAmbiente').value,
+        categoria: document.getElementById('iCategoria').value,
+        unidade:   document.getElementById('iUnidade').value,
         qtd: Number(document.getElementById('iQtd').value) || 0,
         min: Number(document.getElementById('iMin').value) || 0,
-        local: document.getElementById('iLocal').value,
-        obs:   document.getElementById('iObs').value,
+        local: document.getElementById('iLocal').value.trim(),
+        obs:   document.getElementById('iObs').value.trim(),
       };
-      if (id) { const idx = itens.findIndex(i=>i.id===id); itens[idx]=obj; }
-      else itens.push(obj);
-      BBM.save(KEY_I, itens);
+      if (id) { const idx = itens.findIndex(i=>i.id===id); if(idx>=0) itens[idx]=obj; }
+      else itens = [...itens, obj];
       BBM.closeModal('modalItem');
-      BBM.toast(id ? 'Item atualizado.' : 'Item cadastrado.');
-      renderItens();
-      document.getElementById('itemId').value='';
-      document.getElementById('iNome').value='';
+      renderAmbientes(); renderItens(); atualizarCards();
+      await salvar(KEY_I, itens, { sucesso: id ? 'Item atualizado.' : 'Item cadastrado.' });
     }
 
     function editarItem(id) {
       const i = itens.find(x=>x.id===id); if(!i) return;
       document.getElementById('itemId').value     = i.id;
       document.getElementById('iNome').value      = i.nome;
+      document.getElementById('iAmbiente').value  = i.ambiente || 'Almoxarifado';
       document.getElementById('iCategoria').value = i.categoria;
       document.getElementById('iUnidade').value   = i.unidade;
       document.getElementById('iQtd').value       = i.qtd;
       document.getElementById('iMin').value       = i.min;
-      document.getElementById('iLocal').value     = i.local;
-      document.getElementById('iObs').value       = i.obs;
+      document.getElementById('iLocal').value     = i.local || '';
+      document.getElementById('iObs').value       = i.obs || '';
       document.getElementById('modalItemTitle').textContent = 'Editar Item';
       BBM.openModal('modalItem');
     }
 
-    function excluirItem(id) {
+    async function excluirItem(id) {
       if (!confirm('Excluir este item?')) return;
       itens = itens.filter(i=>i.id!==id);
-      BBM.save(KEY_I, itens);
-      BBM.toast('Item removido.','error');
-      renderItens();
+      renderAmbientes(); renderItens(); atualizarCards();
+      await salvar(KEY_I, itens, { sucesso: 'Item removido.' });
     }
 
-    function salvarMovimento() {
+    // ── Movimentação ──────────────────────────────────────────────
+    function abrirMovimento() {
+      const sel = document.getElementById('mItem');
+      const lista = ambienteAtivo ? itens.filter(i=>i.ambiente===ambienteAtivo) : itens;
+      sel.innerHTML = lista.length
+        ? lista.map(i=>`<option value="${i.id}">${i.nome} — ${i.ambiente} (${i.qtd} ${i.unidade})</option>`).join('')
+        : '<option value="">Nenhum item cadastrado</option>';
+      document.getElementById('mQtd').value='';
+      document.getElementById('mResp').value='';
+      document.getElementById('mObs').value='';
+      BBM.openModal('modalMovimento');
+    }
+
+    async function salvarMovimento() {
       const itemId = document.getElementById('mItem').value;
       const qtd    = Number(document.getElementById('mQtd').value);
       const tipo   = document.getElementById('mTipo').value;
@@ -314,38 +443,23 @@
       const mov = {
         id: BBM.generateId(),
         data: new Date().toLocaleString('pt-BR'),
-        itemNome: item.nome, itemId,
+        itemNome: item.nome, itemId, ambiente: item.ambiente,
         tipo, qtd,
-        resp: document.getElementById('mResp').value,
-        obs:  document.getElementById('mObs').value,
+        resp: document.getElementById('mResp').value.trim(),
+        obs:  document.getElementById('mObs').value.trim(),
       };
-      movimentos.push(mov);
-      BBM.save(KEY_I, itens);
-      BBM.save(KEY_M, movimentos);
+      movimentos = [...movimentos, mov];
       BBM.closeModal('modalMovimento');
-      BBM.toast('Movimentação registrada.');
-      renderItens();
+      renderAmbientes(); renderItens(); atualizarCards();
+      // grava as duas coleções; só confirma se ambas subirem
+      const okItens = await salvar(KEY_I, itens);
+      const okMov   = await salvar(KEY_M, movimentos, { sucesso: okItens ? 'Movimentação registrada.' : null });
+      if (okItens && okMov && document.getElementById('tabMovimentos').style.display!=='none') renderMovimentos();
     }
 
-    document.getElementById('searchItem').addEventListener('input', () => {
-      const q = document.getElementById('searchItem').value.toLowerCase();
-      const c = document.getElementById('filterCat').value;
-      renderItens(itens.filter(i => i.nome.toLowerCase().includes(q) && (!c || i.categoria===c)));
-    });
-    document.getElementById('filterCat').addEventListener('change', () => {
-      document.getElementById('searchItem').dispatchEvent(new Event('input'));
-    });
-
-    document.getElementById('modalMovimento').addEventListener('click', e => {
-      if (e.target === document.getElementById('modalMovimento')) return;
-    });
-
-    const origOpenModal = BBM.openModal.bind(BBM);
-    document.querySelector('[onclick="BBM.openModal(\'modalMovimento\')"]')
-      ?.addEventListener('click', () => { populaSelectItens(); });
-
-    renderItens();
-    atualizarCards();
+    document.getElementById('searchItem').addEventListener('input', aplicarFiltros);
+    document.getElementById('filterCat').addEventListener('change', aplicarFiltros);
+    document.getElementById('filterAmb').addEventListener('change', e => selecionarAmbiente(e.target.value || 'Todos os ambientes'));
   </script>
 </body>
 </html>

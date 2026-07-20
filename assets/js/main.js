@@ -190,6 +190,7 @@ window.BBM = {
     if (key && key.indexOf('escala_') === 0) return { modulo: 'escala', colecao: key.slice(7) };
     if (key && key.indexOf('estrutura_') === 0) return { modulo: 'estrutura', colecao: key.slice(10) };
     if (key && key.indexOf('viaturas_') === 0) return { modulo: 'viaturas', colecao: key.slice(9) };
+    if (key && key.indexOf('almoxarifado_') === 0) return { modulo: 'almoxarifado', colecao: key.slice(13) };
     return null;
   },
 
