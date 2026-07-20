@@ -72,8 +72,9 @@
       </div>
 
       <!-- TABS -->
-      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px">
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap">
         <button class="tab-btn active" onclick="showTab('tabEstoque',this)">Estoque</button>
+        <button class="tab-btn" onclick="showTab('tabConferencia',this)">Conferência de Estoque</button>
         <button class="tab-btn" onclick="showTab('tabMovimentos',this)">Histórico de Movimentos</button>
       </div>
 
@@ -98,7 +99,7 @@
             <thead>
               <tr>
                 <th>Item</th><th>Ambiente</th><th>Categoria</th><th>Unidade</th>
-                <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Situação</th><th>Ações</th>
+                <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Situação</th><th>Últ. alteração</th><th>Ações</th>
               </tr>
             </thead>
             <tbody id="tabelaItens"></tbody>
@@ -117,8 +118,57 @@
           </table>
         </div>
       </div>
+
+      <!-- CONFERÊNCIA DE ESTOQUE -->
+      <div id="tabConferencia" style="display:none">
+        <div class="conf-bar">
+          <div class="conf-bar-info" id="confInfo">Nenhuma conferência em andamento.</div>
+          <div class="conf-bar-acoes">
+            <button class="btn btn-ghost" onclick="imprimirContagem()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir folha
+            </button>
+            <button class="btn btn-ghost" onclick="atualizarConferencia()" id="btnAtualizarConf">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Atualizar
+            </button>
+            <button class="btn btn-primary" onclick="iniciarConferencia()">Iniciar nova conferência</button>
+          </div>
+        </div>
+        <div class="conf-progress-wrap" id="confProgressWrap" style="display:none">
+          <div class="conf-progress-bar"><div class="conf-progress-fill" id="confProgressFill"></div></div>
+          <div class="conf-progress-txt" id="confProgressTxt"></div>
+        </div>
+        <div id="confLista"></div>
+      </div>
     </div>
   </main>
+
+  <!-- MODAL CONTAGEM -->
+  <div class="modal-overlay" id="modalContagem">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header">
+        <span class="modal-title">Confirmar contagem</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalContagem')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cfId"/>
+        <div style="font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:2px" id="cfNome"></div>
+        <div style="font-size:.78rem;color:var(--text-light);margin-bottom:14px" id="cfRegistrado"></div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Quantidade contada fisicamente</label>
+          <input class="form-control" id="cfQtd" type="number" min="0" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalContagem')">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmarContagem" onclick="confirmarContagem()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÁREA DE IMPRESSÃO (folha de contagem) -->
+  <div id="folhaContagem" aria-hidden="true"></div>
 
   <!-- MODAL ITEM -->
   <div class="modal-overlay" id="modalItem">
@@ -198,12 +248,51 @@
     .amb-card-meta b { color:var(--text); font-weight:700; }
     .amb-card-alerta { color:var(--red); }
     @media(max-width:520px){ .amb-grid { grid-template-columns:1fr 1fr; } }
+
+    /* Conferência */
+    .conf-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    .conf-bar-info { font-size:.86rem; color:var(--text-light); }
+    .conf-bar-info b { color:var(--text); }
+    .conf-bar-acoes { display:flex; gap:8px; flex-wrap:wrap; }
+    .conf-progress-wrap { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+    .conf-progress-bar { flex:1; height:10px; background:var(--border); border-radius:6px; overflow:hidden; }
+    .conf-progress-fill { height:100%; background:var(--green); width:0%; transition:width .3s; }
+    .conf-progress-txt { font-size:.82rem; font-weight:700; color:var(--text); white-space:nowrap; }
+    .conf-cat { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-light); margin:18px 0 8px; }
+    .conf-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--border); border-radius:10px; margin-bottom:6px; transition:background .2s,border-color .2s; }
+    .conf-row.pend { background:#fff7ed; border-color:#fdba74; }        /* destaque: pendente */
+    .conf-row.ok   { background:#f0fdf4; border-color:#86efac; }        /* conferido */
+    .conf-row-main { flex:1; min-width:0; }
+    .conf-row-nome { font-size:.9rem; font-weight:700; color:var(--text); }
+    .conf-row-sub { font-size:.76rem; color:var(--text-light); margin-top:2px; }
+    .conf-row.ok .conf-row-sub { color:#15803d; font-weight:600; }
+    .conf-row-qtd { font-size:1.05rem; font-weight:800; color:var(--text); min-width:44px; text-align:right; }
+    .conf-badge { font-size:.7rem; font-weight:700; padding:3px 9px; border-radius:10px; white-space:nowrap; }
+    .conf-badge.pend { background:#fed7aa; color:#9a3412; }
+    .conf-badge.ok { background:#bbf7d0; color:#166534; }
+
+    /* Folha de impressão */
+    #folhaContagem { display:none; }
+    @media print {
+      body * { visibility:hidden; }
+      #folhaContagem, #folhaContagem * { visibility:visible; }
+      #folhaContagem { display:block; position:absolute; left:0; top:0; width:100%; padding:0 6mm; color:#000; }
+      #folhaContagem h1 { font-size:14pt; text-align:center; margin:0; }
+      #folhaContagem .fc-sub { font-size:9pt; text-align:center; margin:2px 0 10px; }
+      #folhaContagem .fc-cat { font-size:10pt; font-weight:bold; background:#eee; padding:3px 6px; margin-top:10px; border:1px solid #000; }
+      #folhaContagem table { width:100%; border-collapse:collapse; font-size:9pt; }
+      #folhaContagem th, #folhaContagem td { border:1px solid #000; padding:3px 6px; }
+      #folhaContagem th { background:#f0f0f0; }
+      #folhaContagem .fc-blank { height:20px; }
+      @page { margin:10mm; }
+    }
   </style>
 
   <script src="../../assets/js/main.js"></script>
   <script>
     const KEY_I = 'almoxarifado_itens';
     const KEY_M = 'almoxarifado_movimentos';
+    const KEY_C = 'almoxarifado_conferencia'; // estado da conferência (compartilhado)
 
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
@@ -213,7 +302,21 @@
     const CATEGORIAS = ['Incêndio Urbano','Incêndio Florestal','Salvamento Aquático','Salvamento Terrestre','APH','Mergulho','Captura de Animal','Ferramentas','EPI','Material de Escritório','Mobiliário','Eletrodoméstico','Cama/Enxoval','Limpeza','Combustível','Outros'];
 
     let itens = [], movimentos = [];
+    let conferencia = { id:'atual', inicio:null, por:'', em:null }; // sessão de contagem
     let ambienteAtivo = ''; // '' = todos
+
+    function fmtQuando(iso){
+      if(!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) + ' ' +
+             d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    }
+    // carimba quem alterou e quando — o "registro de última alteração"
+    function carimbar(obj){
+      obj.ultimaAlteracao = new Date().toISOString();
+      obj.alteradoPor = (BBM.currentUser && BBM.currentUser()?.nome) || '—';
+      return obj;
+    }
 
     // popula selects estáticos
     (function initSelects(){
@@ -227,20 +330,24 @@
     })();
 
     // ── Carga inicial (nuvem, compartilhada entre todos) ──────────
-    BBM.ready([KEY_I, KEY_M], () => {
+    BBM.ready([KEY_I, KEY_M, KEY_C], () => {
       itens = (BBM.load(KEY_I) || []).map(i => ({ ...i, ambiente: i.ambiente || 'Almoxarifado' }));
       movimentos = BBM.load(KEY_M) || [];
+      const c = (BBM.load(KEY_C) || [])[0];
+      if (c) conferencia = c;
       renderAmbientes();
       renderItens();
       atualizarCards();
     });
 
     function showTab(id, btn) {
-      ['tabEstoque','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
+      ['tabEstoque','tabConferencia','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).style.display='block';
       btn.classList.add('active');
       if (id === 'tabMovimentos') renderMovimentos();
+      if (id === 'tabConferencia') { renderConferencia(); iniciarPolling(); }
+      else pararPolling();
     }
 
     function situacao(item) {
@@ -295,7 +402,7 @@
 
     function renderItens(lista = itensFiltrados()) {
       const tbody = document.getElementById('tabelaItens');
-      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><p>Nenhum item neste filtro.</p></div></td></tr>`; return; }
+      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><p>Nenhum item neste filtro.</p></div></td></tr>`; return; }
       tbody.innerHTML = lista.map(i => {
         const [sit,cls] = situacao(i);
         return `<tr>
@@ -307,6 +414,7 @@
           <td>${i.min}</td>
           <td>${i.local || '—'}</td>
           <td><span class="badge ${cls}">${sit}</span></td>
+          <td style="font-size:.76rem;color:var(--text-light);white-space:nowrap">${i.ultimaAlteracao?`${fmtQuando(i.ultimaAlteracao)}<br><span style="font-size:.7rem">${i.alteradoPor||''}</span>`:'—'}</td>
           <td style="display:flex;gap:6px">
             <button class="action-btn" onclick="editarItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
             <button class="action-btn" onclick="excluirItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
@@ -389,6 +497,7 @@
         local: document.getElementById('iLocal').value.trim(),
         obs:   document.getElementById('iObs').value.trim(),
       };
+      carimbar(obj);
       if (id) { const idx = itens.findIndex(i=>i.id===id); if(idx>=0) itens[idx]=obj; }
       else itens = [...itens, obj];
       BBM.closeModal('modalItem');
@@ -440,6 +549,7 @@
       if (!item) return;
       if (tipo==='Saída' && qtd > item.qtd) { BBM.toast('Quantidade insuficiente em estoque.','error'); return; }
       item.qtd += tipo==='Entrada' ? qtd : -qtd;
+      carimbar(item);
       const mov = {
         id: BBM.generateId(),
         data: new Date().toLocaleString('pt-BR'),
@@ -455,6 +565,115 @@
       const okItens = await salvar(KEY_I, itens);
       const okMov   = await salvar(KEY_M, movimentos, { sucesso: okItens ? 'Movimentação registrada.' : null });
       if (okItens && okMov && document.getElementById('tabMovimentos').style.display!=='none') renderMovimentos();
+    }
+
+    // ── Conferência de estoque (compartilhada) ────────────────────
+    // Um item está "conferido" nesta sessão se foi alterado depois do início.
+    function conferido(i) {
+      return i.ultimaAlteracao && conferencia.inicio && i.ultimaAlteracao >= conferencia.inicio;
+    }
+
+    async function iniciarConferencia() {
+      if (!confirm('Iniciar uma nova conferência? Todos os itens voltam a ficar PENDENTES de contagem para toda a guarnição.')) return;
+      const agora = new Date().toISOString();
+      conferencia = { id:'atual', inicio:agora, por:(BBM.currentUser&&BBM.currentUser()?.nome)||'—', em:agora };
+      renderConferencia();
+      await salvar(KEY_C, [conferencia], { sucesso:'Conferência iniciada.' });
+    }
+
+    function renderConferencia() {
+      const info = document.getElementById('confInfo');
+      const lista = document.getElementById('confLista');
+      const pw = document.getElementById('confProgressWrap');
+      if (!conferencia.inicio) {
+        info.innerHTML = 'Nenhuma conferência em andamento. Toque em <b>Iniciar nova conferência</b> para começar a contagem compartilhada.';
+        pw.style.display = 'none';
+        lista.innerHTML = '<div class="empty-state"><p>Sem conferência ativa.</p></div>';
+        return;
+      }
+      const total = itens.length;
+      const feitos = itens.filter(conferido).length;
+      info.innerHTML = `Conferência iniciada por <b>${conferencia.por||'—'}</b> em <b>${fmtQuando(conferencia.inicio)}</b>. Atualiza sozinho a cada 20s.`;
+      pw.style.display = 'flex';
+      document.getElementById('confProgressFill').style.width = (total?Math.round(feitos/total*100):0) + '%';
+      document.getElementById('confProgressTxt').textContent = `${feitos}/${total} conferidos`;
+      const grupos = {};
+      for (const i of itens) (grupos[i.categoria] = grupos[i.categoria] || []).push(i);
+      let html = '';
+      for (const cat of Object.keys(grupos)) {
+        html += `<div class="conf-cat">${cat}</div>`;
+        for (const i of grupos[cat]) {
+          const ok = conferido(i);
+          html += `<div class="conf-row ${ok?'ok':'pend'}">
+            <div class="conf-row-main">
+              <div class="conf-row-nome">${i.nome}</div>
+              <div class="conf-row-sub">${ok?`✓ contado por ${i.alteradoPor||'—'} • ${fmtQuando(i.ultimaAlteracao)}`:`pendente • ${i.unidade}`}</div>
+            </div>
+            <div class="conf-row-qtd">${i.qtd}</div>
+            ${ok?'<span class="conf-badge ok">Conferido</span>':`<button class="btn btn-primary" style="padding:6px 12px;font-size:.78rem" onclick="abrirContagem('${i.id}')">Contar</button>`}
+          </div>`;
+        }
+      }
+      lista.innerHTML = html;
+    }
+
+    function abrirContagem(id) {
+      const i = itens.find(x=>x.id===id); if(!i) return;
+      document.getElementById('cfId').value = i.id;
+      document.getElementById('cfNome').textContent = i.nome;
+      document.getElementById('cfRegistrado').textContent = `Registrado: ${i.qtd} ${i.unidade} — ${i.categoria}`;
+      document.getElementById('cfQtd').value = i.qtd;
+      BBM.openModal('modalContagem');
+      setTimeout(()=>{ const el=document.getElementById('cfQtd'); el.focus(); el.select(); }, 200);
+    }
+
+    async function confirmarContagem() {
+      const id = document.getElementById('cfId').value;
+      const i = itens.find(x=>x.id===id); if(!i) return;
+      const v = Number(document.getElementById('cfQtd').value);
+      if (!(v>=0)) { BBM.toast('Informe a quantidade contada.','error'); return; }
+      i.qtd = v; carimbar(i);
+      BBM.closeModal('modalContagem');
+      renderConferencia(); renderAmbientes(); atualizarCards();
+      await salvar(KEY_I, itens, { sucesso:'Contagem registrada.' });
+    }
+
+    let _atualizando = false;
+    async function atualizarConferencia(silencioso) {
+      if (_atualizando) return; _atualizando = true;
+      try {
+        const [ni, nc] = await Promise.all([BBM.refresh(KEY_I), BBM.refresh(KEY_C)]);
+        itens = (ni||[]).map(i => ({ ...i, ambiente:i.ambiente||'Almoxarifado' }));
+        const c = (nc||[])[0]; if (c) conferencia = c;
+        renderConferencia(); renderAmbientes(); atualizarCards();
+        if (!silencioso) BBM.toast('Lista atualizada.');
+      } catch(e) { console.warn('atualizarConferencia', e); }
+      finally { _atualizando = false; }
+    }
+
+    let _pollId = null;
+    function iniciarPolling() {
+      pararPolling();
+      _pollId = setInterval(() => { if (document.visibilityState==='visible') atualizarConferencia(true); }, 20000);
+    }
+    function pararPolling() { if (_pollId) { clearInterval(_pollId); _pollId = null; } }
+
+    // ── Folha de contagem para impressão ──────────────────────────
+    function imprimirContagem() {
+      const grupos = {};
+      for (const i of itens) (grupos[i.categoria] = grupos[i.categoria] || []).push(i);
+      const hoje = new Date().toLocaleDateString('pt-BR');
+      let html = `<h1>15º BBM — Folha de Contagem de Estoque</h1><div class="fc-sub">Almoxarifado • Emitida em ${hoje} • ${itens.length} itens</div>`;
+      for (const cat of Object.keys(grupos)) {
+        html += `<div class="fc-cat">${cat}</div>`;
+        html += `<table><thead><tr><th style="width:44%">Item</th><th>Un.</th><th>Registrado</th><th style="width:22%">Contagem física</th><th style="width:8%">OK</th></tr></thead><tbody>`;
+        for (const i of grupos[cat]) {
+          html += `<tr><td>${i.nome}</td><td>${i.unidade}</td><td style="text-align:center">${i.qtd}</td><td class="fc-blank"></td><td></td></tr>`;
+        }
+        html += `</tbody></table>`;
+      }
+      document.getElementById('folhaContagem').innerHTML = html;
+      window.print();
     }
 
     document.getElementById('searchItem').addEventListener('input', aplicarFiltros);
