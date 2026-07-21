@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Permutas de Serviço — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Patrimônio</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../permutas/index.html"       class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><span class="nav-text">Permutas</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema de Gestão</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Permutas de Serviço</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:#dbeafe;color:#2563eb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Permutas de Serviço</div>
+            <div class="mod-subtitle">Solicitação e assinatura de troca de serviço entre praças</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="atualizar()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Atualizar
+          </button>
+          <button class="btn btn-primary" onclick="abrirSolicitar()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Solicitar permuta
+          </button>
+        </div>
+      </div>
+
+      <div id="pendentesVoce"></div>
+      <div class="section-label" style="margin-top:8px">Permutas</div>
+      <div id="listaPermutas"></div>
+    </div>
+  </main>
+
+  <!-- MODAL SOLICITAR -->
+  <div class="modal-overlay" id="modalSolicitar">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <span class="modal-title">Solicitar permuta de serviço</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalSolicitar')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Meu dia de serviço *</label>
+          <select class="form-control" id="pDia"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Quem vai me substituir *</label>
+          <select class="form-control" id="pSubstituto"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Motivo</label>
+          <textarea class="form-control" id="pMotivo" rows="2" placeholder="Justificativa da permuta"></textarea>
+        </div>
+        <div style="font-size:.78rem;color:#6b7280;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:12px">
+          Escalante dos praças: <strong id="pEscalante">—</strong><br/>
+          A permuta será assinada por você, pelo substituto e pelo escalante.
+        </div>
+        <div class="form-group" style="margin:0"><label class="form-label">Sua senha (assina como solicitante) *</label>
+          <input class="form-control" id="pSenha" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')criarPermuta()"/>
+        </div>
+        <div id="pErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalSolicitar')">Cancelar</button>
+        <button class="btn btn-primary" id="btnCriar" onclick="criarPermuta()">Assinar e solicitar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ASSINAR -->
+  <div class="modal-overlay" id="modalAssinar">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <span class="modal-title" id="assTitulo">Assinar permuta</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAssinar')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="assId"/><input type="hidden" id="assPapel"/>
+        <div style="font-size:.85rem;color:#374151;margin-bottom:12px" id="assResumo"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Sua senha de acesso *</label>
+          <input class="form-control" id="assSenha" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')confirmarAssinar()"/>
+        </div>
+        <div id="assErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAssinar')">Cancelar</button>
+        <button class="btn btn-primary" id="btnAssinar" onclick="confirmarAssinar()">Assinar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="docPermuta" aria-hidden="true"></div>
+
+  <style>
+    .pm-card { border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:12px; background:var(--surface); }
+    .pm-card.urgente { border-color:#f59e0b; background:#fffbeb; }
+    .pm-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+    .pm-titulo { font-size:.95rem; font-weight:700; color:var(--text); }
+    .pm-sub { font-size:.8rem; color:var(--text-light); margin-top:3px; }
+    .pm-status { font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; }
+    .pm-status.aguardando_substituto { background:#fef3c7; color:#92400e; }
+    .pm-status.aguardando_escalante { background:#dbeafe; color:#1d4ed8; }
+    .pm-status.assinado { background:#dcfce7; color:#15803d; }
+    .pm-status.recusado { background:#fee2e2; color:#b91c1c; }
+    .pm-assinaturas { display:flex; gap:16px; flex-wrap:wrap; margin:12px 0 4px; }
+    .pm-ass { font-size:.78rem; display:flex; align-items:center; gap:6px; }
+    .pm-ass .dot { width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:#fff; }
+    .pm-ass.ok .dot { background:#16a34a; }
+    .pm-ass.pend .dot { background:#d1d5db; color:#6b7280; }
+    .pm-ass-nome { color:var(--text); font-weight:600; }
+    .pm-ass.pend .pm-ass-nome { color:var(--text-light); font-weight:500; }
+    .pm-acoes { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    #docPermuta { display:none; }
+    @media print {
+      body * { visibility:hidden; }
+      #docPermuta, #docPermuta * { visibility:visible; }
+      #docPermuta { display:block; position:absolute; left:0; top:0; width:100%; padding:0 8mm; color:#000; font-size:11pt; }
+      #docPermuta h2 { text-align:center; font-size:13pt; margin:0; }
+      #docPermuta .doc-head { text-align:center; font-size:9.5pt; line-height:1.3; margin-bottom:16px; }
+      #docPermuta .doc-corpo { line-height:1.7; text-align:justify; margin:18px 0 40px; }
+      #docPermuta .doc-ass { display:flex; justify-content:space-between; gap:20px; margin-top:50px; }
+      #docPermuta .doc-ass div { flex:1; text-align:center; border-top:1px solid #000; padding-top:4px; font-size:9pt; }
+      @page { margin:16mm; }
+    }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const KEY_P = 'permutas_solicitacoes';
+    const FUNC_ESCALANTE = 'B1 — Escalante dos Praças';
+
+    let permutas = [], meusServicos = [], pracas = [], escalanteNome = '';
+
+    function _norm(s){
+      return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+        .replace(/\bbm\b/g,'').replace(/\s+/g,' ').trim();
+    }
+    function ehMesmaPessoa(a,b){ const x=_norm(a),y=_norm(b); return !!x&&!!y&&(x===y||x.includes(y)||y.includes(x)); }
+    function fmtData(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}); }
+    function fmtDataHora(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+    function eu(){ return BBM.currentUser && BBM.currentUser(); }
+
+    async function carregarTudo() {
+      permutas = BBM.load(KEY_P) || [];
+      // meus dias de serviço (a partir da escala)
+      const user = eu();
+      const registros = BBM.load('escala_registros') || [];
+      const hoje = new Date().toISOString().slice(0,10);
+      meusServicos = registros
+        .filter(r => r.data >= hoje && user && ehMesmaPessoa(r.militar, user.nome))
+        .sort((a,b)=>a.data.localeCompare(b.data));
+      // escalante dos praças (estrutura)
+      const funcs = BBM.load('estrutura_funcoes') || [];
+      const ef = funcs.find(f => f.funcao === FUNC_ESCALANTE);
+      escalanteNome = ef ? ef.oficial : '';
+      // efetivo (praças) para escolher o substituto
+      const mil = await BBM.militares();
+      pracas = mil.filter(m => (m.categoria||'').indexOf('Praça')>=0 || (m.categoria||'').indexOf('BC')>=0);
+    }
+
+    function badgeStatus(s){
+      const txt = { aguardando_substituto:'Aguardando substituto', aguardando_escalante:'Aguardando escalante', assinado:'Assinado', recusado:'Recusado' };
+      return `<span class="pm-status ${s}">${txt[s]||s}</span>`;
+    }
+
+    function blocoAss(p){
+      const b = (papel, label, ass) => {
+        const ok = !!ass;
+        return `<div class="pm-ass ${ok?'ok':'pend'}"><span class="dot">${ok?'✓':'•'}</span>
+          <span><span class="pm-ass-nome">${label}</span>${ok?` — ${fmtDataHora(ass.em)}`:' — pendente'}</span></div>`;
+      };
+      return `<div class="pm-assinaturas">
+        ${b('solicitante','Solicitante: '+p.solicitanteNome, p.ass.solicitante)}
+        ${b('substituto','Substituto: '+p.substitutoNome, p.ass.substituto)}
+        ${b('escalante','Escalante: '+(p.escalanteNome||'—'), p.ass.escalante)}
+      </div>`;
+    }
+
+    // Papel que o usuário logado pode assinar agora nesta permuta, ou null.
+    function meuPapelPendente(p){
+      const u = eu(); if(!u || p.status==='recusado' || p.status==='assinado') return null;
+      if (p.status==='aguardando_substituto' && !p.ass.substituto && ehMesmaPessoa(u.nome, p.substitutoNome)) return 'substituto';
+      if (p.status==='aguardando_escalante' && !p.ass.escalante && ehMesmaPessoa(u.nome, p.escalanteNome)) return 'escalante';
+      return null;
+    }
+
+    function cardPermuta(p){
+      const papel = meuPapelPendente(p);
+      let acoes = `<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="imprimirPermuta('${p.id}')">🖨️ Imprimir</button>`;
+      if (papel) {
+        acoes = `<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinar('${p.id}','${papel}')">✍ Assinar como ${papel}</button>
+                 <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#dc2626;border-color:#fca5a5" onclick="recusar('${p.id}')">Recusar</button>` + acoes;
+      }
+      return `<div class="pm-card${papel?' urgente':''}">
+        <div class="pm-top">
+          <div>
+            <div class="pm-titulo">${p.solicitanteNome} → ${p.substitutoNome}</div>
+            <div class="pm-sub">Serviço de ${fmtData(p.data)}${p.funcao?' • '+p.funcao:''}${p.motivo?' • '+p.motivo:''}</div>
+          </div>
+          ${badgeStatus(p.status)}
+        </div>
+        ${blocoAss(p)}
+        <div class="pm-acoes">${acoes}</div>
+      </div>`;
+    }
+
+    function render(){
+      const u = eu();
+      // Pendentes de você (destaque no topo)
+      const pend = permutas.filter(meuPapelPendente);
+      const pv = document.getElementById('pendentesVoce');
+      pv.innerHTML = pend.length
+        ? `<div class="section-label" style="color:#b45309">⚠ Aguardando sua assinatura</div>${pend.map(cardPermuta).join('')}`
+        : '';
+      // Lista geral (mais recentes primeiro)
+      const lista = [...permutas].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
+      const el = document.getElementById('listaPermutas');
+      el.innerHTML = lista.length ? lista.map(cardPermuta).join('')
+        : '<div class="empty-state"><p>Nenhuma permuta registrada.</p></div>';
+    }
+
+    // ── Solicitar ─────────────────────────────────────────────────
+    function abrirSolicitar(){
+      const u = eu(); if(!u) return;
+      const dia = document.getElementById('pDia');
+      dia.innerHTML = meusServicos.length
+        ? meusServicos.map((r,ix)=>`<option value="${ix}">${fmtData(r.data)}${r.funcao?' — '+r.funcao:''}</option>`).join('')
+        : '<option value="">Você não tem serviços futuros na escala</option>';
+      const sub = document.getElementById('pSubstituto');
+      const outros = pracas.filter(m => !ehMesmaPessoa(m.nome, u.nome));
+      sub.innerHTML = '<option value="">— selecione —</option>' + outros.map(m=>`<option value="${m.nome.replace(/"/g,'&quot;')}">${m.posto?m.posto+' ':''}${m.nome}</option>`).join('');
+      document.getElementById('pEscalante').textContent = escalanteNome || '⚠ não definido na Estrutura Interna';
+      document.getElementById('pMotivo').value='';
+      document.getElementById('pSenha').value='';
+      document.getElementById('pErro').style.display='none';
+      BBM.openModal('modalSolicitar');
+    }
+
+    async function criarPermuta(){
+      const u = eu(); if(!u) return;
+      const err = document.getElementById('pErro');
+      const ix = document.getElementById('pDia').value;
+      const substituto = document.getElementById('pSubstituto').value;
+      const senha = document.getElementById('pSenha').value;
+      const mostra = m => { err.textContent=m; err.style.display='block'; };
+      if (ix==='' || !meusServicos[ix]) return mostra('Selecione um dia de serviço seu.');
+      if (!substituto) return mostra('Selecione quem vai substituir.');
+      if (!escalanteNome) return mostra('O escalante dos praças não está definido na Estrutura Interna.');
+      if (!senha) return mostra('Informe sua senha para assinar.');
+      const btn = document.getElementById('btnCriar'); btn.disabled=true; btn.textContent='Verificando…';
+      const okSenha = await conferirSenha(senha);
+      if (!okSenha) { btn.disabled=false; btn.textContent='Assinar e solicitar'; return mostra('Senha incorreta.'); }
+      const serv = meusServicos[ix];
+      const agora = new Date().toISOString();
+      const p = {
+        id: BBM.generateId(), criadoEm: agora,
+        solicitanteNome: u.nome, solicitantePosto: u.posto||'',
+        data: serv.data, funcao: serv.funcao||'',
+        substitutoNome: substituto,
+        escalanteNome,
+        motivo: document.getElementById('pMotivo').value.trim(),
+        status: 'aguardando_substituto',
+        ass: { solicitante:{ nome:u.nome, em:agora }, substituto:null, escalante:null },
+      };
+      permutas = [p, ...permutas];
+      BBM.closeModal('modalSolicitar');
+      render();
+      await salvarPermutas('Permuta solicitada e assinada. Aguardando o substituto.');
+      btn.disabled=false; btn.textContent='Assinar e solicitar';
+    }
+
+    // ── Assinar ───────────────────────────────────────────────────
+    function abrirAssinar(id, papel){
+      const p = permutas.find(x=>x.id===id); if(!p) return;
+      document.getElementById('assId').value=id;
+      document.getElementById('assPapel').value=papel;
+      document.getElementById('assTitulo').textContent = 'Assinar como '+papel;
+      document.getElementById('assResumo').innerHTML =
+        `Permuta de <strong>${p.solicitanteNome}</strong> → <strong>${p.substitutoNome}</strong><br/>Serviço de ${fmtData(p.data)}.`;
+      document.getElementById('assSenha').value='';
+      document.getElementById('assErro').style.display='none';
+      BBM.openModal('modalAssinar');
+      setTimeout(()=>document.getElementById('assSenha').focus(),200);
+    }
+
+    async function confirmarAssinar(){
+      const id = document.getElementById('assId').value;
+      const papel = document.getElementById('assPapel').value;
+      const senha = document.getElementById('assSenha').value;
+      const err = document.getElementById('assErro');
+      const p = permutas.find(x=>x.id===id); if(!p) return;
+      if (meuPapelPendente(p)!==papel) { err.textContent='Esta assinatura não é sua ou já não está pendente.'; err.style.display='block'; return; }
+      if (!senha) { err.textContent='Informe sua senha.'; err.style.display='block'; return; }
+      const btn = document.getElementById('btnAssinar'); btn.disabled=true; btn.textContent='Verificando…';
+      const ok = await conferirSenha(senha);
+      if (!ok) { btn.disabled=false; btn.textContent='Assinar'; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
+      const u = eu(); const agora = new Date().toISOString();
+      p.ass[papel] = { nome:u.nome, em:agora };
+      if (papel==='substituto') p.status='aguardando_escalante';
+      if (papel==='escalante')  p.status='assinado';
+      BBM.closeModal('modalAssinar');
+      render();
+      await salvarPermutas(papel==='escalante'?'Permuta finalizada e assinada por todos.':'Assinatura registrada. Encaminhada ao próximo assinante.');
+      btn.disabled=false; btn.textContent='Assinar';
+    }
+
+    async function recusar(id){
+      const p = permutas.find(x=>x.id===id); if(!p) return;
+      if (!meuPapelPendente(p)) return;
+      const motivo = prompt('Motivo da recusa (opcional):') ;
+      if (motivo===null) return; // cancelou
+      p.status='recusado'; p.recusadoPor = eu()?.nome; p.recusadoMotivo=motivo||''; p.recusadoEm=new Date().toISOString();
+      render();
+      await salvarPermutas('Permuta recusada.');
+    }
+
+    // ── Assinatura interna: confere a senha do próprio usuário ────
+    async function conferirSenha(senha){
+      const u = eu(); if(!u) return false;
+      try {
+        const sb = await BBM.sb();
+        const { data:{ session } } = await sb.auth.getSession();
+        const { error } = await sb.auth.signInWithPassword({ email:(u.login||'').trim().toLowerCase()+'@15bbm.app', password:senha });
+        if (session) await sb.auth.setSession({ access_token:session.access_token, refresh_token:session.refresh_token });
+        return !error;
+      } catch(e){ console.error(e); return false; }
+    }
+
+    function semPermissao(err){
+      if(!err) return false;
+      const c=String(err.code||''), m=String(err.message||'').toLowerCase();
+      return c==='42501'||c==='PGRST301'||m.includes('row-level security');
+    }
+    async function salvarPermutas(sucesso){
+      let res; try { res = await BBM.save(KEY_P, permutas); } catch(e){ res={ok:false,error:e}; }
+      const ok = !res || res.ok;
+      if (ok) { if(sucesso) BBM.toast(sucesso); }
+      else if (semPermissao(res.error)) BBM.toast('Sem permissão para salvar a permuta.','error');
+      else BBM.toast('Falha ao sincronizar — verifique a conexão.','error');
+      return ok;
+    }
+
+    async function atualizar(){
+      permutas = await BBM.refresh(KEY_P);
+      render();
+      BBM.toast('Lista atualizada.');
+    }
+
+    // ── Documento para impressão ──────────────────────────────────
+    function imprimirPermuta(id){
+      const p = permutas.find(x=>x.id===id); if(!p) return;
+      const assLinha = (label, ass) => `<div>${label}<br/>${ass?`Assinado em ${fmtDataHora(ass.em)}`:'____________________'}</div>`;
+      document.getElementById('docPermuta').innerHTML = `
+        <div class="doc-head">
+          ESTADO DO MARANHÃO<br/>CORPO DE BOMBEIROS MILITAR<br/>15º BATALHÃO DE BOMBEIROS MILITAR — CHAPADINHA/MA
+        </div>
+        <h2>TERMO DE PERMUTA DE SERVIÇO</h2>
+        <div class="doc-corpo">
+          O militar <strong>${p.solicitantePosto?p.solicitantePosto+' ':''}${p.solicitanteNome}</strong> solicita a permuta do serviço
+          escalado para o dia <strong>${fmtData(p.data)}</strong>${p.funcao?` (função: ${p.funcao})`:''}, a ser assumido
+          pelo militar <strong>${p.substitutoNome}</strong>.
+          ${p.motivo?`<br/><br/>Motivo: ${p.motivo}.`:''}
+          <br/><br/>Declaram as partes estar de acordo com a presente permuta, sujeita à homologação do escalante dos praças.
+          ${p.status==='recusado'?`<br/><br/><strong>PERMUTA RECUSADA</strong>${p.recusadoPor?` por ${p.recusadoPor}`:''}${p.recusadoMotivo?` — ${p.recusadoMotivo}`:''}.`:''}
+        </div>
+        <div class="doc-ass">
+          ${assLinha('Solicitante: '+p.solicitanteNome, p.ass.solicitante)}
+          ${assLinha('Substituto: '+p.substitutoNome, p.ass.substituto)}
+          ${assLinha('Escalante: '+(p.escalanteNome||'—'), p.ass.escalante)}
+        </div>`;
+      window.print();
+    }
+
+    // ── Início ────────────────────────────────────────────────────
+    BBM.ready(['escala_registros', 'estrutura_funcoes', KEY_P], async () => {
+      await carregarTudo();
+      render();
+    });
+  </script>
+</body>
+</html>
