@@ -135,6 +135,9 @@
         <div class="hero-date" id="heroDate"></div>
       </div>
 
+      <!-- MEUS PRÓXIMOS SERVIÇOS (praça logado) -->
+      <div id="meusServicos" style="display:none"></div>
+
       <!-- CARDS DE MÓDULOS -->
       <div class="section-label">Módulos do Sistema</div>
       <div class="module-grid">
@@ -282,6 +285,20 @@
     </div><!-- /content -->
   </main>
 
+  <style>
+    .ms-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:1.6rem; }
+    .ms-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .ms-title { font-family:'Rajdhani',sans-serif; font-size:1.15rem; font-weight:700; color:var(--navy); display:flex; align-items:center; gap:8px; }
+    .ms-link { font-size:.8rem; font-weight:600; color:var(--red); text-decoration:none; white-space:nowrap; }
+    .ms-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; }
+    .ms-item { border:1px solid var(--border); border-left:4px solid var(--blue,#2563eb); border-radius:10px; padding:10px 14px; }
+    .ms-item.joe { border-left-color:var(--red); background:#fff5f5; }
+    .ms-data { font-size:.9rem; font-weight:700; color:var(--text); text-transform:capitalize; }
+    .ms-func { font-size:.8rem; color:var(--text-light); margin-top:2px; }
+    .ms-joe-badge { display:inline-block; font-size:.66rem; font-weight:700; color:#fff; background:var(--red); padding:1px 7px; border-radius:8px; margin-left:6px; vertical-align:middle; }
+    .ms-vazio { font-size:.85rem; color:var(--text-light); }
+  </style>
+
   <script src="assets/js/main.js"></script>
   <script>
     // Ajusta a tela conforme o perfil (carregado de forma assíncrona do Supabase)
@@ -295,6 +312,56 @@
           if (m && BBM.nivel(m[1]) === 'nenhum') card.style.display = 'none';
         });
       }
+    });
+
+    // ── Meus próximos serviços (para o praça logado) ──────────────
+    // A escala usa o NOME do militar (vindo do cadastro central) no campo
+    // "militar"; casamos com o nome do perfil logado.
+    function _norm(s){
+      return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+        .replace(/\bbm\b/g,'')      // "2º Sgt BM Dene" == "2º Sgt Dene"
+        .replace(/\s+/g,' ').trim();
+    }
+    function _ehMeu(militar, nome){
+      const a=_norm(militar), b=_norm(nome);
+      if(!a||!b) return false;
+      return a===b || a.includes(b) || b.includes(a);
+    }
+    function _fmtDataServico(d){
+      const dt = new Date(d + 'T00:00:00');
+      return dt.toLocaleDateString('pt-BR',{ weekday:'long', day:'2-digit', month:'2-digit' });
+    }
+
+    BBM.ready(['escala_registros'], () => {
+      const user = BBM.currentUser && BBM.currentUser();
+      const box = document.getElementById('meusServicos');
+      if (!user || !box) return;
+      const hoje = new Date().toISOString().slice(0,10);
+      const registros = BBM.load('escala_registros') || [];
+      const meus = registros
+        .filter(r => r.data >= hoje && _ehMeu(r.militar, user.nome))
+        .sort((a,b) => a.data.localeCompare(b.data))
+        .slice(0, 8);
+      // Só exibe o painel para quem tem serviço (praças escalados)
+      if (!meus.length) return;
+      box.style.display = 'block';
+      box.innerHTML = `
+        <div class="ms-box">
+          <div class="ms-head">
+            <div class="ms-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Meus próximos serviços
+            </div>
+            <a class="ms-link" href="modulos/escala/index.html">Ver escala completa →</a>
+          </div>
+          <div class="ms-list">
+            ${meus.map(r => `
+              <div class="ms-item${r.joe?' joe':''}">
+                <div class="ms-data">${_fmtDataServico(r.data)}${r.joe?'<span class="ms-joe-badge">JOE</span>':''}</div>
+                <div class="ms-func">${r.funcao || 'Serviço'}</div>
+              </div>`).join('')}
+          </div>
+        </div>`;
     });
   </script>
 </body>
