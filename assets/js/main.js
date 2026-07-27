@@ -478,6 +478,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     navEl.appendChild(a);
   }
 
+  // ---- Injeta o item Livro de Serviço Operacional no menu lateral ----
+  if (navEl && BBM.moduloAtual() !== 'operacional' && BBM.nivel('operacional') !== 'nenhum') {
+    const a = document.createElement('a');
+    a.className = 'nav-item';
+    a.href = ROOT + 'modulos/operacional/index.html';
+    a.innerHTML = '<span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="nav-text">Livro Operacional</span><span class="nav-arrow">›</span>';
+    navEl.appendChild(a);
+  }
+
   // ---- Enforcement de acesso ao módulo ----
   const modAtual = BBM.moduloAtual();
   if (user.role !== 'admin' && modAtual) {

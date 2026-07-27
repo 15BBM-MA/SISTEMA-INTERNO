@@ -37,9 +37,7 @@
           <span class="breadcrumb-current">Livro de Serviço Operacional</span>
         </div>
       </div>
-      <div class="topbar-right">
-        <div class="topbar-date" id="topbarDate"></div>
-      </div>
+      <div class="topbar-right"><div class="topbar-date" id="topbarDate"></div></div>
     </header>
 
     <div class="content">
@@ -62,31 +60,35 @@
 
       <!-- ===== NOVA PARTE ===== -->
       <div id="tabNova">
-        <div class="form-card">
+        <div id="bloqueadoBanner" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.85rem;color:#1d4ed8"></div>
+        <div class="form-card" id="formCard">
           <input type="hidden" id="op_id"/>
           <div class="fc-sec">Período</div>
           <div class="grid3">
-            <div class="form-group"><label class="form-label">Do dia (serviço) *</label><input class="form-control" id="op_data" type="date"/></div>
+            <div class="form-group"><label class="form-label">Do dia (serviço) *</label><input class="form-control" id="op_data" type="date" onchange="puxarEscala(true)"/></div>
             <div class="form-group"><label class="form-label">Para o dia</label><input class="form-control" id="op_dataProx" type="date"/></div>
             <div class="form-group" style="display:flex;align-items:flex-end">
-              <button class="btn btn-ghost" style="width:100%" onclick="puxarEscala()" title="Preenche guarnição/motorista com a escala do dia">↻ Puxar da escala</button>
+              <button class="btn btn-ghost" style="width:100%" onclick="puxarEscala(false)">↻ Puxar da escala</button>
             </div>
           </div>
 
           <div class="fc-sec">I — Serviço Interno</div>
-          <div class="grid2">
-            <div class="form-group"><label class="form-label">Chefe de Socorro</label><input class="form-control" id="op_chefe"/></div>
-            <div class="form-group"><label class="form-label">Cmt de Guarnição</label><input class="form-control" id="op_cmt"/></div>
+          <div class="form-group"><label class="form-label">Chefe de Socorro *</label>
+            <select class="form-control" id="op_chefe"></select>
           </div>
-          <div class="form-group"><label class="form-label">Guarnição</label><textarea class="form-control" id="op_guarnicao" rows="2"></textarea></div>
-          <div class="form-group"><label class="form-label">Motorista</label><input class="form-control" id="op_motorista"/></div>
+          <label class="form-label" style="margin-bottom:6px">Guarnição (organizada por função — troque o militar para corrigir ou registrar permuta)</label>
+          <div id="guarRows"></div>
+          <button class="btn btn-ghost" style="font-size:.8rem;padding:5px 12px;margin-top:6px" onclick="addGuarRow('','')">+ integrante</button>
 
           <div class="fc-sec">II — Jornada Extra Operacional / Serviço Externo</div>
           <div class="form-group"><textarea class="form-control" id="op_jornada" rows="3"></textarea></div>
 
           <div class="fc-sec">III — Alterações</div>
-          <div class="form-group"><label class="form-label">A) Permuta de serviço</label><textarea class="form-control" id="op_permuta" rows="2"></textarea></div>
-          <div class="form-group"><label class="form-label">B) Atestado médico</label><textarea class="form-control" id="op_atestado" rows="2"></textarea></div>
+          <label class="form-label">A) Permuta de serviço</label>
+          <div style="font-size:.76rem;color:var(--text-light);margin-bottom:6px">Quem estava de serviço permutou com quem assumiu. Fica registrado no livro.</div>
+          <div id="permRows"></div>
+          <button class="btn btn-ghost" style="font-size:.8rem;padding:5px 12px;margin:6px 0 4px" onclick="addPermRow('','')">+ permuta</button>
+          <div class="form-group" style="margin-top:14px"><label class="form-label">B) Atestado médico</label><textarea class="form-control" id="op_atestado" rows="2"></textarea></div>
           <div class="form-group"><label class="form-label">C) Alterações de viaturas</label><textarea class="form-control" id="op_viaturas" rows="2"></textarea></div>
 
           <div class="fc-sec">IV — Ocorrências</div>
@@ -100,8 +102,8 @@
 
           <div class="fc-actions">
             <button class="btn btn-ghost" onclick="limpar()">Limpar</button>
-            <button class="btn btn-ghost" onclick="salvar(false)">Salvar</button>
-            <button class="btn btn-primary" onclick="salvar(true)">Salvar e imprimir</button>
+            <button class="btn btn-ghost" onclick="salvarRascunho()">Salvar rascunho</button>
+            <button class="btn btn-primary" onclick="abrirAssinarCmt()">Assinar e enviar ao Chefe</button>
           </div>
         </div>
       </div>
@@ -115,6 +117,28 @@
       </div>
     </div>
   </main>
+
+  <!-- MODAL ASSINAR -->
+  <div class="modal-overlay" id="modalAssinar">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <span class="modal-title" id="assTitulo">Assinar</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAssinar')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="assId"/><input type="hidden" id="assPapel"/>
+        <div id="assResumo" style="font-size:.85rem;color:#374151;margin-bottom:12px"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Sua senha de acesso *</label>
+          <input class="form-control" id="assSenha" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')confirmarAssinatura()"/>
+        </div>
+        <div id="assErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAssinar')">Cancelar</button>
+        <button class="btn btn-primary" id="btnAssinar" onclick="confirmarAssinatura()">Assinar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- VISUALIZADOR / IMPRESSÃO -->
   <div id="docOverlay">
@@ -132,18 +156,25 @@
     .form-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:22px; }
     .fc-sec { font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin:18px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border); }
     .fc-sec:first-child { margin-top:0; }
-    .grid2 { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
     .grid3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px; }
     .fc-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap; }
-    @media(max-width:768px){ .grid2,.grid3{grid-template-columns:1fr} .fc-actions .btn{flex:1;justify-content:center} }
+    .guar-row { display:grid;grid-template-columns:190px 1fr auto;gap:8px;margin-bottom:8px;align-items:center; }
+    .perm-row { display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;margin-bottom:8px;align-items:center; }
+    .perm-row .seta { font-size:.8rem;color:var(--text-light);white-space:nowrap; }
+    .row-x { background:none;border:1px solid var(--border);border-radius:6px;width:30px;height:34px;cursor:pointer;color:#dc2626;font-size:1rem; }
+    @media(max-width:768px){ .grid3{grid-template-columns:1fr} .guar-row,.perm-row{grid-template-columns:1fr} .fc-actions .btn{flex:1;justify-content:center} }
     .hist-controls { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px; }
     .hist-controls input { flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem;background:#fff;color:var(--text); }
     .hist-item { border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; }
+    .hist-item.urgente { border-color:#f59e0b;background:#fffbeb; }
     .hist-data { font-weight:700;color:var(--text);text-transform:capitalize; }
     .hist-meta { font-size:.8rem;color:var(--text-light);margin-top:2px; }
     .hist-acoes { display:flex;gap:8px;flex-wrap:wrap; }
+    .st { font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap;margin-left:8px; }
+    .st.rascunho { background:#f1f5f9;color:#475569; }
+    .st.aguardando_chefe { background:#fef3c7;color:#92400e; }
+    .st.assinado { background:#dcfce7;color:#15803d; }
 
-    /* Visualizador / documento (padrão DAT) */
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
     #docOverlay.open { display:block; }
     .doc-bar { position:fixed;top:0;left:0;right:0;z-index:10;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px); }
@@ -160,12 +191,13 @@
     .doc h3 { font-size:11.5pt;margin:14px 0 4px;text-transform:uppercase; }
     .doc .sub { font-weight:bold;margin:8px 0 2px; }
     .doc p { margin:5px 0;text-align:justify; }
-    .doc .campo { border-bottom:1px solid #000;min-height:1.2em; }
     .doc .b { font-weight:bold; }
     .doc .texto { white-space:pre-wrap;min-height:1.3em;border-bottom:1px dotted #999;padding:2px 0; }
-    .doc .assinaturas { margin-top:40px;display:flex;flex-direction:column;gap:30px;align-items:center; }
+    .doc .status-tag { text-align:center;font-weight:bold;padding:4px;border:1px dashed #999;margin:10px 0;font-size:10pt; }
+    .doc .assinaturas { margin-top:36px;display:flex;flex-direction:column;gap:26px;align-items:center; }
     .doc .assin-linha { text-align:center;width:340px; }
     .doc .assin-linha .ln { border-top:1px solid #000;padding-top:3px;font-size:10pt; }
+    .doc .assin-linha .st2 { font-size:8.5pt;color:#166534; }
 
     @media print {
       @page { size:A4; margin:12mm; }
@@ -181,18 +213,31 @@
   <script src="../../assets/js/main.js"></script>
   <script>
     const KEY_OP = 'operacional_partes';
-    let partes = [];
+    const FUNCOES = ['Comandante de Guarnição','Chefe de Linha','Auxiliar do Chefe de Linha','Motorista'];
+    const CHEFE_EXCLUIR = ['oliveira','martins']; // nomes de oficiais fora da lista de Chefe de Socorro
+
+    let partes = [], militares = [], oficiais = [], bloqueado = false;
 
     const val = id => (document.getElementById(id).value||'').trim();
     const hoje = () => new Date().toISOString().slice(0,10);
     const BASE = location.origin + location.pathname.replace(/modulos\/operacional\/.*/, '');
     const LOGO = BASE + 'assets/img/logo.png';
 
+    function _norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\bbm\b/g,'').replace(/\s+/g,' ').trim(); }
+    function ehMesma(a,b){ const x=_norm(a),y=_norm(b); return !!x&&!!y&&(x===y||x.includes(y)||y.includes(x)); }
+    function canonMilitar(nome){ const m=militares.find(x=>ehMesma(x.nome,nome)); return m?m.nome:(nome||''); }
     function diaSemana(iso){ if(!iso) return ''; return new Date(iso+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long'}); }
     function brData(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
     function extenso(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); const ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return d+' de '+ms[+m-1]+' de '+y; }
     function esc(s){ return String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
     function nl(s){ return esc(s).replace(/\n/g,'<br/>'); }
+    function eu(){ return BBM.currentUser && BBM.currentUser(); }
+
+    // O nome do militar já traz a graduação (ex.: "2º Sgt Ribeiro"); value = nome.
+    function optsMilitares(sel){
+      return '<option value="">— selecione —</option>' +
+        militares.map(m=>`<option${_norm(m.nome)===_norm(sel)?' selected':''}>${esc(m.nome)}</option>`).join('');
+    }
 
     function showTab(id, btn){
       ['tabNova','tabHist'].forEach(t=>document.getElementById(t).style.display='none');
@@ -201,79 +246,211 @@
       if(id==='tabHist') renderHist();
     }
 
-    function limpar(){
-      ['op_id','op_data','op_dataProx','op_chefe','op_cmt','op_guarnicao','op_motorista','op_jornada','op_permuta','op_atestado','op_viaturas','op_ocorrencias','op_outros','op_passagem']
-        .forEach(k=>document.getElementById(k).value='');
-      document.getElementById('op_data').value = hoje();
+    // ── Chefe de Socorro (oficiais, exceto Oliveira e Martins) ────
+    function popularChefe(sel){
+      const el = document.getElementById('op_chefe');
+      const lista = oficiais.filter(o => !CHEFE_EXCLUIR.some(x => _norm(o.nome).includes(x)));
+      el.innerHTML = '<option value="">— selecione o Chefe de Socorro —</option>' +
+        lista.map(o=>`<option value="${o.id}"${o.id===sel?' selected':''}>${esc((o.posto?o.posto+' ':'')+o.nome)}</option>`).join('');
     }
 
-    // Preenche a partir da escala do dia selecionado
-    function puxarEscala(){
-      const data = val('op_data'); if(!data){ BBM.toast('Informe a data primeiro.','error'); return; }
+    // ── Guarnição estruturada ─────────────────────────────────────
+    function guarRowHtml(funcao, militar){
+      return `<div class="guar-row">
+        <input class="form-control" value="${esc(funcao)}" placeholder="Função"/>
+        <select class="form-control">${optsMilitares(militar)}</select>
+        <button class="row-x" onclick="this.closest('.guar-row').remove()">×</button>
+      </div>`;
+    }
+    function addGuarRow(funcao, militar){ document.getElementById('guarRows').insertAdjacentHTML('beforeend', guarRowHtml(funcao, militar)); }
+    function setGuarnicao(lista){
+      const cont = document.getElementById('guarRows'); cont.innerHTML='';
+      const base = (lista && lista.length) ? lista : FUNCOES.map(f=>({funcao:f, militar:''}));
+      base.forEach(g=>addGuarRow(g.funcao, g.militar));
+    }
+    function lerGuarnicao(){
+      return [...document.querySelectorAll('#guarRows .guar-row')].map(r=>({
+        funcao:(r.querySelector('input').value||'').trim(),
+        militar:(r.querySelector('select').value||'').trim(),
+      })).filter(g=>g.funcao||g.militar);
+    }
+
+    // ── Permuta de serviço estruturada ────────────────────────────
+    function permRowHtml(saiu, entrou){
+      return `<div class="perm-row">
+        <select class="form-control">${optsMilitares(saiu)}</select>
+        <span class="seta">permutou com →</span>
+        <select class="form-control">${optsMilitares(entrou)}</select>
+        <button class="row-x" onclick="this.closest('.perm-row').remove()">×</button>
+      </div>`;
+    }
+    function addPermRow(saiu, entrou){ document.getElementById('permRows').insertAdjacentHTML('beforeend', permRowHtml(saiu, entrou)); }
+    function setPermutas(lista){ const c=document.getElementById('permRows'); c.innerHTML=''; (lista||[]).forEach(p=>addPermRow(p.saiu,p.entrou)); }
+    function lerPermutas(){
+      return [...document.querySelectorAll('#permRows .perm-row')].map(r=>{
+        const s=r.querySelectorAll('select');
+        return { saiu:(s[0].value||'').trim(), entrou:(s[1].value||'').trim() };
+      }).filter(p=>p.saiu||p.entrou);
+    }
+
+    // ── Puxar da escala ───────────────────────────────────────────
+    function puxarEscala(silencioso){
+      const data = val('op_data'); if(!data){ if(!silencioso) BBM.toast('Informe a data primeiro.','error'); return; }
       const regs = (BBM.load('escala_registros')||[]).filter(r=>r.data===data);
-      if(!regs.length){ BBM.toast('Nenhum registro de escala nesse dia.','error'); return; }
-      const guar=[];
-      for(const r of regs){
-        const f=(r.funcao||'').toLowerCase();
-        if(f.includes('motorista')) document.getElementById('op_motorista').value = r.militar;
-        else if(f.includes('chefe')) document.getElementById('op_chefe').value = r.militar;
-        else if(f.includes('comand')||f.includes('cmt')||f.includes('guarni')) document.getElementById('op_cmt').value = r.militar;
-        else guar.push((r.funcao?r.funcao+': ':'')+r.militar);
-      }
-      if(guar.length) document.getElementById('op_guarnicao').value = guar.join('\n');
-      BBM.toast('Dados da escala preenchidos. Confira antes de salvar.');
+      if(!regs.length){ if(!silencioso) BBM.toast('Nenhum registro de escala nesse dia.','error'); return; }
+      // organiza por função, na ordem padrão + extras
+      const porFunc = {};
+      regs.forEach(r=>{ (porFunc[r.funcao]=porFunc[r.funcao]||[]).push(canonMilitar(r.militar)); });
+      const lista = [];
+      FUNCOES.forEach(f=>{ (porFunc[f]||['']).forEach(mil=>lista.push({funcao:f, militar:mil})); delete porFunc[f]; });
+      Object.keys(porFunc).forEach(f=>porFunc[f].forEach(mil=>lista.push({funcao:f, militar:mil})));
+      setGuarnicao(lista);
+      if(!silencioso) BBM.toast('Guarnição puxada da escala. Ajuste se necessário.');
     }
 
-    function coletar(){
+    // ── Coletar / status ──────────────────────────────────────────
+    function coletar(status){
+      const chefeId = val('op_chefe');
+      const of = oficiais.find(o=>o.id===chefeId);
+      const anterior = partes.find(x=>x.id===val('op_id'));
       return {
         id: val('op_id') || BBM.generateId(),
         data: val('op_data'), dataProx: val('op_dataProx'),
-        chefe: val('op_chefe'), cmt: val('op_cmt'),
-        guarnicao: val('op_guarnicao'), motorista: val('op_motorista'),
+        chefeId, chefeNome: of?of.nome:'', chefeLogin: of?of.login:'',
+        guarnicao: lerGuarnicao(),
         jornada: val('op_jornada'),
-        permuta: val('op_permuta'), atestado: val('op_atestado'), viaturas: val('op_viaturas'),
+        permutas: lerPermutas(),
+        atestado: val('op_atestado'), viaturas: val('op_viaturas'),
         ocorrencias: val('op_ocorrencias'), outros: val('op_outros'), passagem: val('op_passagem'),
-        criadoPor: (BBM.currentUser&&BBM.currentUser()?.nome)||'',
-        criadoEm: new Date().toISOString(),
+        status,
+        criadoPor: anterior?anterior.criadoPor:(eu()?.nome||''),
+        criadoPorId: anterior?anterior.criadoPorId:(eu()?.id||''),
+        criadoEm: anterior?anterior.criadoEm:new Date().toISOString(),
+        assCmt: anterior?anterior.assCmt:null,
+        assChefe: anterior?anterior.assChefe:null,
       };
     }
 
     function semPermissao(err){ if(!err) return false; const c=String(err.code||''),m=String(err.message||'').toLowerCase(); return c==='42501'||c==='PGRST301'||m.includes('row-level security'); }
-
-    async function salvar(imprimir){
-      const p = coletar();
-      if(!p.data){ BBM.toast('Informe a data do serviço.','error'); return; }
+    async function persistir(p, msgOk){
       const idx = partes.findIndex(x=>x.id===p.id);
       if(idx>=0) partes[idx]=p; else partes=[p,...partes];
-      document.getElementById('op_id').value = p.id;
       let res; try{ res=await BBM.save(KEY_OP, partes); }catch(e){ res={ok:false,error:e}; }
-      if(!res || res.ok){
-        BBM.toast('Parte diária salva.');
-        if(imprimir) verDoc(p.id);
-      } else if(semPermissao(res.error)){
-        BBM.toast('Seu usuário não tem permissão de edição no Livro Operacional.','error');
-      } else {
-        BBM.toast('Falha ao sincronizar — verifique a conexão.','error');
-      }
+      if(!res || res.ok){ if(msgOk) BBM.toast(msgOk); return true; }
+      if(semPermissao(res.error)) BBM.toast('Sem permissão de edição no Livro Operacional.','error');
+      else BBM.toast('Falha ao sincronizar — verifique a conexão.','error');
+      return false;
     }
 
-    function editar(id){
+    async function salvarRascunho(){
+      if(!val('op_data')){ BBM.toast('Informe a data do serviço.','error'); return; }
+      const p = coletar('rascunho');
+      document.getElementById('op_id').value = p.id;
+      await persistir(p, 'Rascunho salvo. Visível a todos no histórico.');
+    }
+
+    // ── Assinatura do Cmt (quem preenche) ─────────────────────────
+    function abrirAssinarCmt(){
+      if(!val('op_data')){ BBM.toast('Informe a data do serviço.','error'); return; }
+      if(!val('op_chefe')){ BBM.toast('Selecione o Chefe de Socorro.','error'); return; }
+      const p = coletar('rascunho'); // garante que está salvo antes de assinar
+      document.getElementById('op_id').value = p.id;
+      persistir(p).then(()=>{
+        document.getElementById('assId').value = p.id;
+        document.getElementById('assPapel').value = 'cmt';
+        document.getElementById('assTitulo').textContent = 'Assinar como Cmt de Guarnição';
+        document.getElementById('assResumo').innerHTML = 'Ao assinar, a parte é enviada ao <strong>Chefe de Socorro</strong> para conferência e não poderá mais ser editada.';
+        document.getElementById('assSenha').value='';
+        document.getElementById('assErro').style.display='none';
+        BBM.openModal('modalAssinar');
+        setTimeout(()=>document.getElementById('assSenha').focus(),200);
+      });
+    }
+
+    function abrirAssinarChefe(id){
       const p = partes.find(x=>x.id===id); if(!p) return;
-      const set=(k,v)=>document.getElementById(k).value=v||'';
-      set('op_id',p.id); set('op_data',p.data); set('op_dataProx',p.dataProx);
-      set('op_chefe',p.chefe); set('op_cmt',p.cmt); set('op_guarnicao',p.guarnicao); set('op_motorista',p.motorista);
-      set('op_jornada',p.jornada); set('op_permuta',p.permuta); set('op_atestado',p.atestado); set('op_viaturas',p.viaturas);
-      set('op_ocorrencias',p.ocorrencias); set('op_outros',p.outros); set('op_passagem',p.passagem);
+      document.getElementById('assId').value = id;
+      document.getElementById('assPapel').value = 'chefe';
+      document.getElementById('assTitulo').textContent = 'Assinar como Chefe de Socorro';
+      document.getElementById('assResumo').innerHTML = `Parte diária de <strong>${esc(brData(p.data))}</strong>. Ao assinar, fica finalizada e visível a todos como assinada.`;
+      document.getElementById('assSenha').value='';
+      document.getElementById('assErro').style.display='none';
+      BBM.openModal('modalAssinar');
+      setTimeout(()=>document.getElementById('assSenha').focus(),200);
+    }
+
+    async function conferirSenha(senha){
+      const u=eu(); if(!u) return false;
+      try{
+        const sb=await BBM.sb();
+        const {data:{session}}=await sb.auth.getSession();
+        const {error}=await sb.auth.signInWithPassword({email:(u.login||'').trim().toLowerCase()+'@15bbm.app',password:senha});
+        if(session) await sb.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});
+        return !error;
+      }catch(e){ console.error(e); return false; }
+    }
+
+    async function confirmarAssinatura(){
+      const id=val('assId'), papel=val('assPapel'), senha=val('assSenha');
+      const err=document.getElementById('assErro');
+      const p=partes.find(x=>x.id===id); if(!p) return;
+      const u=eu();
+      if(papel==='chefe' && !ehMesma(u?.nome, p.chefeNome)){ err.textContent='Só o Chefe de Socorro indicado pode assinar.'; err.style.display='block'; return; }
+      if(!senha){ err.textContent='Informe sua senha.'; err.style.display='block'; return; }
+      const btn=document.getElementById('btnAssinar'); btn.disabled=true; btn.textContent='Verificando…';
+      const ok=await conferirSenha(senha);
+      if(!ok){ btn.disabled=false; btn.textContent='Assinar'; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
+      const agora=new Date().toISOString();
+      if(papel==='cmt'){ p.assCmt={nome:u.nome, em:agora}; p.status='aguardando_chefe'; }
+      if(papel==='chefe'){ p.assChefe={nome:u.nome, em:agora}; p.status='assinado'; }
+      BBM.closeModal('modalAssinar');
+      const okSave = await persistir(p, papel==='cmt'?'Assinado e enviado ao Chefe de Socorro.':'Parte assinada e finalizada.');
+      btn.disabled=false; btn.textContent='Assinar';
+      if(okSave){ if(papel==='cmt'){ limpar(); showTab('tabHist', document.querySelectorAll('.tab-btn')[1]); } else renderHist(); }
+    }
+
+    // ── Editar / limpar ───────────────────────────────────────────
+    function limpar(){
+      document.getElementById('op_id').value='';
+      ['op_dataProx','op_jornada','op_atestado','op_viaturas','op_ocorrencias','op_outros','op_passagem'].forEach(k=>document.getElementById(k).value='');
+      document.getElementById('op_data').value=hoje();
+      popularChefe('');
+      setGuarnicao(null);
+      setPermutas([]);
+      setBloqueado(false);
+    }
+    function setBloqueado(b, msg){
+      bloqueado=b;
+      const banner=document.getElementById('bloqueadoBanner');
+      const card=document.getElementById('formCard');
+      card.querySelectorAll('input,select,textarea,button').forEach(el=>{ if(!el.closest('.doc-bar')) el.disabled=b; });
+      document.querySelector('.fc-actions').style.display=b?'none':'flex';
+      banner.style.display=b?'block':'none';
+      if(b) banner.textContent=msg||'Parte já assinada — somente leitura.';
+    }
+    function editar(id){
+      const p=partes.find(x=>x.id===id); if(!p) return;
+      document.getElementById('op_id').value=p.id;
+      document.getElementById('op_data').value=p.data||hoje();
+      document.getElementById('op_dataProx').value=p.dataProx||'';
+      popularChefe(p.chefeId||'');
+      setGuarnicao(p.guarnicao&&p.guarnicao.length?p.guarnicao:null);
+      setPermutas(p.permutas||[]);
+      ['jornada','atestado','viaturas','ocorrencias','outros','passagem'].forEach(k=>document.getElementById('op_'+k).value=p[k]||'');
+      const podeEditar = p.status==='rascunho' && (!p.criadoPorId || p.criadoPorId===eu()?.id);
+      setBloqueado(!podeEditar, p.status==='rascunho'?'Rascunho de outro usuário — somente leitura.':'Parte já assinada pelo Cmt — somente leitura.');
       document.querySelector('.tab-btn').click();
       document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
     }
 
     async function excluir(id){
-      if(!confirm('Excluir esta parte diária?')) return;
-      partes = partes.filter(x=>x.id!==id);
+      const p=partes.find(x=>x.id===id); if(!p) return;
+      if(p.status!=='rascunho'){ BBM.toast('Só rascunhos podem ser excluídos.','error'); return; }
+      if(!confirm('Excluir este rascunho?')) return;
+      partes=partes.filter(x=>x.id!==id);
       let res; try{ res=await BBM.save(KEY_OP, partes); }catch(e){ res={ok:false,error:e}; }
       renderHist();
-      BBM.toast(!res||res.ok ? 'Parte excluída.' : 'Falha ao excluir na nuvem.', (!res||res.ok)?'ok':'error');
+      BBM.toast(!res||res.ok?'Rascunho excluído.':'Falha ao excluir.', (!res||res.ok)?'ok':'error');
     }
 
     // ── Documento ─────────────────────────────────────────────────
@@ -289,76 +466,90 @@
     }
 
     function verDoc(id){
-      const p = partes.find(x=>x.id===id); if(!p) return;
-      const dsem = p.data ? ' ('+diaSemana(p.data)+')' : '';
-      const dproxsem = p.dataProx ? ' ('+diaSemana(p.dataProx)+')' : '';
-      const bloco = (t)=>`<div class="texto">${nl(t)||'&nbsp;'}</div>`;
+      const p=partes.find(x=>x.id===id); if(!p) return;
+      const cmt = (p.guarnicao||[]).find(g=>/comand/i.test(g.funcao));
+      const mot = (p.guarnicao||[]).find(g=>/motorista/i.test(g.funcao));
+      const guarLista = (p.guarnicao||[]).map(g=>`${esc(g.funcao)}: ${esc(g.militar)||'—'}`).join('<br/>');
+      const bloco = t => `<div class="texto">${nl(t)||'&nbsp;'}</div>`;
+      const permHtml = (p.permutas&&p.permutas.length)
+        ? p.permutas.map(x=>`${esc(x.saiu)||'—'} permutou com ${esc(x.entrou)||'—'}`).join('<br/>')
+        : '&nbsp;';
+      const statusTag = p.status==='assinado' ? ''
+        : `<div class="status-tag">${p.status==='aguardando_chefe'?'AGUARDANDO ASSINATURA DO CHEFE DE SOCORRO':'RASCUNHO — NÃO ASSINADO'}</div>`;
+      const assLinha = (nomeFixo, papelLabel, ass) =>
+        `<div class="assin-linha"><div class="ln">${esc(nomeFixo)||'&nbsp;'}<br/>${papelLabel}${ass?`<div class="st2">✓ Assinado em ${new Date(ass.em).toLocaleString('pt-BR')}</div>`:''}</div></div>`;
       const html = `
         <div class="doc-visto">VISTO EM:<br/>____/____/______<div class="l">SUB CMT DO 15º BBM</div></div>
         ${cabecalho()}
-        <p style="clear:both">Parte diária do serviço operacional do 15º BBM do dia <span class="b">${brData(p.data)}</span>${dsem}
-        para o dia <span class="b">${brData(p.dataProx)}</span>${dproxsem}.</p>
+        ${statusTag}
+        <p style="clear:both">Parte diária do serviço operacional do 15º BBM do dia <span class="b">${brData(p.data)}</span>${p.data?' ('+diaSemana(p.data)+')':''}
+        para o dia <span class="b">${brData(p.dataProx)}</span>${p.dataProx?' ('+diaSemana(p.dataProx)+')':''}.</p>
 
         <h3>I — Serviço Interno</h3>
-        <p><span class="b">Chefe de Socorro:</span> ${esc(p.chefe)||'&nbsp;'}</p>
-        <p><span class="b">Cmt de Guarnição:</span> ${esc(p.cmt)||'&nbsp;'}</p>
-        <p><span class="b">Guarnição:</span><br/>${nl(p.guarnicao)||'&nbsp;'}</p>
-        <p><span class="b">Motorista:</span> ${esc(p.motorista)||'&nbsp;'}</p>
+        <p><span class="b">Chefe de Socorro:</span> ${esc(p.chefeNome)||'—'}</p>
+        <p><span class="b">Cmt de Guarnição:</span> ${esc(cmt?cmt.militar:'')||'—'}</p>
+        <p><span class="b">Guarnição:</span><br/>${guarLista||'&nbsp;'}</p>
+        <p><span class="b">Motorista:</span> ${esc(mot?mot.militar:'')||'—'}</p>
 
-        <h3>II — Jornada Extra Operacional / Serviço Externo</h3>
-        ${bloco(p.jornada)}
+        <h3>II — Jornada Extra Operacional / Serviço Externo</h3>${bloco(p.jornada)}
 
         <h3>III — Alterações</h3>
-        <div class="sub">A) Permuta de serviço</div>${bloco(p.permuta)}
+        <div class="sub">A) Permuta de serviço</div><div class="texto">${permHtml}</div>
         <div class="sub">B) Atestado médico</div>${bloco(p.atestado)}
         <div class="sub">C) Alterações de viaturas</div>${bloco(p.viaturas)}
 
-        <h3>IV — Ocorrências</h3>
-        ${bloco(p.ocorrencias)}
+        <h3>IV — Ocorrências</h3>${bloco(p.ocorrencias)}
+        <h3>V — Outros</h3>${bloco(p.outros)}
+        <h3>VI — Passagem de Serviço</h3>${bloco(p.passagem)}
 
-        <h3>V — Outros</h3>
-        ${bloco(p.outros)}
-
-        <h3>VI — Passagem de Serviço</h3>
-        ${bloco(p.passagem)}
+        ${(p.permutas&&p.permutas.length)?`<h3>Registro de Permutas de Serviço</h3><div class="texto">${permHtml}</div>`:''}
 
         <p style="margin-top:22px">Quartel em Chapadinha/MA, ${p.data?esc(extenso(p.data)):'______ de ____________ de ______'}.</p>
 
         <div class="assinaturas">
-          <div class="assin-linha"><div class="ln">${esc(p.chefe)||'&nbsp;'}<br/>CHEFE DE SOCORRO DA 15º BBM</div></div>
-          <div class="assin-linha"><div class="ln">${esc(p.cmt)||'&nbsp;'}<br/>CMT DE GUARNIÇÃO DA 15º BBM</div></div>
+          ${assLinha(p.assCmt?p.assCmt.nome:(cmt?cmt.militar:''),'CMT DE GUARNIÇÃO DA 15º BBM', p.assCmt)}
+          ${assLinha(p.chefeNome,'CHEFE DE SOCORRO DA 15º BBM', p.assChefe)}
         </div>`;
-      document.getElementById('docView').innerHTML = '<div class="doc">'+html+'</div>';
+      document.getElementById('docView').innerHTML='<div class="doc">'+html+'</div>';
       document.getElementById('docOverlay').classList.add('open');
     }
     function fecharDoc(){ document.getElementById('docOverlay').classList.remove('open'); }
 
     // ── Histórico ─────────────────────────────────────────────────
+    function stBadge(s){ const t={rascunho:'Rascunho',aguardando_chefe:'Aguardando Chefe',assinado:'Assinado'}; return `<span class="st ${s}">${t[s]||s}</span>`; }
     function renderHist(){
-      const q = (document.getElementById('histBusca').value||'').toLowerCase();
-      const lista = [...partes]
-        .filter(p => !q || (p.data||'').includes(q) || (p.cmt||'').toLowerCase().includes(q) || (p.chefe||'').toLowerCase().includes(q))
+      const u=eu();
+      const q=(document.getElementById('histBusca').value||'').toLowerCase();
+      const lista=[...partes]
+        .filter(p=>!q||(p.data||'').includes(q)||(p.chefeNome||'').toLowerCase().includes(q)||(p.criadoPor||'').toLowerCase().includes(q))
         .sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-      const el = document.getElementById('histLista');
+      const el=document.getElementById('histLista');
       if(!lista.length){ el.innerHTML='<div class="empty-state"><p>Nenhuma parte diária registrada.</p></div>'; return; }
-      el.innerHTML = lista.map(p=>`
-        <div class="hist-item">
+      el.innerHTML=lista.map(p=>{
+        const souChefe = p.status==='aguardando_chefe' && ehMesma(u?.nome, p.chefeNome);
+        const souCriador = p.status==='rascunho' && (!p.criadoPorId || p.criadoPorId===u?.id);
+        let acoes=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verDoc('${p.id}')">🖨️ Ver / Imprimir</button>`;
+        if(souChefe) acoes=`<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinarChefe('${p.id}')">✍ Assinar como Chefe</button>`+acoes;
+        if(souCriador) acoes+=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="editar('${p.id}')">✎ Editar</button>
+                               <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#dc2626;border-color:#fca5a5" onclick="excluir('${p.id}')">🗑</button>`;
+        return `<div class="hist-item${souChefe?' urgente':''}">
           <div>
-            <div class="hist-data">${p.data?new Date(p.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</div>
-            <div class="hist-meta">Cmt: ${esc(p.cmt)||'—'} · Chefe: ${esc(p.chefe)||'—'}${p.criadoPor?' · registro de '+esc(p.criadoPor):''}</div>
+            <div class="hist-data">${p.data?new Date(p.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}${stBadge(p.status)}</div>
+            <div class="hist-meta">Chefe: ${esc(p.chefeNome)||'—'}${p.criadoPor?' · registro de '+esc(p.criadoPor):''}</div>
           </div>
-          <div class="hist-acoes">
-            <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verDoc('${p.id}')">🖨️ Ver / Imprimir</button>
-            <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="editar('${p.id}')">✎ Editar</button>
-            <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#dc2626;border-color:#fca5a5" onclick="excluir('${p.id}')">🗑</button>
-          </div>
-        </div>`).join('');
+          <div class="hist-acoes">${acoes}</div>
+        </div>`;
+      }).join('');
     }
 
     // ── Início ────────────────────────────────────────────────────
-    BBM.ready(['escala_registros', KEY_OP], () => {
+    BBM.ready(['escala_registros', KEY_OP], async () => {
       partes = BBM.load(KEY_OP) || [];
+      militares = await BBM.militares();
+      try { const sb=await BBM.sb(); const {data}=await sb.rpc('listar_oficiais'); oficiais=data||[]; } catch(e){ oficiais=[]; }
       document.getElementById('op_data').value = hoje();
+      popularChefe('');
+      setGuarnicao(null);
     });
   </script>
 </body>
