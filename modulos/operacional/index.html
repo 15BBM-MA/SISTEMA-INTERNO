@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Livro de Serviço Operacional — 15º BBM</title>
+  <link rel="stylesheet" href="../../assets/css/main.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../../assets/img/logo.png" alt="Logo" class="sidebar-logo"/>
+      <div class="sidebar-title"><span class="sidebar-title-main">15º BBM</span><span class="sidebar-title-sub">Chapadinha — MA</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <a href="../viaturas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="22" height="10" rx="2"/><path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="nav-text">Viaturas</span><span class="nav-arrow">›</span></a>
+      <a href="../almoxarifado/index.html"   class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-text">Patrimônio</span><span class="nav-arrow">›</span></a>
+      <a href="../escala/index.html"         class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="nav-text">Escala de Serviço</span><span class="nav-arrow">›</span></a>
+      <a href="../operacional/index.html"    class="nav-item active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="nav-text">Livro Operacional</span><span class="nav-arrow">›</span></a>
+      <a href="../permutas/index.html"       class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><span class="nav-text">Permutas</span><span class="nav-arrow">›</span></a>
+      <a href="../bombeiro-mirim/index.html" class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-text">Bombeiro Mirim</span><span class="nav-arrow">›</span></a>
+      <a href="../estrutura/index.html"      class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-text">Estrutura Interna</span><span class="nav-arrow">›</span></a>
+      <a href="../manutencao/index.html"     class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-text">Manutenção</span><span class="nav-arrow">›</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="sidebar-footer-text">CBMMA — Corpo de Bombeiros Militar do Maranhão</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="topbar-breadcrumb">
+          <a href="../../index.html">Sistema de Gestão</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current">Livro de Serviço Operacional</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="mod-header">
+        <div class="mod-title-row">
+          <div class="mod-icon" style="background:#dbeafe;color:#2563eb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div>
+            <div class="mod-title">Livro de Serviço Operacional</div>
+            <div class="mod-subtitle">Parte diária do serviço operacional — Comandante de Guarnição</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs-scroll">
+        <button class="tab-btn active" onclick="showTab('tabNova',this)">Nova parte diária</button>
+        <button class="tab-btn" onclick="showTab('tabHist',this)">Histórico</button>
+      </div>
+
+      <!-- ===== NOVA PARTE ===== -->
+      <div id="tabNova">
+        <div class="form-card">
+          <input type="hidden" id="op_id"/>
+          <div class="fc-sec">Período</div>
+          <div class="grid3">
+            <div class="form-group"><label class="form-label">Do dia (serviço) *</label><input class="form-control" id="op_data" type="date"/></div>
+            <div class="form-group"><label class="form-label">Para o dia</label><input class="form-control" id="op_dataProx" type="date"/></div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <button class="btn btn-ghost" style="width:100%" onclick="puxarEscala()" title="Preenche guarnição/motorista com a escala do dia">↻ Puxar da escala</button>
+            </div>
+          </div>
+
+          <div class="fc-sec">I — Serviço Interno</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Chefe de Socorro</label><input class="form-control" id="op_chefe"/></div>
+            <div class="form-group"><label class="form-label">Cmt de Guarnição</label><input class="form-control" id="op_cmt"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Guarnição</label><textarea class="form-control" id="op_guarnicao" rows="2"></textarea></div>
+          <div class="form-group"><label class="form-label">Motorista</label><input class="form-control" id="op_motorista"/></div>
+
+          <div class="fc-sec">II — Jornada Extra Operacional / Serviço Externo</div>
+          <div class="form-group"><textarea class="form-control" id="op_jornada" rows="3"></textarea></div>
+
+          <div class="fc-sec">III — Alterações</div>
+          <div class="form-group"><label class="form-label">A) Permuta de serviço</label><textarea class="form-control" id="op_permuta" rows="2"></textarea></div>
+          <div class="form-group"><label class="form-label">B) Atestado médico</label><textarea class="form-control" id="op_atestado" rows="2"></textarea></div>
+          <div class="form-group"><label class="form-label">C) Alterações de viaturas</label><textarea class="form-control" id="op_viaturas" rows="2"></textarea></div>
+
+          <div class="fc-sec">IV — Ocorrências</div>
+          <div class="form-group"><textarea class="form-control" id="op_ocorrencias" rows="6"></textarea></div>
+
+          <div class="fc-sec">V — Outros</div>
+          <div class="form-group"><textarea class="form-control" id="op_outros" rows="2"></textarea></div>
+
+          <div class="fc-sec">VI — Passagem de Serviço</div>
+          <div class="form-group"><textarea class="form-control" id="op_passagem" rows="2"></textarea></div>
+
+          <div class="fc-actions">
+            <button class="btn btn-ghost" onclick="limpar()">Limpar</button>
+            <button class="btn btn-ghost" onclick="salvar(false)">Salvar</button>
+            <button class="btn btn-primary" onclick="salvar(true)">Salvar e imprimir</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HISTÓRICO ===== -->
+      <div id="tabHist" style="display:none">
+        <div class="hist-controls">
+          <input id="histBusca" type="text" placeholder="Buscar por data, cmt, chefe…" oninput="renderHist()"/>
+        </div>
+        <div id="histLista"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- VISUALIZADOR / IMPRESSÃO -->
+  <div id="docOverlay">
+    <div class="doc-bar no-print">
+      <button class="btn btn-ghost" onclick="fecharDoc()">✕ Fechar</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+    <div id="docView"></div>
+  </div>
+
+  <style>
+    .tabs-scroll { display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto; }
+    .tab-btn { background:none;border:none;padding:12px 16px;cursor:pointer;font-size:.86rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;white-space:nowrap; }
+    .tab-btn.active { color:var(--blue);border-bottom-color:var(--blue); }
+    .form-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:22px; }
+    .fc-sec { font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin:18px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border); }
+    .fc-sec:first-child { margin-top:0; }
+    .grid2 { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+    .grid3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px; }
+    .fc-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap; }
+    @media(max-width:768px){ .grid2,.grid3{grid-template-columns:1fr} .fc-actions .btn{flex:1;justify-content:center} }
+    .hist-controls { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px; }
+    .hist-controls input { flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem;background:#fff;color:var(--text); }
+    .hist-item { border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; }
+    .hist-data { font-weight:700;color:var(--text);text-transform:capitalize; }
+    .hist-meta { font-size:.8rem;color:var(--text-light);margin-top:2px; }
+    .hist-acoes { display:flex;gap:8px;flex-wrap:wrap; }
+
+    /* Visualizador / documento (padrão DAT) */
+    #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
+    #docOverlay.open { display:block; }
+    .doc-bar { position:fixed;top:0;left:0;right:0;z-index:10;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px); }
+    .doc-bar .btn { color:#fff !important; }
+    .doc-bar .btn-ghost { border-color:rgba(255,255,255,.6) !important;background:transparent !important; }
+    .doc-bar .btn-primary { background:var(--red) !important; }
+    #docView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4); }
+    .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.45;position:relative; }
+    .doc-visto { border:1px solid #000;padding:4px 8px;font-size:9pt;text-align:center;width:180px;float:right;line-height:1.3; }
+    .doc-visto .l { border-top:1px solid #000;margin-top:16px;padding-top:2px;font-weight:bold; }
+    .doc-head { text-align:center;line-height:1.3;margin-bottom:6px; }
+    .doc-head img { width:96px;height:96px;object-fit:contain; }
+    .doc-head .l { font-weight:bold;font-size:11pt;text-transform:uppercase; }
+    .doc h3 { font-size:11.5pt;margin:14px 0 4px;text-transform:uppercase; }
+    .doc .sub { font-weight:bold;margin:8px 0 2px; }
+    .doc p { margin:5px 0;text-align:justify; }
+    .doc .campo { border-bottom:1px solid #000;min-height:1.2em; }
+    .doc .b { font-weight:bold; }
+    .doc .texto { white-space:pre-wrap;min-height:1.3em;border-bottom:1px dotted #999;padding:2px 0; }
+    .doc .assinaturas { margin-top:40px;display:flex;flex-direction:column;gap:30px;align-items:center; }
+    .doc .assin-linha { text-align:center;width:340px; }
+    .doc .assin-linha .ln { border-top:1px solid #000;padding-top:3px;font-size:10pt; }
+
+    @media print {
+      @page { size:A4; margin:12mm; }
+      * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+      body > *:not(#docOverlay) { display:none !important; }
+      .no-print { display:none !important; }
+      #docOverlay { position:static !important;display:block !important;background:#fff;overflow:visible; }
+      #docView { margin:0 !important;max-width:none;box-shadow:none;padding:0; }
+      .doc { font-size:11pt;line-height:1.35; }
+    }
+  </style>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const KEY_OP = 'operacional_partes';
+    let partes = [];
+
+    const val = id => (document.getElementById(id).value||'').trim();
+    const hoje = () => new Date().toISOString().slice(0,10);
+    const BASE = location.origin + location.pathname.replace(/modulos\/operacional\/.*/, '');
+    const LOGO = BASE + 'assets/img/logo.png';
+
+    function diaSemana(iso){ if(!iso) return ''; return new Date(iso+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long'}); }
+    function brData(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+    function extenso(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); const ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return d+' de '+ms[+m-1]+' de '+y; }
+    function esc(s){ return String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+    function nl(s){ return esc(s).replace(/\n/g,'<br/>'); }
+
+    function showTab(id, btn){
+      ['tabNova','tabHist'].forEach(t=>document.getElementById(t).style.display='none');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).style.display='block'; btn.classList.add('active');
+      if(id==='tabHist') renderHist();
+    }
+
+    function limpar(){
+      ['op_id','op_data','op_dataProx','op_chefe','op_cmt','op_guarnicao','op_motorista','op_jornada','op_permuta','op_atestado','op_viaturas','op_ocorrencias','op_outros','op_passagem']
+        .forEach(k=>document.getElementById(k).value='');
+      document.getElementById('op_data').value = hoje();
+    }
+
+    // Preenche a partir da escala do dia selecionado
+    function puxarEscala(){
+      const data = val('op_data'); if(!data){ BBM.toast('Informe a data primeiro.','error'); return; }
+      const regs = (BBM.load('escala_registros')||[]).filter(r=>r.data===data);
+      if(!regs.length){ BBM.toast('Nenhum registro de escala nesse dia.','error'); return; }
+      const guar=[];
+      for(const r of regs){
+        const f=(r.funcao||'').toLowerCase();
+        if(f.includes('motorista')) document.getElementById('op_motorista').value = r.militar;
+        else if(f.includes('chefe')) document.getElementById('op_chefe').value = r.militar;
+        else if(f.includes('comand')||f.includes('cmt')||f.includes('guarni')) document.getElementById('op_cmt').value = r.militar;
+        else guar.push((r.funcao?r.funcao+': ':'')+r.militar);
+      }
+      if(guar.length) document.getElementById('op_guarnicao').value = guar.join('\n');
+      BBM.toast('Dados da escala preenchidos. Confira antes de salvar.');
+    }
+
+    function coletar(){
+      return {
+        id: val('op_id') || BBM.generateId(),
+        data: val('op_data'), dataProx: val('op_dataProx'),
+        chefe: val('op_chefe'), cmt: val('op_cmt'),
+        guarnicao: val('op_guarnicao'), motorista: val('op_motorista'),
+        jornada: val('op_jornada'),
+        permuta: val('op_permuta'), atestado: val('op_atestado'), viaturas: val('op_viaturas'),
+        ocorrencias: val('op_ocorrencias'), outros: val('op_outros'), passagem: val('op_passagem'),
+        criadoPor: (BBM.currentUser&&BBM.currentUser()?.nome)||'',
+        criadoEm: new Date().toISOString(),
+      };
+    }
+
+    function semPermissao(err){ if(!err) return false; const c=String(err.code||''),m=String(err.message||'').toLowerCase(); return c==='42501'||c==='PGRST301'||m.includes('row-level security'); }
+
+    async function salvar(imprimir){
+      const p = coletar();
+      if(!p.data){ BBM.toast('Informe a data do serviço.','error'); return; }
+      const idx = partes.findIndex(x=>x.id===p.id);
+      if(idx>=0) partes[idx]=p; else partes=[p,...partes];
+      document.getElementById('op_id').value = p.id;
+      let res; try{ res=await BBM.save(KEY_OP, partes); }catch(e){ res={ok:false,error:e}; }
+      if(!res || res.ok){
+        BBM.toast('Parte diária salva.');
+        if(imprimir) verDoc(p.id);
+      } else if(semPermissao(res.error)){
+        BBM.toast('Seu usuário não tem permissão de edição no Livro Operacional.','error');
+      } else {
+        BBM.toast('Falha ao sincronizar — verifique a conexão.','error');
+      }
+    }
+
+    function editar(id){
+      const p = partes.find(x=>x.id===id); if(!p) return;
+      const set=(k,v)=>document.getElementById(k).value=v||'';
+      set('op_id',p.id); set('op_data',p.data); set('op_dataProx',p.dataProx);
+      set('op_chefe',p.chefe); set('op_cmt',p.cmt); set('op_guarnicao',p.guarnicao); set('op_motorista',p.motorista);
+      set('op_jornada',p.jornada); set('op_permuta',p.permuta); set('op_atestado',p.atestado); set('op_viaturas',p.viaturas);
+      set('op_ocorrencias',p.ocorrencias); set('op_outros',p.outros); set('op_passagem',p.passagem);
+      document.querySelector('.tab-btn').click();
+      document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
+    }
+
+    async function excluir(id){
+      if(!confirm('Excluir esta parte diária?')) return;
+      partes = partes.filter(x=>x.id!==id);
+      let res; try{ res=await BBM.save(KEY_OP, partes); }catch(e){ res={ok:false,error:e}; }
+      renderHist();
+      BBM.toast(!res||res.ok ? 'Parte excluída.' : 'Falha ao excluir na nuvem.', (!res||res.ok)?'ok':'error');
+    }
+
+    // ── Documento ─────────────────────────────────────────────────
+    function cabecalho(){
+      return `<div class="doc-head">
+        <img src="${LOGO}" alt=""/>
+        <div class="l">Estado do Maranhão</div>
+        <div class="l">Secretaria de Estado da Segurança Pública</div>
+        <div class="l" style="color:#C8102E">Corpo de Bombeiros Militar</div>
+        <div class="l">Comando Operacional Norte</div>
+        <div class="l">15º Batalhão de Bombeiros Militar</div>
+      </div>`;
+    }
+
+    function verDoc(id){
+      const p = partes.find(x=>x.id===id); if(!p) return;
+      const dsem = p.data ? ' ('+diaSemana(p.data)+')' : '';
+      const dproxsem = p.dataProx ? ' ('+diaSemana(p.dataProx)+')' : '';
+      const bloco = (t)=>`<div class="texto">${nl(t)||'&nbsp;'}</div>`;
+      const html = `
+        <div class="doc-visto">VISTO EM:<br/>____/____/______<div class="l">SUB CMT DO 15º BBM</div></div>
+        ${cabecalho()}
+        <p style="clear:both">Parte diária do serviço operacional do 15º BBM do dia <span class="b">${brData(p.data)}</span>${dsem}
+        para o dia <span class="b">${brData(p.dataProx)}</span>${dproxsem}.</p>
+
+        <h3>I — Serviço Interno</h3>
+        <p><span class="b">Chefe de Socorro:</span> ${esc(p.chefe)||'&nbsp;'}</p>
+        <p><span class="b">Cmt de Guarnição:</span> ${esc(p.cmt)||'&nbsp;'}</p>
+        <p><span class="b">Guarnição:</span><br/>${nl(p.guarnicao)||'&nbsp;'}</p>
+        <p><span class="b">Motorista:</span> ${esc(p.motorista)||'&nbsp;'}</p>
+
+        <h3>II — Jornada Extra Operacional / Serviço Externo</h3>
+        ${bloco(p.jornada)}
+
+        <h3>III — Alterações</h3>
+        <div class="sub">A) Permuta de serviço</div>${bloco(p.permuta)}
+        <div class="sub">B) Atestado médico</div>${bloco(p.atestado)}
+        <div class="sub">C) Alterações de viaturas</div>${bloco(p.viaturas)}
+
+        <h3>IV — Ocorrências</h3>
+        ${bloco(p.ocorrencias)}
+
+        <h3>V — Outros</h3>
+        ${bloco(p.outros)}
+
+        <h3>VI — Passagem de Serviço</h3>
+        ${bloco(p.passagem)}
+
+        <p style="margin-top:22px">Quartel em Chapadinha/MA, ${p.data?esc(extenso(p.data)):'______ de ____________ de ______'}.</p>
+
+        <div class="assinaturas">
+          <div class="assin-linha"><div class="ln">${esc(p.chefe)||'&nbsp;'}<br/>CHEFE DE SOCORRO DA 15º BBM</div></div>
+          <div class="assin-linha"><div class="ln">${esc(p.cmt)||'&nbsp;'}<br/>CMT DE GUARNIÇÃO DA 15º BBM</div></div>
+        </div>`;
+      document.getElementById('docView').innerHTML = '<div class="doc">'+html+'</div>';
+      document.getElementById('docOverlay').classList.add('open');
+    }
+    function fecharDoc(){ document.getElementById('docOverlay').classList.remove('open'); }
+
+    // ── Histórico ─────────────────────────────────────────────────
+    function renderHist(){
+      const q = (document.getElementById('histBusca').value||'').toLowerCase();
+      const lista = [...partes]
+        .filter(p => !q || (p.data||'').includes(q) || (p.cmt||'').toLowerCase().includes(q) || (p.chefe||'').toLowerCase().includes(q))
+        .sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+      const el = document.getElementById('histLista');
+      if(!lista.length){ el.innerHTML='<div class="empty-state"><p>Nenhuma parte diária registrada.</p></div>'; return; }
+      el.innerHTML = lista.map(p=>`
+        <div class="hist-item">
+          <div>
+            <div class="hist-data">${p.data?new Date(p.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</div>
+            <div class="hist-meta">Cmt: ${esc(p.cmt)||'—'} · Chefe: ${esc(p.chefe)||'—'}${p.criadoPor?' · registro de '+esc(p.criadoPor):''}</div>
+          </div>
+          <div class="hist-acoes">
+            <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verDoc('${p.id}')">🖨️ Ver / Imprimir</button>
+            <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="editar('${p.id}')">✎ Editar</button>
+            <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#dc2626;border-color:#fca5a5" onclick="excluir('${p.id}')">🗑</button>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Início ────────────────────────────────────────────────────
+    BBM.ready(['escala_registros', KEY_OP], () => {
+      partes = BBM.load(KEY_OP) || [];
+      document.getElementById('op_data').value = hoje();
+    });
+  </script>
+</body>
+</html>

@@ -192,6 +192,7 @@ window.BBM = {
     if (key && key.indexOf('viaturas_') === 0) return { modulo: 'viaturas', colecao: key.slice(9) };
     if (key && key.indexOf('almoxarifado_') === 0) return { modulo: 'almoxarifado', colecao: key.slice(13) };
     if (key && key.indexOf('permutas_') === 0) return { modulo: 'permutas', colecao: key.slice(9) };
+    if (key && key.indexOf('operacional_') === 0) return { modulo: 'operacional', colecao: key.slice(12) };
     return null;
   },
 
