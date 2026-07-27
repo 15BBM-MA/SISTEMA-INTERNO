@@ -313,8 +313,10 @@ window.BBM = {
   // ===================== CONTROLE DE ACESSO =====================
   MODULOS_SIS: [
     { key:'viaturas',       label:'Viaturas' },
-    { key:'almoxarifado',   label:'Almoxarifado' },
+    { key:'almoxarifado',   label:'Patrimônio' },
     { key:'escala',         label:'Escala de Serviço' },
+    { key:'operacional',    label:'Livro de Serviço Operacional' },
+    { key:'permutas',       label:'Permutas de Serviço' },
     { key:'bombeiro-mirim', label:'Bombeiro Mirim' },
     { key:'estrutura',      label:'Estrutura Interna' },
     { key:'manutencao',     label:'Manutenção' },
