@@ -135,6 +135,9 @@
         <div class="hero-date" id="heroDate"></div>
       </div>
 
+      <!-- NOTIFICAÇÕES / PENDÊNCIAS DE ASSINATURA -->
+      <div id="notificacoes"></div>
+
       <!-- MEUS PRÓXIMOS SERVIÇOS (praça logado) -->
       <div id="meusServicos" style="display:none"></div>
 
@@ -324,6 +327,25 @@
     .ms-func { font-size:.8rem; color:var(--text-light); margin-top:2px; }
     .ms-joe-badge { display:inline-block; font-size:.66rem; font-weight:700; color:#fff; background:var(--red); padding:1px 7px; border-radius:8px; margin-left:6px; vertical-align:middle; }
     .ms-vazio { font-size:.85rem; color:var(--text-light); }
+
+    /* Notificações / pendências de assinatura */
+    .nt-box { border-radius:14px; padding:16px 20px; margin-bottom:1.6rem; border:1px solid var(--border); background:var(--surface); }
+    .nt-box.tem { border-color:#f59e0b; background:#fffbeb; }
+    .nt-head { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+    .nt-title { font-family:'Rajdhani',sans-serif; font-size:1.15rem; font-weight:700; color:var(--navy); }
+    .nt-count { font-size:.72rem; font-weight:800; color:#fff; background:#f59e0b; border-radius:20px; padding:2px 9px; }
+    .nt-vazio { font-size:.88rem; color:var(--text-light); display:flex; align-items:center; gap:8px; }
+    .nt-list { display:flex; flex-direction:column; gap:10px; }
+    .nt-item { display:flex; align-items:center; gap:12px; border:1px solid #fde68a; background:#fff; border-radius:10px; padding:11px 14px; }
+    .nt-ico { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .nt-ico.check { background:#dbeafe; color:#2563eb; }
+    .nt-ico.perm { background:#e0e7ff; color:#4f46e5; }
+    .nt-ico.livro { background:#fee2e2; color:#dc2626; }
+    .nt-txt { flex:1; min-width:0; }
+    .nt-tipo { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#92400e; }
+    .nt-desc { font-size:.86rem; color:var(--text); margin-top:1px; }
+    .nt-btn { font-size:.78rem; font-weight:600; color:#fff; background:#f59e0b; border-radius:8px; padding:7px 14px; text-decoration:none; white-space:nowrap; }
+    .nt-btn:hover { background:#d97706; }
   </style>
 
   <script src="assets/js/main.js"></script>
@@ -359,8 +381,71 @@
       return dt.toLocaleDateString('pt-BR',{ weekday:'long', day:'2-digit', month:'2-digit' });
     }
 
-    BBM.ready(['escala_registros'], () => {
+    function _brData(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+
+    // ── Notificações / pendências de assinatura do usuário logado ──
+    function renderNotificacoes(user){
+      const box = document.getElementById('notificacoes');
+      if (!box || !user) return;
+      const nt = [];
+
+      // 1) Checklist de viatura aguardando o oficial (Chefe de Socorro)
+      (BBM.load('viaturas_checklist') || []).forEach(c => {
+        if (c.status==='aguardando_oficial' && c.chefeId===user.id)
+          nt.push({ cls:'check', tipo:'Checklist de viatura',
+            desc:`Checklist da <b>${c.viaturaNome||'viatura'}</b> de ${_brData(c.data)} aguarda sua assinatura como Chefe de Socorro.`,
+            href:'modulos/viaturas/index.html', label:'Assinar' });
+      });
+
+      // 2) Permutas — quem precisa completar a assinatura (substituto/escalante)
+      (BBM.load('permutas_solicitacoes') || []).forEach(p => {
+        const ass = p.ass || {};
+        if (p.status==='aguardando_substituto' && !ass.substituto && _ehMeu(p.substitutoNome, user.nome))
+          nt.push({ cls:'perm', tipo:'Permuta de serviço',
+            desc:`Permuta de <b>${p.solicitanteNome}</b> aguarda sua assinatura como substituto.`,
+            href:'modulos/permutas/index.html', label:'Assinar' });
+        if (p.status==='aguardando_escalante' && !ass.escalante && _ehMeu(p.escalanteNome, user.nome))
+          nt.push({ cls:'perm', tipo:'Permuta de serviço',
+            desc:`Permuta de <b>${p.solicitanteNome} → ${p.substitutoNome}</b> aguarda sua assinatura como escalante.`,
+            href:'modulos/permutas/index.html', label:'Assinar' });
+      });
+
+      // 3) Livro operacional — parte aguardando o Chefe de Socorro
+      (BBM.load('operacional_partes') || []).forEach(p => {
+        if (p.status==='aguardando_chefe' && !p.assChefe && _ehMeu(p.chefeNome, user.nome))
+          nt.push({ cls:'livro', tipo:'Livro de serviço',
+            desc:`Parte diária de ${_brData(p.data)} aguarda sua assinatura como Chefe de Socorro.`,
+            href:'modulos/operacional/index.html', label:'Assinar' });
+      });
+
+      if (!nt.length){
+        box.innerHTML = `<div class="nt-box">
+          <div class="nt-head"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="nt-title">Notificações</span></div>
+          <div class="nt-vazio">✓ Nenhuma pendência de assinatura no momento.</div>
+        </div>`;
+        return;
+      }
+      box.innerHTML = `<div class="nt-box tem">
+        <div class="nt-head">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="nt-title">Pendências de assinatura</span>
+          <span class="nt-count">${nt.length}</span>
+        </div>
+        <div class="nt-list">
+          ${nt.map(n=>`<div class="nt-item">
+            <div class="nt-ico ${n.cls}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+            </div>
+            <div class="nt-txt"><div class="nt-tipo">${n.tipo}</div><div class="nt-desc">${n.desc}</div></div>
+            <a class="nt-btn" href="${n.href}">${n.label} →</a>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    BBM.ready(['escala_registros','viaturas_checklist','permutas_solicitacoes','operacional_partes'], () => {
       const user = BBM.currentUser && BBM.currentUser();
+      renderNotificacoes(user);
       const box = document.getElementById('meusServicos');
       if (!user || !box) return;
       const hoje = new Date().toISOString().slice(0,10);
