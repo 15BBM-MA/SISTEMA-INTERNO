@@ -163,8 +163,12 @@
     /* ── Print ── */
     #printOverlay { display:none; position:fixed; inset:0; z-index:500; background:#fff; overflow:auto; padding:20mm 15mm; }
     .print-doc { font-family:'Times New Roman',serif; font-size:11pt; line-height:1.4; color:#000; max-width:180mm; margin:0 auto; }
-    .print-doc-head { text-align:center; font-weight:bold; line-height:1.4; margin-bottom:10px; }
-    .print-cl-table { width:100%; border-collapse:collapse; font-size:9.5pt; margin-bottom:10px; }
+    /* Cabeçalho no padrão dos documentos do DAT (logo + linhas centralizadas) */
+    .print-doc-head { text-align:center; line-height:1.3; margin-bottom:10px; }
+    .print-doc-head img { width:104px; height:104px; object-fit:contain; }
+    .print-doc-head .l { font-weight:bold; font-size:11pt; text-transform:uppercase; }
+    .print-doc-head .doc-title { font-weight:bold; font-size:13pt; text-transform:uppercase; margin-top:10px; }
+    .print-cl-table { width:100%; border-collapse:collapse; font-size:9.5pt; margin:0 auto 10px; }
     .print-cl-table th { border:1px solid #000; padding:4px 6px; text-align:center; font-weight:bold; background:#f0f0f0; }
     .print-cl-table td { border:1px solid #000; padding:3px 6px; }
     .print-alt { margin-top:10px; }
@@ -173,9 +177,9 @@
     .print-sign { margin-top:14px; }
     .print-sign-row { display:flex; gap:24px; margin-top:8px; }
     .print-sign-item { flex:1; border-top:1px solid #000; padding-top:4px; font-size:9pt; text-align:center; }
-    .print-fotos { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:10px; page-break-inside:avoid; }
-    .print-fotos figure { margin:0; text-align:center; font-size:7.5pt; }
-    .print-fotos img { width:100%; height:55mm; object-fit:cover; border:1px solid #000; }
+    .print-fotos { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px auto 0; page-break-inside:avoid; justify-items:center; }
+    .print-fotos figure { margin:0; text-align:center; font-size:8pt; width:100%; }
+    .print-fotos img { width:100%; height:66mm; object-fit:cover; border:1px solid #000; }
     @media print {
       body > * { display:none!important; }
       #printOverlay { display:block!important; position:static!important; padding:0; background:#fff; }
@@ -1636,9 +1640,13 @@
 
       document.getElementById('printDoc').innerHTML = `
         <div class="print-doc-head">
-          CORPO DE BOMBEIROS MILITAR DO MARANHÃO<br/>
-          15º BATALHÃO DE BOMBEIROS MILITAR — CHAPADINHA/MA<br/>
-          <span style="font-size:13pt">CHECK LIST ${cl.viaturaNome}</span>
+          <img src="../../assets/img/logo.png" alt=""/>
+          <div class="l">Estado do Maranhão</div>
+          <div class="l">Secretaria de Estado da Segurança Pública</div>
+          <div class="l" style="color:#C8102E">Corpo de Bombeiros Militar</div>
+          <div class="l">Comando Operacional Norte</div>
+          <div class="l">15º Batalhão de Bombeiros Militar — Chapadinha/MA</div>
+          <div class="doc-title">Check List — ${cl.viaturaNome}</div>
         </div>
         <table style="width:100%;margin-bottom:6px;font-size:9.5pt;border-collapse:collapse">
           <tr>
