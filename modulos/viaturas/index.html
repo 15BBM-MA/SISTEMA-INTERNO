@@ -168,7 +168,8 @@
     .print-doc-head img { width:104px; height:104px; object-fit:contain; }
     .print-doc-head .l { font-weight:bold; font-size:11pt; text-transform:uppercase; }
     .print-doc-head .doc-title { font-weight:bold; font-size:13pt; text-transform:uppercase; margin-top:10px; }
-    .print-cl-table { width:100%; border-collapse:collapse; font-size:9.5pt; margin:0 auto 10px; }
+    .print-cl-table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:9.5pt; margin:0 auto 10px; }
+    .print-cl-table td, .print-cl-table th { word-wrap:break-word; overflow-wrap:break-word; }
     .print-cl-table th { border:1px solid #000; padding:4px 6px; text-align:center; font-weight:bold; background:#f0f0f0; }
     .print-cl-table td { border:1px solid #000; padding:3px 6px; }
     .print-alt { margin-top:10px; }
@@ -183,8 +184,9 @@
     @media print {
       body > * { display:none!important; }
       #printOverlay { display:block!important; position:static!important; padding:0; background:#fff; }
-      /* Margens ABNT: superior 3cm, inferior 2cm, esquerda 3cm, direita 2cm */
-      @page { size:A4; margin:30mm 20mm 20mm 30mm; }
+      /* Margem simétrica: documento largo e centralizado (evita o deslocamento
+         lateral que as margens assimétricas da ABNT provocam) */
+      @page { size:A4; margin:15mm; }
     }
   </style>
 </head>
