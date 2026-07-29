@@ -162,7 +162,7 @@
 
     /* ── Print ── */
     #printOverlay { display:none; position:fixed; inset:0; z-index:500; background:#fff; overflow:auto; padding:20mm 15mm; }
-    .print-doc { font-family:'Times New Roman',serif; font-size:11pt; line-height:1.4; color:#000; max-width:180mm; margin:0 auto; }
+    .print-doc { font-family:'Times New Roman',serif; font-size:11pt; line-height:1.4; color:#000; width:100%; max-width:none; margin:0; }
     /* Cabeçalho no padrão dos documentos do DAT (logo + linhas centralizadas) */
     .print-doc-head { text-align:center; line-height:1.3; margin-bottom:10px; }
     .print-doc-head img { width:104px; height:104px; object-fit:contain; }
@@ -183,7 +183,8 @@
     @media print {
       body > * { display:none!important; }
       #printOverlay { display:block!important; position:static!important; padding:0; background:#fff; }
-      @page { size:A4; margin:15mm 10mm; }
+      /* Margens ABNT: superior 3cm, inferior 2cm, esquerda 3cm, direita 2cm */
+      @page { size:A4; margin:30mm 20mm 20mm 30mm; }
     }
   </style>
 </head>
