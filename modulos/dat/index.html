@@ -56,6 +56,7 @@
         <button class="tab-btn active" onclick="showTab('tabEvento',this)">Evento de Pequeno Porte</button>
         <button class="tab-btn" onclick="showTab('tabBaixo',this)">Baixo Risco (Anexo B)</button>
         <button class="tab-btn" onclick="showTab('tabHist',this)">Documentos Emitidos</button>
+        <button class="tab-btn" onclick="showTab('tabApoio',this)">Apoio ao Analista</button>
       </div>
 
       <!-- ===================== EVENTO ===================== -->
@@ -193,6 +194,69 @@
           </table>
         </div>
       </div>
+
+      <!-- ===================== APOIO AO ANALISTA ===================== -->
+      <div id="tabApoio" style="display:none">
+        <p class="info-dat">Ferramentas de apoio à análise, com base na <strong>NT-42</strong> (enquadramento de risco) e no <strong>Anexo A da Lei 11.390/2020</strong> (taxas). Os valores são referenciais — confira sempre a norma vigente.</p>
+
+        <!-- VBBM -->
+        <div class="form-card" style="margin-bottom:18px">
+          <div class="fc-sec">Valor Básico Bombeiro Militar (VBBM)</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="ap_vbbm" type="number" step="0.01" value="27.61" onchange="salvarVbbm()"/></div>
+            <div class="form-group" style="display:flex;align-items:flex-end"><div style="font-size:.8rem;color:var(--text-mid)">Base legal: Anexo A da Lei 11.390/2020. MEI é isento de taxas.</div></div>
+          </div>
+        </div>
+
+        <!-- ENQUADRAMENTO -->
+        <div class="form-card" style="margin-bottom:18px">
+          <div class="fc-sec">Enquadramento de Risco (NT-42)</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Área total construída (m²)</label><input class="form-control" id="ap_area" type="number" min="0" oninput="enquadrar()"/></div>
+            <div class="form-group"><label class="form-label">Altura (m)</label><input class="form-control" id="ap_alt" type="number" min="0" oninput="enquadrar()"/></div>
+            <div class="form-group"><label class="form-label">Nº de pavimentos</label><input class="form-control" id="ap_pav" type="number" min="0" oninput="enquadrar()"/></div>
+            <div class="form-group"><label class="form-label">Lotação (pessoas)</label><input class="form-control" id="ap_lot" type="number" min="0" oninput="enquadrar()"/></div>
+            <div class="form-group"><label class="form-label">Líquidos inflamáveis/combustíveis (L)</label><input class="form-control" id="ap_liq" type="number" min="0" oninput="enquadrar()"/></div>
+            <div class="form-group"><label class="form-label">GLP (kg)</label><input class="form-control" id="ap_glp" type="number" min="0" oninput="enquadrar()"/></div>
+            <div class="form-group"><label class="form-label">Leitos (hotel/pousada/pensão)</label><input class="form-control" id="ap_leitos" type="number" min="0" oninput="enquadrar()"/></div>
+          </div>
+          <div class="chips" style="margin-top:8px">
+            <label><input type="checkbox" id="ap_mei" onchange="enquadrar()"/> MEI em residência, sem atendimento de público</label>
+            <label><input type="checkbox" id="ap_f11" onchange="enquadrar()"/> Reunião de público (Divisão F-11)</label>
+            <label><input type="checkbox" id="ap_saude" onchange="enquadrar()"/> Hospital / asilo / creche / pré-escola / atenção especial</label>
+            <label><input type="checkbox" id="ap_gasrev" onchange="enquadrar()"/> Revenda de GLP / outros gases combustíveis</label>
+            <label><input type="checkbox" id="ap_perig" onchange="enquadrar()"/> Produtos perigosos (explosivos, tóxicos, radioativos…)</label>
+          </div>
+          <div id="ap_resultado" style="margin-top:16px"></div>
+        </div>
+
+        <!-- TAXAS -->
+        <div class="form-card">
+          <div class="fc-sec">Calculadora de Taxas (Anexo A)</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Tipo de documento / taxa</label>
+              <select class="form-control" id="tx_tipo" onchange="calcTaxa()">
+                <option value="ca">Certificado de Aprovação (CA/CAV)</option>
+                <option value="ca_ren">Renovação de CA/CAV</option>
+                <option value="cap">Certificado de Aprovação de Projeto (CAP)</option>
+                <option value="caet">Evento Temporário (CAET)</option>
+                <option value="trqf">Queima de Fogos (TRQF)</option>
+                <option value="lpi">Laudo de Perícia de Incêndio (LPI)</option>
+                <option value="taacbm">Termo de Adequação (TAACBM)</option>
+                <option value="cred_inst">Credenciamento — instaladora/conservadora/revendedora</option>
+                <option value="cred_trein">Credenciamento — formação de brigadistas/bombeiro civil</option>
+                <option value="cred_proj">Credenciamento — projeto de SCI</option>
+              </select>
+            </div>
+            <div class="form-group" id="tx_areaWrap"><label class="form-label">Área total da edificação (m²)</label><input class="form-control" id="tx_area" type="number" min="0" oninput="calcTaxa()"/></div>
+            <div class="form-group" id="tx_altWrap"><label class="form-label">Altura (m)</label><input class="form-control" id="tx_alt" type="number" min="0" oninput="calcTaxa()"/></div>
+            <div class="form-group" id="tx_diasWrap" style="display:none"><label class="form-label">Nº de dias do evento</label><input class="form-control" id="tx_dias" type="number" min="1" value="1" oninput="calcTaxa()"/></div>
+            <div class="form-group" id="tx_folhasWrap" style="display:none"><label class="form-label">Nº de folhas do laudo</label><input class="form-control" id="tx_folhas" type="number" min="1" value="1" oninput="calcTaxa()"/></div>
+          </div>
+          <div class="chips" style="margin-top:4px"><label><input type="checkbox" id="tx_mei" onchange="calcTaxa()"/> MEI (isento)</label></div>
+          <div id="tx_resultado" style="margin-top:16px"></div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -312,7 +376,7 @@
     }
 
     function showTab(id, btn){
-      ['tabEvento','tabBaixo','tabHist'].forEach(t=>document.getElementById(t).style.display='none');
+      ['tabEvento','tabBaixo','tabHist','tabApoio'].forEach(t=>document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(id).style.display='block'; btn.classList.add('active');
       if(id==='tabHist') renderHist();
@@ -559,6 +623,111 @@
       if(mig) BBM.save('dat_emitidos', emitidos);
       numeroAtual = proximoNumero();   // fixa a numeração da sessão a partir do histórico
       setNumeroField();
+    });
+
+    // ===================== APOIO AO ANALISTA =====================
+    const num = id => parseFloat(document.getElementById(id).value) || 0;
+    const brl = v => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    let VBBM = 27.61;
+
+    function salvarVbbm(){
+      const v = num('ap_vbbm'); if(v>0) VBBM = v;
+      BBM.save('dat_config', [{ id:'cfg', vbbm: VBBM }]);
+      calcTaxa();
+    }
+
+    // Enquadramento de risco — NT-42 (itens 5.1 baixo / 5.2 médio; demais = PT/alto)
+    function enquadrar(){
+      const el = document.getElementById('ap_resultado');
+      const area=num('ap_area'), alt=num('ap_alt'), pav=num('ap_pav'), lot=num('ap_lot'),
+            liq=num('ap_liq'), glp=num('ap_glp'), leitos=num('ap_leitos');
+      const mei=chk('ap_mei'), f11=chk('ap_f11'), saude=chk('ap_saude'), gasrev=chk('ap_gasrev'), perig=chk('ap_perig');
+      if(!mei && area<=0){ el.innerHTML=''; return; }
+
+      const bloq = f11 || saude || perig;               // impedem baixo e médio
+      const baixoResid = mei;                            // MEI em residência, sem atendimento (5.1.1)
+      const baixoEdif  = area>0 && area<=200 && pav<=2 && lot<=100 && liq<=250 && glp<=90 && leitos<=16 && !bloq && !gasrev; // 5.1.4
+      const baixo = baixoResid || baixoEdif;
+      const medio = !baixo && area>0 && area<=750 && alt<=12 && lot<=200 && liq<=500 && glp<=190 && leitos<=40 && !bloq; // 5.2
+
+      let risco, processo, cor, medidas;
+      if(baixo){
+        risco='BAIXO RISCO'; cor='#16a34a';
+        processo='Declaração de Baixo Risco (Anexo B da NT-42) — <strong>isenta de taxa</strong>, renovação anual.';
+        medidas='Iluminação, sinalização, saídas de emergência e extintores (declaração do proprietário).';
+      } else if(medio){
+        risco='MÉDIO RISCO'; cor='#d97706';
+        processo='Processo Técnico Simplificado (PTS) — Declaração do RT (Anexo C) + emissão de CA. Segue a NT-42.';
+        medidas='Conforme Anexo A da NT-42: saídas, iluminação, sinalização e extintores (mais itens por classificação de ocupação).';
+      } else {
+        risco='ALTO RISCO'; cor='#dc2626';
+        processo='Processo Técnico completo (PT) — NT-01 Parte 1: 1ª fase (análise de projeto → CAP) + 2ª fase (execução/vistoria → CA).';
+        medidas='Dimensionadas por NT específica de cada medida (ver NT-01 Parte 2, tabelas de exigência por ocupação).';
+      }
+      const motivos=[];
+      if(f11) motivos.push('reunião de público (F-11)');
+      if(saude) motivos.push('ocupação de saúde/atenção especial');
+      if(perig) motivos.push('produtos perigosos');
+      if(!baixo){
+        if(area>750) motivos.push('área > 750 m²');
+        if(alt>12) motivos.push('altura > 12 m');
+        if(lot>200) motivos.push('lotação > 200 pessoas');
+        if(liq>500) motivos.push('inflamáveis > 500 L');
+        if(glp>190) motivos.push('GLP > 190 kg');
+      }
+      el.innerHTML = `
+        <div style="border:1px solid ${cor}44;background:${cor}0d;border-radius:10px;padding:14px 16px">
+          <div style="font-weight:800;color:${cor};font-size:1rem">${risco}</div>
+          <div style="margin-top:6px;font-size:.88rem;color:var(--text)"><strong>Processo:</strong> ${processo}</div>
+          <div style="margin-top:6px;font-size:.82rem;color:var(--text-mid)"><strong>Medidas:</strong> ${medidas}</div>
+          ${motivos.length?`<div style="margin-top:8px;font-size:.8rem;color:${cor}"><strong>Fatores que elevam o enquadramento:</strong> ${motivos.join(' · ')}.</div>`:''}
+          <div style="margin-top:8px;font-size:.72rem;color:var(--text-light)">Referencial (NT-42). Confirme a classificação de ocupação (Tabela 1, Anexo A da NT-01) e o CNAE no Anexo I da Res. 51/CGSIM.</div>
+        </div>`;
+    }
+
+    // Calculadora de taxas — Anexo A da Lei 11.390/2020
+    function calcTaxa(){
+      const tipo = document.getElementById('tx_tipo').value;
+      const mei = chk('tx_mei');
+      const area = num('tx_area'), alt = num('tx_alt'), dias = num('tx_dias')||1, folhas = num('tx_folhas')||1;
+      document.getElementById('tx_areaWrap').style.display = ['ca','ca_ren','cap','caet','taacbm'].includes(tipo) ? '' : 'none';
+      document.getElementById('tx_altWrap').style.display  = ['ca','ca_ren','cap','taacbm'].includes(tipo) ? '' : 'none';
+      document.getElementById('tx_diasWrap').style.display = tipo==='caet' ? '' : 'none';
+      document.getElementById('tx_folhasWrap').style.display = tipo==='lpi' ? '' : 'none';
+
+      const grande = area>750 || alt>12; // faixa "acima" para CA/CAP/renov/TAACBM
+      let valor=0, formula='';
+      const V=VBBM;
+      switch(tipo){
+        case 'ca':     valor = grande ? 0.02*area*V : 10*V; formula = grande?`0,02 × ${area} m² × VBBM`:`10 × VBBM`; break;
+        case 'ca_ren': valor = grande ? 0.008*area*V : 5*V; formula = grande?`0,008 × ${area} m² × VBBM`:`5 × VBBM`; break;
+        case 'cap':    valor = grande ? 0.02*area*V : 10*V; formula = grande?`0,02 × ${area} m² × VBBM`:`10 × VBBM`; break;
+        case 'taacbm': valor = grande ? 0.02*area*V : 10*V; formula = grande?`0,02 × ${area} m² × VBBM`:`10 × VBBM`; break;
+        case 'caet':   valor = 0.004*area*dias*V; formula = `0,004 × ${area} m² × ${dias} dia(s) × VBBM`; break;
+        case 'trqf':   valor = 10*V; formula = `10 × VBBM`; break;
+        case 'lpi':    valor = folhas*V; formula = `${folhas} folha(s) × 1 × VBBM`; break;
+        case 'cred_inst':  valor = 50*V; formula = `50 × VBBM`; break;
+        case 'cred_trein': valor = 30*V; formula = `30 × VBBM`; break;
+        case 'cred_proj':  valor = 10*V; formula = `10 × VBBM`; break;
+      }
+      const isento = mei && ['ca','ca_ren','cap','caet','trqf','taacbm'].includes(tipo);
+      const el = document.getElementById('tx_resultado');
+      if(isento){
+        el.innerHTML = `<div style="border:1px solid #16a34a44;background:#16a34a0d;border-radius:10px;padding:14px 16px">
+          <div style="font-weight:800;color:#16a34a;font-size:1.1rem">Isento</div>
+          <div style="font-size:.82rem;color:var(--text-mid);margin-top:4px">MEI é isento de taxas e emolumentos (item 10.1.1 da NT-42 / LC 123/2006).</div></div>`;
+        return;
+      }
+      el.innerHTML = `<div style="border:1px solid var(--blue);background:var(--blue-light);border-radius:10px;padding:14px 16px">
+        <div style="font-size:.78rem;color:var(--text-mid)">${formula.replace('VBBM', 'VBBM ('+brl(V)+')')}</div>
+        <div style="font-weight:800;color:var(--blue);font-size:1.4rem;margin-top:4px">${brl(valor)}</div>
+        <div style="font-size:.72rem;color:var(--text-light);margin-top:6px">Anexo A da Lei 11.390/2020. Recolhimento via DARE. Confira a Portaria vigente que corrige o VBBM.</div></div>`;
+    }
+
+    BBM.ready(['dat_config'], ()=>{
+      const cfg = (BBM.load('dat_config')||[])[0];
+      if(cfg && cfg.vbbm>0){ VBBM = cfg.vbbm; document.getElementById('ap_vbbm').value = VBBM; }
+      calcTaxa();
     });
   </script>
 </body>
