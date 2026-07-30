@@ -1498,7 +1498,11 @@
       const lista = checklists.filter(c =>
         c.viaturaId===viaturaAtual.id &&
         (!q || c.data.includes(q) || (c.guarnicao||'').toLowerCase().includes(q) || (c.status||'').includes(q))
-      );
+      ).sort((a,b) => {
+        // mais recente primeiro: por data e, em empate, pelo momento de criação
+        const d = (b.data||'').localeCompare(a.data||'');
+        return d !== 0 ? d : (b.criadoEm||'').localeCompare(a.criadoEm||'');
+      });
       const el = document.getElementById('histLista');
       if (!lista.length) {
         el.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:30px 0">Nenhum checklist registrado.</div>'; return;
