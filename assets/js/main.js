@@ -489,6 +489,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     navEl.appendChild(a);
   }
 
+  // ---- Ordena o menu lateral e aninha "Permutas" sob "Escala de Serviço" ----
+  if (navEl) {
+    const txt = a => (a.querySelector('.nav-text')?.textContent || '').trim();
+    const href = a => a.getAttribute('href') || '';
+    // Retira qualquer "Permutas" de topo (será reposicionado como subitem da Escala)
+    let permA = null;
+    navEl.querySelectorAll('a.nav-item').forEach(a => {
+      if (href(a).includes('modulos/permutas/')) { permA = a; a.remove(); }
+    });
+    // Ordena os itens de topo em ordem alfabética (o rótulo "Módulos" permanece no topo)
+    [...navEl.querySelectorAll('a.nav-item')]
+      .sort((x, y) => txt(x).localeCompare(txt(y), 'pt', { sensitivity: 'base' }))
+      .forEach(a => navEl.appendChild(a));
+    // Subitem "Permutas" logo abaixo de "Escala de Serviço"
+    if (BBM.nivel('permutas') !== 'nenhum') {
+      const ativo = (permA && permA.classList.contains('active')) || BBM.moduloAtual() === 'permutas';
+      if (!permA) {
+        permA = document.createElement('a');
+        permA.href = ROOT + 'modulos/permutas/index.html';
+        permA.innerHTML = '<span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><span class="nav-text">Permutas</span><span class="nav-arrow">›</span>';
+      }
+      permA.className = 'nav-item' + (ativo ? ' active' : '');
+      permA.style.paddingLeft = '2.6rem';   // recuo indica subordinação à Escala
+      permA.style.fontSize = '.86rem';
+      const escala = [...navEl.querySelectorAll('a.nav-item')].find(a => href(a).includes('modulos/escala/'));
+      if (escala) navEl.insertBefore(permA, escala.nextSibling);
+      else navEl.appendChild(permA);
+    }
+  }
+
   // ---- Enforcement de acesso ao módulo ----
   const modAtual = BBM.moduloAtual();
   if (user.role !== 'admin' && modAtual) {
