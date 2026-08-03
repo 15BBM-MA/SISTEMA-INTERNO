@@ -432,9 +432,14 @@
         }
         if (!funcName) continue;
 
-        // Itens de nome: à direita do mínimo X das colunas de data (−15px de margem)
-        const xMinData = Math.min(...dateCols.map(d => d.x)) - 15;
-        const nameItems = row.items.filter(i => i.x >= xMinData);
+        // Itens de nome: descarta o rótulo da função e usa margem ampla à
+        // esquerda (−45px). A margem antiga (−15) cortava os nomes da 1ª coluna,
+        // que ficam alinhados à esquerda (x≈139) abaixo do X da data (x≈160),
+        // transformando-os em furos na importação.
+        const xMinData = Math.min(...dateCols.map(d => d.x)) - 45;
+        const nameItems = row.items.filter(i =>
+          i.x >= xMinData && !FUNC_LABELS.some(([lbl]) => i.str.toUpperCase() === lbl)
+        );
 
         // Atribui cada item ao coluna de data mais próxima por X
         const colTexts = dateCols.map(() => []);
