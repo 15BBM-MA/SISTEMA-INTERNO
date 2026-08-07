@@ -155,9 +155,13 @@
         <input type="hidden" id="cfId"/>
         <div style="font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:2px" id="cfNome"></div>
         <div style="font-size:.78rem;color:var(--text-light);margin-bottom:14px" id="cfRegistrado"></div>
-        <div class="form-group" style="margin:0">
+        <div class="form-group">
           <label class="form-label">Quantidade contada fisicamente</label>
           <input class="form-control" id="cfQtd" type="number" min="0" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Ambiente (onde o item está)</label>
+          <select class="form-control" id="cfAmbiente"></select>
         </div>
       </div>
       <div class="modal-footer">
@@ -653,6 +657,8 @@
       document.getElementById('cfNome').textContent = i.nome;
       document.getElementById('cfRegistrado').textContent = `Registrado: ${i.qtd} ${i.unidade} — ${i.categoria}`;
       document.getElementById('cfQtd').value = i.qtd;
+      const selAmb = document.getElementById('cfAmbiente');
+      selAmb.innerHTML = AMBIENTES.map(a=>`<option${a===i.ambiente?' selected':''}>${a}</option>`).join('');
       BBM.openModal('modalContagem');
       setTimeout(()=>{ const el=document.getElementById('cfQtd'); el.focus(); el.select(); }, 200);
     }
@@ -662,10 +668,14 @@
       const i = itens.find(x=>x.id===id); if(!i) return;
       const v = Number(document.getElementById('cfQtd').value);
       if (!(v>=0)) { BBM.toast('Informe a quantidade contada.','error'); return; }
-      i.qtd = v; carimbar(i);
+      const novoAmb = document.getElementById('cfAmbiente').value;
+      const trocou = novoAmb && novoAmb !== i.ambiente;
+      i.qtd = v;
+      if (trocou) i.ambiente = novoAmb;
+      carimbar(i);
       BBM.closeModal('modalContagem');
       renderConferencia(); renderAmbientes(); atualizarCards();
-      await salvar(KEY_I, itens, { sucesso:'Contagem registrada.' });
+      await salvar(KEY_I, itens, { sucesso: trocou ? `Contagem registrada e item movido para ${novoAmb}.` : 'Contagem registrada.' });
     }
 
     let _atualizando = false;
