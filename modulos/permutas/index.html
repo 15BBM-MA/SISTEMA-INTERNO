@@ -125,6 +125,28 @@
     </div>
   </div>
 
+  <!-- MODAL ASSINAR EM LOTE -->
+  <div class="modal-overlay" id="modalAssinarLote">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <span class="modal-title">Assinar permutas pendentes</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAssinarLote')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:.82rem;color:#374151;margin-bottom:10px">Selecione as permutas que deseja assinar de uma só vez:</div>
+        <div id="loteLista" style="max-height:320px;overflow:auto;margin-bottom:14px"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Sua senha de acesso *</label>
+          <input class="form-control" id="loteSenha" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')confirmarAssinarLote()"/>
+        </div>
+        <div id="loteErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAssinarLote')">Cancelar</button>
+        <button class="btn btn-primary" id="btnAssinarLote" onclick="confirmarAssinarLote()">Assinar selecionadas</button>
+      </div>
+    </div>
+  </div>
+
   <div id="docPermuta" aria-hidden="true"></div>
 
   <style>
@@ -246,7 +268,10 @@
       const pend = permutas.filter(meuPapelPendente);
       const pv = document.getElementById('pendentesVoce');
       pv.innerHTML = pend.length
-        ? `<div class="section-label" style="color:#b45309">⚠ Aguardando sua assinatura</div>${pend.map(cardPermuta).join('')}`
+        ? `<div class="section-label" style="color:#b45309;display:flex;justify-content:space-between;align-items:center">
+             <span>⚠ Aguardando sua assinatura (${pend.length})</span>
+             ${pend.length>1?`<button class="btn btn-primary" style="font-size:.74rem;padding:4px 12px" onclick="abrirAssinarLote()">✍ Assinar todas de uma vez</button>`:''}
+           </div>${pend.map(cardPermuta).join('')}`
         : '';
       // Lista geral (mais recentes primeiro)
       const lista = [...permutas].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
@@ -338,6 +363,52 @@
       render();
       await salvarPermutas(papel==='escalante'?'Permuta finalizada e assinada por todos.':'Assinatura registrada. Encaminhada ao próximo assinante.');
       btn.disabled=false; btn.textContent='Assinar';
+    }
+
+    // ── Assinar em lote ───────────────────────────────────────────
+    function abrirAssinarLote(){
+      const pend = permutas.filter(meuPapelPendente);
+      if (!pend.length) return;
+      document.getElementById('loteLista').innerHTML = pend.map(p=>{
+        const papel = meuPapelPendente(p);
+        return `<label style="display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;cursor:pointer">
+          <input type="checkbox" class="lote-chk" value="${p.id}" data-papel="${papel}" checked style="margin-top:2px"/>
+          <span style="font-size:.82rem">
+            <strong>${p.solicitanteNome} → ${p.substitutoNome}</strong><br/>
+            <span style="color:var(--text-light)">Serviço de ${fmtData(p.data)} • assinar como <strong>${papel}</strong></span>
+          </span>
+        </label>`;
+      }).join('');
+      document.getElementById('loteSenha').value='';
+      document.getElementById('loteErro').style.display='none';
+      BBM.openModal('modalAssinarLote');
+      setTimeout(()=>document.getElementById('loteSenha').focus(),200);
+    }
+
+    async function confirmarAssinarLote(){
+      const err = document.getElementById('loteErro');
+      const mostra = m => { err.textContent=m; err.style.display='block'; };
+      const marcados = [...document.querySelectorAll('.lote-chk:checked')];
+      if (!marcados.length) return mostra('Selecione ao menos uma permuta.');
+      const senha = document.getElementById('loteSenha').value;
+      if (!senha) return mostra('Informe sua senha para assinar.');
+      const btn = document.getElementById('btnAssinarLote'); btn.disabled=true; btn.textContent='Verificando…';
+      const ok = await conferirSenha(senha);
+      if (!ok) { btn.disabled=false; btn.textContent='Assinar selecionadas'; return mostra('Senha incorreta.'); }
+      const u = eu(); const agora = new Date().toISOString();
+      let n = 0;
+      for (const chk of marcados) {
+        const p = permutas.find(x=>x.id===chk.value); if(!p) continue;
+        const papel = meuPapelPendente(p); if(!papel) continue; // revalida no momento
+        p.ass[papel] = { nome:u.nome, em:agora };
+        if (papel==='substituto') p.status='aguardando_escalante';
+        if (papel==='escalante')  p.status='assinado';
+        n++;
+      }
+      BBM.closeModal('modalAssinarLote');
+      render();
+      await salvarPermutas(`${n} permuta${n>1?'s':''} assinada${n>1?'s':''} de uma vez.`);
+      btn.disabled=false; btn.textContent='Assinar selecionadas';
     }
 
     async function recusar(id){
