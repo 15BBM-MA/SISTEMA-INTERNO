@@ -342,7 +342,19 @@
       fa.value = anoAtivo;
     }
 
-    function nomeMilitar(m){ return (m.posto?m.posto+' ':'') + m.nome; }
+    // Monta o nome do sistema sem repetir o posto (o cadastro às vezes já
+    // traz a graduação dentro do campo nome, ex.: posto "2º SGT BM" + nome
+    // "2º SGT COSTA BARROS" → mostrar só "2º SGT COSTA BARROS").
+    function nomeMilitar(m){
+      const posto = (m.posto||'').trim(), nome = (m.nome||'').trim();
+      if (!nome) return posto;
+      if (!posto) return nome;
+      const pth = _norm(posto).split(' ').filter(Boolean);
+      const nmt = _norm(nome).split(' ').filter(Boolean);
+      const jaNoInicio = pth.length && pth.every((t,i)=>nmt[i]===t);
+      const jaContido  = pth.length && pth.every(t=>nmt.includes(t));
+      return (jaNoInicio || jaContido) ? nome : (posto + ' ' + nome);
+    }
     // normaliza nome (minúsculo, sem acento, sem "BM", sem pontuação)
     function _norm(s){
       return (s||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
