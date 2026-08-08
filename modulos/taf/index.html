@@ -81,6 +81,11 @@
       </div>
       <div id="classificacao"></div>
 
+      <!-- Ranking por TAF (navegação horizontal) -->
+      <div class="section-label" style="margin-top:26px">Ranking por TAF — tempos e pontuação de cada prova</div>
+      <div id="tafNav" class="taf-nav"></div>
+      <div id="tafDetalhe"></div>
+
       <!-- Sessões -->
       <div class="section-label" style="margin-top:26px">Sessões de TAF do ano</div>
       <div id="listaSessoes"></div>
@@ -171,10 +176,18 @@
     .taf-pos.p1 { color:#b8860b; } .taf-pos.p2 { color:#6b7280; } .taf-pos.p3 { color:#a0522d; }
     .taf-final { font-weight:800; color:#16a34a; }
     .taf-desc { color:#dc2626; }
-    .taf-table tr.lb1 td { background:linear-gradient(90deg, rgba(245,158,11,.16), transparent 60%) !important; }
-    .taf-table tr.lb2 td { background:linear-gradient(90deg, rgba(148,163,184,.18), transparent 60%) !important; }
-    .taf-table tr.lb3 td { background:linear-gradient(90deg, rgba(217,119,6,.15), transparent 60%) !important; }
+    .taf-table tr.lb1 td { background:#fff8e6 !important; }
+    .taf-table tr.lb2 td { background:#f3f5f8 !important; }
+    .taf-table tr.lb3 td { background:#fdf1e5 !important; }
+    .taf-table tr.lb1 td:first-child { box-shadow:inset 4px 0 0 #f59e0b; }
+    .taf-table tr.lb2 td:first-child { box-shadow:inset 4px 0 0 #94a3b8; }
+    .taf-table tr.lb3 td:first-child { box-shadow:inset 4px 0 0 #d97706; }
     .taf-table tr.lb1 td:first-child, .taf-table tr.lb2 td:first-child, .taf-table tr.lb3 td:first-child { font-size:1.1rem; }
+    @media (prefers-color-scheme:dark){
+      .taf-table tr.lb1 td { background:rgba(245,158,11,.13) !important; }
+      .taf-table tr.lb2 td { background:rgba(148,163,184,.14) !important; }
+      .taf-table tr.lb3 td { background:rgba(217,119,6,.13) !important; }
+    }
 
     .ses-card { border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:12px; background:var(--surface); display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
     .ses-nome { font-size:.98rem; font-weight:700; color:var(--text); }
@@ -189,6 +202,34 @@
     .taf-entry td.nome { text-align:left; font-weight:600; }
     .taf-entry input, .taf-entry select { width:100%; padding:5px 7px; border:1px solid var(--border); border-radius:7px; font-size:.82rem; background:var(--surface); color:var(--text); }
     .taf-entry input.tempo { width:88px; text-align:center; }
+
+    /* ===== Navegação e tabela por TAF ===== */
+    .taf-nav { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+    .taf-pills { display:flex; gap:8px; overflow-x:auto; padding:2px; flex:1; scroll-behavior:smooth; }
+    .taf-pill { flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px;
+      border:1px solid var(--border); background:var(--surface); color:var(--text); font-weight:600; font-size:.84rem; cursor:pointer; transition:.15s; }
+    .taf-pill:hover { border-color:#93c5fd; }
+    .taf-pill.active { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border-color:transparent; box-shadow:0 6px 16px -8px rgba(37,99,235,.8); }
+    .taf-pill-n { font-size:.7rem; background:rgba(0,0,0,.12); padding:1px 7px; border-radius:999px; }
+    .taf-pill.active .taf-pill-n { background:rgba(255,255,255,.25); }
+    .taf-arrow { flex:0 0 auto; width:34px; height:34px; border-radius:50%; border:1px solid var(--border);
+      background:var(--surface); color:var(--text); font-size:1.2rem; line-height:1; cursor:pointer; }
+    .taf-arrow:disabled { opacity:.35; cursor:default; }
+    .taf-det-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+    .taf-det-nome { font-weight:800; font-size:1.05rem; color:var(--text); }
+    .taf-det-sub { font-size:.8rem; color:var(--text-light); margin-left:8px; }
+    .taf-taf tbody tr { cursor:pointer; }
+    .taf-taf tbody tr.semdado td { color:#9ca3af; }
+    .taf-taf tbody tr.aberto td { background:#eff6ff !important; }
+    .taf-tag { font-size:.66rem; font-weight:700; color:#92400e; background:#fef3c7; padding:1px 7px; border-radius:8px; margin-left:4px; }
+    .taf-info { color:#94a3b8; font-size:.8rem; }
+    .taf-detrow td { padding:0 !important; background:#f8fafc; }
+    .taf-explica { padding:11px 16px; font-size:.82rem; line-height:1.7; color:var(--text); border-left:3px solid #2563eb; }
+    .taf-legenda { font-size:.74rem; color:var(--text-light); margin-top:8px; }
+    @media (prefers-color-scheme:dark){
+      .taf-taf tbody tr.aberto td { background:rgba(37,99,235,.14) !important; }
+      .taf-detrow td { background:rgba(148,163,184,.08); }
+    }
 
     /* ===== Pódio gamificado ===== */
     .pod-arena {
@@ -259,6 +300,7 @@
     const JUSTIFICADAS = new Set(['Atestado','Férias','Justificado','Dispensado']);
 
     let sessoes = [], resultados = [], efetivo = [], anoAtivo = new Date().getFullYear();
+    let tafView = null, _ctx = null, _expandido = null;
 
     // ── Helpers de tempo (min:seg ⇄ segundos) ────────────────────
     function parseTempo(txt){
@@ -301,12 +343,40 @@
     }
 
     function nomeMilitar(m){ return (m.posto?m.posto+' ':'') + m.nome; }
-    // normaliza nome p/ casar grafias (acentos, º/°, "BM", pontuação)
+    // normaliza nome (minúsculo, sem acento, sem "BM", sem pontuação)
     function _norm(s){
       return (s||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
         .replace(/\bbm\b/g,' ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
     }
-    function resultadoDe(sessaoId, chave){ return resultados.find(r=>r.sessaoId===sessaoId && _norm(r.militar)===chave); }
+    // chave canônica: só o NOME distintivo, sem posto/graduação/ordinais.
+    // Assim "CAP DANIEL" (planilha) e "Capitão Daniel" (cadastro) viram a mesma chave.
+    const POSTOS = new Set(['capitao','cap','tenente','ten','major','maj','aspirante','asp',
+      'subtenente','subten','sub','sargento','sargento','sgt','cabo','cb','soldado','sd',
+      'bombeiro','civil','bc','coronel','cel','tc','p','al','aluno']);
+    function chaveMilitar(nome){
+      return _norm(nome).split(' ')
+        .filter(t => t && !POSTOS.has(t) && !/^\d+$/.test(t))
+        .join(' ');
+    }
+    // duas grafias apontam para a mesma pessoa? (tokens do menor ⊆ tokens do maior)
+    function mesmaPessoa(a, b){
+      const ta = chaveMilitar(a).split(' ').filter(Boolean);
+      const tb = chaveMilitar(b).split(' ').filter(Boolean);
+      if (!ta.length || !tb.length) return false;
+      const [curto, longo] = ta.length <= tb.length ? [ta, tb] : [tb, ta];
+      return curto.every(t => longo.includes(t));
+    }
+    // resolve um nome cru para {chave, display} casando com o efetivo cadastrado
+    let _canonCache = {};
+    function canon(nome){
+      if (_canonCache[nome]) return _canonCache[nome];
+      let m = efetivo.find(x => chaveMilitar(nomeMilitar(x)) === chaveMilitar(nome));
+      if (!m) m = efetivo.find(x => mesmaPessoa(nomeMilitar(x), nome));
+      const r = m ? { chave: chaveMilitar(nomeMilitar(m)), display: nomeMilitar(m) }
+                  : { chave: chaveMilitar(nome), display: nome };
+      _canonCache[nome] = r; return r;
+    }
+    function resultadoDe(sessaoId, chave){ return resultados.find(r=>r.sessaoId===sessaoId && canon(r.militar).chave===chave); }
 
     // ── Cálculo de pontos (ranking relativo, fiel à planilha) ────
     // pontos = 10 − (colocação_no_tempo − 1) × 0,25 ; menor tempo = melhor.
@@ -315,41 +385,52 @@
     function pontosEvento(sessaoId, campo){
       const rs = resultados.filter(r=>r.sessaoId===sessaoId && r[campo]>0);
       const ord = [...rs].sort((a,b)=>a[campo]-b[campo]);
-      const pts = {};
+      const pts = {}, ranks = {};
       ord.forEach((r,i)=>{
         const rank = (i>0 && r[campo]===ord[i-1][campo]) ? ord[i-1]._rk : i+1;
         r._rk = rank;
-        pts[_norm(r.militar)] = Math.max(0, 10 - (rank-1)*0.25);
+        const ch = canon(r.militar).chave;
+        pts[ch] = Math.max(0, 10 - (rank-1)*0.25);
+        ranks[ch] = rank;
       });
+      pts._ranks = ranks; pts._n = rs.length;
       return pts;
     }
 
     // desconto por atraso de uma sessão para um militar (fiel à fórmula da planilha)
-    function atrasoDe(sessao, r){
+    // retorna { pts, motivo } — motivo explica o cálculo para o militar
+    function atrasoDetalhe(sessao, r){
       const prev = diasDe(sessao.dataPrevista);
-      if (prev==null) return 0;
-      if (r && JUSTIFICADAS.has(r.situacao)) return 0;         // ausência justificada não penaliza
+      if (prev==null) return { pts:0, motivo:'' };
+      if (r && JUSTIFICADAS.has(r.situacao))
+        return { pts:0, motivo:`${r.situacao} — ausência justificada, sem desconto.` };
       const real = r ? diasDe(r.dataRealizada) : null;
-      let a = 0;
-      if (real!=null && real>prev) a += Math.floor((real-prev)/31)+1;   // realizou atrasado
-      if (real==null){                                                   // não realizou → acumula com o tempo
-        const hoje = Math.floor(Date.now()/86400000);
-        if (hoje>prev) a += Math.floor((hoje-prev)/31)+1;
+      if (real!=null && real>prev){
+        const d = real - prev, n = Math.floor(d/31)+1;
+        return { pts:n, motivo:`Realizou em ${fmtData(r.dataRealizada)} — ${d} dia(s) após a data prevista (${fmtData(sessao.dataPrevista)}). Regra: −1 ponto a cada 31 dias de atraso → ⌊${d}/31⌋+1 = −${n}.` };
       }
-      return a;
+      if (real==null){
+        const hoje = Math.floor(Date.now()/86400000);
+        if (hoje>prev){
+          const d = hoje - prev, n = Math.floor(d/31)+1;
+          return { pts:n, motivo:`Ainda não realizado. Vencido há ${d} dia(s) desde ${fmtData(sessao.dataPrevista)} — acumula −1 a cada 31 dias → ⌊${d}/31⌋+1 = −${n}.` };
+        }
+      }
+      return { pts:0, motivo:'Realizado no prazo — sem desconto.' };
     }
+    function atrasoDe(sessao, r){ return atrasoDetalhe(sessao, r).pts; }
 
     // agrega a classificação do ano
     function calcularClassificacao(){
+      _canonCache = {};
       const doAno = sessoes.filter(s=>s.ano===anoAtivo);
-      // pré-calcula pontos por sessão (chaveados por nome normalizado)
       const ptsPorSessao = {};
       doAno.forEach(s=>{ ptsPorSessao[s.id] = { corrida:pontosEvento(s.id,'corridaSeg'), natacao:pontosEvento(s.id,'natacaoSeg') }; });
-      // roster = efetivo do cadastro ∪ nomes presentes nos resultados do ano
+      // roster = efetivo do cadastro ∪ pessoas presentes nos resultados (dedup por chave canônica)
       const roster = new Map();
-      efetivo.forEach(m=>{ roster.set(_norm(nomeMilitar(m)), nomeMilitar(m)); });
+      efetivo.forEach(m=>{ const c=canon(nomeMilitar(m)); if(!roster.has(c.chave)) roster.set(c.chave, c.display); });
       doAno.forEach(s=> resultados.filter(r=>r.sessaoId===s.id).forEach(r=>{
-        const k=_norm(r.militar); if(!roster.has(k)) roster.set(k, r.militar);
+        const c=canon(r.militar); if(!roster.has(c.chave)) roster.set(c.chave, c.display);
       }));
       const linhas = [...roster.entries()].map(([chave, nome])=>{
         let total=0, desc=0;
@@ -363,18 +444,17 @@
         });
         return { chave, nome, total, desc, final: total - desc, porSessao };
       });
-      // ordena por final desc; empate → nome
       linhas.sort((a,b)=> b.final - a.final || a.nome.localeCompare(b.nome,'pt'));
-      // colocação com empates
       let pos=0, prev=null;
       linhas.forEach((l,i)=>{ if(prev===null || l.final!==prev){ pos=i+1; prev=l.final; } l.pos=pos; });
-      return { linhas, sessoes:doAno };
+      return { linhas, sessoes:doAno, ptsPorSessao };
     }
 
     // ── Render ───────────────────────────────────────────────────
     function render(){
       anoAtivo = Number(document.getElementById('filtroAno').value) || anoAtivo;
-      const { linhas, sessoes:doAno } = calcularClassificacao();
+      const { linhas, sessoes:doAno, ptsPorSessao } = calcularClassificacao();
+      _ctx = { doAno, ptsPorSessao };
       document.getElementById('lblClassif').textContent = 'Classificação anual — ' + anoAtivo;
 
       // cards resumo
@@ -422,6 +502,9 @@
           <tbody>${rows}</tbody></table></div>`;
       }
 
+      // ranking por TAF (navegação horizontal)
+      renderTafSecao(doAno, ptsPorSessao);
+
       // sessões
       const ls = document.getElementById('listaSessoes');
       ls.innerHTML = doAno.length ? [...doAno].sort((a,b)=>(b.dataPrevista||'').localeCompare(a.dataPrevista||'')).map(s=>{
@@ -441,11 +524,101 @@
       }).join('') : '';
     }
 
+    // ── Ranking por TAF (navegação horizontal) ──────────────────
+    function selecionarTaf(id){ tafView = id; _expandido = null; renderTafSecao(_ctx.doAno, _ctx.ptsPorSessao); }
+    function toggleExpandir(chave){ _expandido = (_expandido===chave)?null:chave; renderTafSecao(_ctx.doAno, _ctx.ptsPorSessao); }
+
+    function renderTafSecao(doAno, ptsPorSessao){
+      const nav = document.getElementById('tafNav');
+      const det = document.getElementById('tafDetalhe');
+      const ordenadas = [...doAno].sort((a,b)=>(a.dataPrevista||'').localeCompare(b.dataPrevista||''));
+      if (!ordenadas.length){ nav.innerHTML=''; det.innerHTML=''; return; }
+      if (!tafView || !ordenadas.some(s=>s.id===tafView)) tafView = ordenadas[ordenadas.length-1].id;
+
+      // navegação (pílulas) com setas
+      const idx = ordenadas.findIndex(s=>s.id===tafView);
+      const pills = ordenadas.map(s=>{
+        const n = resultados.filter(r=>r.sessaoId===s.id && (r.corridaSeg>0||r.natacaoSeg>0)).length;
+        return `<button class="taf-pill${s.id===tafView?' active':''}" onclick="selecionarTaf('${s.id}')">
+          ${s.nome}<span class="taf-pill-n">${n}</span></button>`;
+      }).join('');
+      const prevId = idx>0 ? ordenadas[idx-1].id : '';
+      const nextId = idx<ordenadas.length-1 ? ordenadas[idx+1].id : '';
+      nav.innerHTML = `
+        <button class="taf-arrow" ${prevId?'':'disabled'} onclick="${prevId?`selecionarTaf('${prevId}')`:''}">‹</button>
+        <div class="taf-pills">${pills}</div>
+        <button class="taf-arrow" ${nextId?'':'disabled'} onclick="${nextId?`selecionarTaf('${nextId}')`:''}">›</button>`;
+
+      const sessao = ordenadas[idx];
+      const pe = ptsPorSessao[sessao.id];
+
+      // monta linhas do TAF (todos do roster; participantes primeiro por pontos)
+      const roster = new Map();
+      efetivo.forEach(m=>{ const c=canon(nomeMilitar(m)); if(!roster.has(c.chave)) roster.set(c.chave, c.display); });
+      resultados.filter(r=>r.sessaoId===sessao.id).forEach(r=>{ const c=canon(r.militar); if(!roster.has(c.chave)) roster.set(c.chave, c.display); });
+
+      let linhas = [...roster.entries()].map(([chave, nome])=>{
+        const r = resultadoDe(sessao.id, chave);
+        const pc = pe.corrida[chave]||0, pn = pe.natacao[chave]||0;
+        const rc = pe.corrida._ranks[chave], rn = pe.natacao._ranks[chave];
+        const temTempo = !!(r && (r.corridaSeg>0 || r.natacaoSeg>0));
+        const at = atrasoDetalhe(sessao, r);
+        return { chave, nome, r, pc, pn, rc, rn, temTempo, total:pc+pn, desc:at.pts, motivo:at.motivo };
+      });
+      // ordena: quem tem tempo primeiro (por total desc), depois os demais
+      linhas.sort((a,b)=> (b.temTempo-a.temTempo) || (b.total-a.total) || a.nome.localeCompare(b.nome,'pt'));
+      let pos=0, prev=null;
+      linhas.forEach((l,i)=>{ if(l.temTempo){ if(prev===null||l.total!==prev){pos=i+1;prev=l.total;} l.pos=pos; } });
+
+      const nC = pe.corrida._n, nN = pe.natacao._n;
+      const rows = linhas.map(l=>{
+        const medal = l.pos===1?'🥇':l.pos===2?'🥈':l.pos===3?'🥉':(l.pos?l.pos+'º':'—');
+        const cls = l.temTempo ? (l.pos<=3?'lb'+l.pos:'') : 'semdado';
+        const tc = l.r&&l.r.corridaSeg? fmtTempo(l.r.corridaSeg):'—';
+        const tn = l.r&&l.r.natacaoSeg? fmtTempo(l.r.natacaoSeg):'—';
+        const just = l.r && JUSTIFICADAS.has(l.r.situacao);
+        const cCorr = l.r&&l.r.corridaSeg ? `<strong>${tc}</strong> · ${l.pc.toFixed(2).replace('.',',')}` : '—';
+        const cNat  = l.r&&l.r.natacaoSeg ? `<strong>${tn}</strong> · ${l.pn.toFixed(2).replace('.',',')}` : '—';
+        const descTxt = l.desc>0 ? `<span class="taf-desc">−${l.desc}</span>` : (just?'<span style="color:#16a34a">isento</span>':'0');
+        const expandido = _expandido===l.chave;
+        let detalhe = '';
+        if (expandido){
+          const bits = [];
+          if (l.r&&l.r.corridaSeg) bits.push(`<b>Corrida:</b> ${l.rc}º mais rápido de ${nC} → 10 − (${l.rc}−1)×0,25 = <b>${l.pc.toFixed(2).replace('.',',')}</b> pts`);
+          if (l.r&&l.r.natacaoSeg) bits.push(`<b>Natação:</b> ${l.rn}º mais rápido de ${nN} → 10 − (${l.rn}−1)×0,25 = <b>${l.pn.toFixed(2).replace('.',',')}</b> pts`);
+          if (l.r&&(l.r.corridaSeg||l.r.natacaoSeg)) bits.push(`<b>Soma do TAF:</b> ${l.pc.toFixed(2).replace('.',',')} + ${l.pn.toFixed(2).replace('.',',')} = <b>${l.total.toFixed(2).replace('.',',')}</b> pts`);
+          if (l.motivo) bits.push(`<b>Desconto por atraso:</b> ${l.motivo}`);
+          if (!bits.length) bits.push('Sem lançamento neste TAF.');
+          detalhe = `<tr class="taf-detrow"><td colspan="6"><div class="taf-explica">${bits.join('<br>')}</div></td></tr>`;
+        }
+        return `<tr class="${cls}${expandido?' aberto':''}" onclick="toggleExpandir('${l.chave}')" title="Clique para ver o cálculo">
+          <td class="taf-pos">${medal}</td>
+          <td class="nome">${l.nome}${just?` <span class="taf-tag">${l.r.situacao}</span>`:''}</td>
+          <td>${cCorr}</td>
+          <td>${cNat}</td>
+          <td><strong>${l.temTempo? l.total.toFixed(2).replace('.',','):'—'}</strong></td>
+          <td>${descTxt} <span class="taf-info">ⓘ</span></td>
+        </tr>${detalhe}`;
+      }).join('');
+
+      det.innerHTML = `
+        <div class="taf-det-head">
+          <div><span class="taf-det-nome">${sessao.nome}</span>
+            <span class="taf-det-sub">prova prevista para ${fmtData(sessao.dataPrevista)} • ${nC} na corrida, ${nN} na natação</span></div>
+          <button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirResultados('${sessao.id}')">✎ Lançar / editar tempos</button>
+        </div>
+        <div style="overflow:auto"><table class="taf-table taf-taf">
+          <thead><tr><th>Col.</th><th class="nome">Militar</th><th>Corrida · pts</th><th>Natação · pts</th><th>Total TAF</th><th>Desc.</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>
+        <div class="taf-legenda">Ranking individual deste TAF • tempos em min:seg • clique numa linha para ver o cálculo dos pontos e de eventual desconto.</div>`;
+    }
+
     // ── Pódio gamificado ─────────────────────────────────────────
     function iniciais(nome){
       const stop = new Set(['sgt','ten','cap','maj','asp','cb','sd','bc','1º','2º','3º','1°','2°','3°','bm','p','do','da','de']);
       const ws = nome.split(/\s+/).filter(w=>!stop.has(w.toLowerCase().replace(/[^\wº°]/g,'')));
       const base = ws.length?ws:nome.split(/\s+/);
+      if (base.length===1) return (base[0].slice(0,2)||'?').toUpperCase();
       return (base.slice(0,2).map(w=>w[0]).join('')||'?').toUpperCase();
     }
     function renderPodium(linhas){
@@ -569,9 +742,13 @@
       document.getElementById('resTitulo').textContent = 'Resultados — ' + s.nome + ' (' + fmtData(s.dataPrevista) + ')';
       document.getElementById('resErro').style.display='none';
       const body = document.getElementById('resBody');
-      body.innerHTML = efetivo.map((m,ix)=>{
-        const nome = nomeMilitar(m);
-        const r = resultadoDe(s.id, nome) || {};
+      // roster união (efetivo ∪ pessoas já com resultado nesta sessão) — nada é perdido ao salvar
+      const roster = new Map();
+      efetivo.forEach(m=>{ const c=canon(nomeMilitar(m)); if(!roster.has(c.chave)) roster.set(c.chave, c.display); });
+      resultados.filter(r=>r.sessaoId===s.id).forEach(r=>{ const c=canon(r.militar); if(!roster.has(c.chave)) roster.set(c.chave, c.display); });
+      const lista = [...roster.entries()].sort((a,b)=>a[1].localeCompare(b[1],'pt'));
+      body.innerHTML = lista.map(([chave, nome],ix)=>{
+        const r = resultadoDe(s.id, chave) || {};
         const sit = r.situacao || 'Realizado';
         return `<tr data-nome="${nome.replace(/"/g,'&quot;')}">
           <td class="nome">${nome}</td>
@@ -619,11 +796,11 @@
       const colsSessao = doAno.map(s=>`<th>${s.nome}</th>`).join('');
       const rows = linhas.map(l=>{
         const cels = l.porSessao.map(ps=>{
-          const just = ps.r && JUSTIFICADAS.has(ps.r.situacao);
-          if (just) return `<td>${ps.r.situacao.slice(0,3)}.</td>`;
           const soma = ps.pc+ps.pn;
-          if (soma===0 && !(ps.r&&(ps.r.corridaSeg||ps.r.natacaoSeg))) return '<td>—</td>';
-          return `<td>${soma.toFixed(2).replace('.',',')}</td>`;
+          const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
+          if (temTempo) return `<td>${soma.toFixed(2).replace('.',',')}</td>`;
+          if (ps.r && JUSTIFICADAS.has(ps.r.situacao)) return `<td>${ps.r.situacao.slice(0,3)}.</td>`;
+          return '<td>—</td>';
         }).join('');
         return `<tr><td>${l.pos}º</td><td class="nome">${l.nome}</td>${cels}<td>${l.total.toFixed(2).replace('.',',')}</td><td>${l.desc?'−'+l.desc:'0'}</td><td><strong>${l.final.toFixed(2).replace('.',',')}</strong></td></tr>`;
       }).join('');
