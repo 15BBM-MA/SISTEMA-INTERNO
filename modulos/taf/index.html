@@ -149,6 +149,10 @@
             </thead>
             <tbody id="resBody"></tbody>
           </table>
+          <datalist id="sitPresets"></datalist>
+        </div>
+        <div style="font-size:.74rem;color:#6b7280;margin-top:8px">
+          <strong>Situação:</strong> use <em>Realizado</em> (com a data) para quem fez a prova; qualquer outro rótulo (Atestado, Férias, Missão, BIOMA…) conta como <strong>ausência justificada</strong> — não penaliza. Deixar em branco = pendente (acumula desconto por atraso).
         </div>
         <div id="resErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
       </div>
@@ -296,8 +300,12 @@
   <script>
     const KEY_S = 'taf_sessoes';
     const KEY_R = 'taf_resultados';
-    const SITUACOES = ['Realizado','Atestado','Férias','Justificado','Dispensado'];
-    const JUSTIFICADAS = new Set(['Atestado','Férias','Justificado','Dispensado']);
+    // Sugestões para o campo de situação (aceita texto livre: missões, serviços etc.)
+    const SITUACOES = ['Realizado','Atestado','Férias','Justificado','Dispensado','Missão','Serviço','Curso'];
+    // Justificada = qualquer situação não vazia diferente de "Realizado".
+    // (No controle original, qualquer texto na data — inclusive rótulos de
+    //  missão como "BIOMA"/"FORÇA" — isenta o desconto por atraso.)
+    function ehJust(sit){ return !!sit && sit !== 'Realizado'; }
 
     let sessoes = [], resultados = [], efetivo = [], anoAtivo = new Date().getFullYear();
     let tafView = null, _ctx = null, _expandido = null;
@@ -414,14 +422,15 @@
     function atrasoDetalhe(sessao, r){
       const prev = diasDe(sessao.dataPrevista);
       if (prev==null) return { pts:0, motivo:'' };
-      if (r && JUSTIFICADAS.has(r.situacao))
+      if (r && ehJust(r.situacao))
         return { pts:0, motivo:`${r.situacao} — ausência justificada, sem desconto.` };
       const real = r ? diasDe(r.dataRealizada) : null;
       if (real!=null && real>prev){
         const d = real - prev, n = Math.floor(d/31)+1;
         return { pts:n, motivo:`Realizou em ${fmtData(r.dataRealizada)} — ${d} dia(s) após a data prevista (${fmtData(sessao.dataPrevista)}). Regra: −1 ponto a cada 31 dias de atraso → ⌊${d}/31⌋+1 = −${n}.` };
       }
-      if (real==null){
+      const temTempo = r && (r.corridaSeg>0 || r.natacaoSeg>0);
+      if (real==null && !temTempo){
         const hoje = Math.floor(Date.now()/86400000);
         if (hoje>prev){
           const d = hoje - prev, n = Math.floor(d/31)+1;
@@ -493,7 +502,7 @@
           const cels = l.porSessao.map(ps=>{
             const soma = ps.pc + ps.pn;
             const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
-            const just = ps.r && JUSTIFICADAS.has(ps.r.situacao);
+            const just = ps.r && ehJust(ps.r.situacao);
             if (temTempo) return `<td${just?` title="${ps.r.situacao} — pontuou normalmente"`:''}>${soma.toFixed(2).replace('.',',')}${just?' <span style="color:#f59e0b">•</span>':''}</td>`;
             if (just) return `<td title="${ps.r.situacao}"><span style="color:#6b7280;font-size:.8rem">${ps.r.situacao.slice(0,3)}.</span></td>`;
             return `<td style="color:#d1d5db">—</td>`;
@@ -520,7 +529,7 @@
       // sessões
       const ls = document.getElementById('listaSessoes');
       ls.innerHTML = doAno.length ? [...doAno].sort((a,b)=>(b.dataPrevista||'').localeCompare(a.dataPrevista||'')).map(s=>{
-        const n = resultados.filter(r=>r.sessaoId===s.id && (r.corridaSeg>0||r.natacaoSeg>0||JUSTIFICADAS.has(r.situacao))).length;
+        const n = resultados.filter(r=>r.sessaoId===s.id && (r.corridaSeg>0||r.natacaoSeg>0||ehJust(r.situacao))).length;
         const ok = n>0;
         return `<div class="ses-card">
           <div>
@@ -588,7 +597,7 @@
         const cls = l.temTempo ? (l.pos<=3?'lb'+l.pos:'') : 'semdado';
         const tc = l.r&&l.r.corridaSeg? fmtTempo(l.r.corridaSeg):'—';
         const tn = l.r&&l.r.natacaoSeg? fmtTempo(l.r.natacaoSeg):'—';
-        const just = l.r && JUSTIFICADAS.has(l.r.situacao);
+        const just = l.r && ehJust(l.r.situacao);
         const cCorr = l.r&&l.r.corridaSeg ? `<strong>${tc}</strong> · ${l.pc.toFixed(2).replace('.',',')}` : '—';
         const cNat  = l.r&&l.r.natacaoSeg ? `<strong>${tn}</strong> · ${l.pn.toFixed(2).replace('.',',')}` : '—';
         const descTxt = l.desc>0 ? `<span class="taf-desc">−${l.desc}</span>` : (just?'<span style="color:#16a34a">isento</span>':'0');
@@ -660,10 +669,10 @@
     }
 
     // ── Importar dados da planilha (TAF 1–5 / 2026) ──────────────
-    const SEED_TAF = {"sessoes":[{"nome":"TAF 1","dataPrevista":"2026-03-05"},{"nome":"TAF 2","dataPrevista":"2026-04-08"},{"nome":"TAF 3","dataPrevista":"2026-05-06"},{"nome":"TAF 4","dataPrevista":"2026-06-03"},{"nome":"TAF 5","dataPrevista":"2026-07-01"}],"resultados":[{"s":0,"militar":"2° SGT COSTA BARROS","c":1378,"n":1162,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2° SGT COSTA BARROS","c":1349,"n":1050,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2° SGT COSTA BARROS","c":1341,"n":1043,"d":"2026-05-28","sit":"Férias"},{"s":3,"militar":"2° SGT COSTA BARROS","c":1370,"n":1048,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2° SGT COSTA BARROS","c":1302,"n":1073,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"1º TEN ARAÚJO","c":1534,"n":916,"d":"2026-03-19","sit":"Atestado"},{"s":1,"militar":"1º TEN ARAÚJO","c":1663,"n":906,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1º TEN ARAÚJO","c":1521,"n":929,"d":"2026-05-29","sit":"Justificado"},{"s":3,"militar":"1º TEN ARAÚJO","c":1530,"n":926,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1º TEN ARAÚJO","c":1470,"n":945,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT ISAC TEIXEIRA","c":1598,"n":1016,"d":"2026-03-19","sit":"Atestado"},{"s":1,"militar":"3º SGT ISAC TEIXEIRA","c":1495,"n":1076,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ISAC TEIXEIRA","c":1475,"n":1070,"d":"2026-05-28","sit":"Férias"},{"s":3,"militar":"3º SGT ISAC TEIXEIRA","c":1580,"n":1127,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT ISAC TEIXEIRA","c":1491,"n":1095,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"2º SGT DENE","c":1709,"n":936,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2º SGT DENE","c":1702,"n":918,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2º SGT DENE","c":1675,"n":918,"d":"2026-05-30","sit":"Justificado"},{"s":3,"militar":"2º SGT DENE","c":1666,"n":931,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2º SGT DENE","c":1641,"n":926,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"CAP DANIEL","c":1385,"n":1136,"d":"2026-03-06","sit":"Realizado"},{"s":1,"militar":"CAP DANIEL","c":1533,"n":1166,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP DANIEL","c":1729,"n":1299,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP DANIEL","c":1461,"n":1120,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP DANIEL","c":1404,"n":1097,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT LISBOA SANTOS","c":1755,"n":1068,"d":"2026-03-11","sit":"Atestado"},{"s":1,"militar":"3º SGT LISBOA SANTOS","c":1654,"n":1037,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT LISBOA SANTOS","c":1711,"n":1071,"d":"2026-05-28","sit":"Atestado"},{"s":3,"militar":"3º SGT LISBOA SANTOS","c":1714,"n":990,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT LISBOA SANTOS","c":1680,"n":1010,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"ASP FELIPE SOUZA","c":1579,"n":1229,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"ASP FELIPE SOUZA","c":1599,"n":1203,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"ASP FELIPE SOUZA","c":1536,"n":1217,"d":"2026-05-09","sit":"Justificado"},{"s":3,"militar":"ASP FELIPE SOUZA","c":1689,"n":1212,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"ASP FELIPE SOUZA","c":1631,"n":1240,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"1° TEN PAULO JOSÉ","c":1708,"n":1194,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"1° TEN PAULO JOSÉ","c":1807,"n":1143,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1° TEN PAULO JOSÉ","c":2107,"n":1159,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"1° TEN PAULO JOSÉ","c":1773,"n":1149,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1° TEN PAULO JOSÉ","c":1840,"n":1153,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"CAP OLIVEIRA","c":1574,"n":1398,"d":"2026-03-11","sit":"Realizado"},{"s":1,"militar":"CAP OLIVEIRA","c":1790,"n":1340,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP OLIVEIRA","c":1651,"n":1354,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP OLIVEIRA","c":1707,"n":1322,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP OLIVEIRA","c":1699,"n":1381,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT ELIZIANE","c":1685,"n":1748,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT ELIZIANE","c":1670,"n":1782,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ELIZIANE","c":1527,"n":1824,"d":"","sit":"Justificado"},{"s":3,"militar":"3º SGT ELIZIANE","c":1505,"n":1664,"d":"2026-06-03","sit":"Realizado"},{"s":0,"militar":"3º SGT IGOR","c":2442,"n":1793,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT IGOR","c":2477,"n":1668,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT IGOR","c":2675,"n":1626,"d":"2026-06-03","sit":"Realizado"},{"s":3,"militar":"3º SGT IGOR","c":2354,"n":1746,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"2º SGT RIBEIRO","c":2257,"n":1054,"d":"2026-05-06","sit":"Realizado"},{"s":1,"militar":"2º SGT RIBEIRO","c":2099,"n":1073,"d":"","sit":"Justificado"},{"s":2,"militar":"2º SGT RIBEIRO","c":2058,"n":1068,"d":"2026-05-29","sit":"Justificado"},{"s":0,"militar":"3º SGT BELARMINO","c":1766,"n":2523,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT BELARMINO","c":1704,"n":2896,"d":"","sit":"Férias"},{"s":2,"militar":"3º SGT BELARMINO","c":1758,"n":2220,"d":"2026-06-03","sit":"Realizado"},{"s":0,"militar":"3º SGT ANDRADE SILVA","c":2004,"n":1316,"d":"2026-04-24","sit":"Férias"},{"s":1,"militar":"3º SGT ANDRADE SILVA","c":2060,"n":1468,"d":"2026-05-09","sit":"Realizado"},{"s":2,"militar":"3º SGT ANDRADE SILVA","c":1960,"n":1252,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"MAJ MARTINS","c":1430,"n":1253,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"MAJ MARTINS","c":1382,"n":1280,"d":"","sit":"Férias"},{"s":0,"militar":"3º SGT FERNANDO","c":1583,"n":1241,"d":"2026-04-04","sit":"Realizado"},{"s":1,"militar":"3º SGT FERNANDO","c":1663,"n":1295,"d":"","sit":"Justificado"}]};
+    const SEED_TAF = {"sessoes":[{"nome":"TAF 1","dataPrevista":"2026-03-05"},{"nome":"TAF 2","dataPrevista":"2026-04-08"},{"nome":"TAF 3","dataPrevista":"2026-05-06"},{"nome":"TAF 4","dataPrevista":"2026-06-03"},{"nome":"TAF 5","dataPrevista":"2026-07-01"},{"nome":"TAF 6","dataPrevista":"2026-08-05"}],"resultados":[{"s":0,"militar":"2° SGT COSTA BARROS","c":1378,"n":1162,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2° SGT COSTA BARROS","c":1349,"n":1050,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2° SGT COSTA BARROS","c":1341,"n":1043,"d":"","sit":"Férias"},{"s":3,"militar":"2° SGT COSTA BARROS","c":1370,"n":1048,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2° SGT COSTA BARROS","c":1302,"n":1073,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"2° SGT COSTA BARROS","c":1288,"n":1084,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"1º TEN ARAÚJO","c":1534,"n":916,"d":"","sit":"Atestado"},{"s":1,"militar":"1º TEN ARAÚJO","c":1663,"n":906,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1º TEN ARAÚJO","c":1521,"n":929,"d":"","sit":"Justificado"},{"s":3,"militar":"1º TEN ARAÚJO","c":1530,"n":926,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1º TEN ARAÚJO","c":1470,"n":945,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"1º TEN ARAÚJO","c":1428,"n":913,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT ISAC TEIXEIRA","c":1598,"n":1016,"d":"","sit":"Atestado"},{"s":1,"militar":"3º SGT ISAC TEIXEIRA","c":1495,"n":1076,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ISAC TEIXEIRA","c":1475,"n":1070,"d":"","sit":"Férias"},{"s":3,"militar":"3º SGT ISAC TEIXEIRA","c":1580,"n":1127,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT ISAC TEIXEIRA","c":1491,"n":1095,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"3º SGT ISAC TEIXEIRA","c":1581,"n":1082,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"2º SGT DENE","c":1709,"n":936,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2º SGT DENE","c":1702,"n":918,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2º SGT DENE","c":1675,"n":918,"d":"","sit":"Justificado"},{"s":3,"militar":"2º SGT DENE","c":1666,"n":931,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2º SGT DENE","c":1641,"n":926,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"2º SGT DENE","c":1711,"n":935,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"CAP DANIEL","c":1385,"n":1136,"d":"2026-03-06","sit":"Realizado"},{"s":1,"militar":"CAP DANIEL","c":1533,"n":1166,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP DANIEL","c":1729,"n":1299,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP DANIEL","c":1461,"n":1120,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP DANIEL","c":1404,"n":1097,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"CAP DANIEL","c":1417,"n":1085,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"ASP FELIPE SOUZA","c":1579,"n":1229,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"ASP FELIPE SOUZA","c":1599,"n":1203,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"ASP FELIPE SOUZA","c":1536,"n":1217,"d":"","sit":"Justificado"},{"s":3,"militar":"ASP FELIPE SOUZA","c":1689,"n":1212,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"ASP FELIPE SOUZA","c":1631,"n":1240,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"ASP FELIPE SOUZA","c":1472,"n":1334,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT LISBOA SANTOS","c":1755,"n":1068,"d":"","sit":"Atestado"},{"s":1,"militar":"3º SGT LISBOA SANTOS","c":1654,"n":1037,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT LISBOA SANTOS","c":1711,"n":1071,"d":"","sit":"Atestado"},{"s":3,"militar":"3º SGT LISBOA SANTOS","c":1714,"n":990,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT LISBOA SANTOS","c":1680,"n":1010,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"3º SGT LISBOA SANTOS","c":0,"n":0,"d":"","sit":"Férias"},{"s":0,"militar":"1° TEN PAULO JOSÉ","c":1708,"n":1194,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"1° TEN PAULO JOSÉ","c":1807,"n":1143,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1° TEN PAULO JOSÉ","c":2107,"n":1159,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"1° TEN PAULO JOSÉ","c":1773,"n":1149,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1° TEN PAULO JOSÉ","c":1840,"n":1153,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"1° TEN PAULO JOSÉ","c":0,"n":0,"d":"","sit":"BIOMA"},{"s":0,"militar":"CAP OLIVEIRA","c":1574,"n":1398,"d":"2026-03-11","sit":"Realizado"},{"s":1,"militar":"CAP OLIVEIRA","c":1790,"n":1340,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP OLIVEIRA","c":1651,"n":1354,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP OLIVEIRA","c":1707,"n":1322,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP OLIVEIRA","c":1699,"n":1381,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT ELIZIANE","c":1685,"n":1748,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT ELIZIANE","c":1670,"n":1782,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ELIZIANE","c":1527,"n":1824,"d":"","sit":"Justificado"},{"s":3,"militar":"3º SGT ELIZIANE","c":1505,"n":1664,"d":"2026-06-03","sit":"Realizado"},{"s":5,"militar":"3º SGT ELIZIANE","c":0,"n":0,"d":"","sit":"Justificado"},{"s":0,"militar":"3º SGT FERNANDO","c":1583,"n":1241,"d":"2026-04-04","sit":"Realizado"},{"s":1,"militar":"3º SGT FERNANDO","c":1663,"n":1295,"d":"","sit":"Justificado"},{"s":2,"militar":"3º SGT FERNANDO","c":1480,"n":1279,"d":"2026-08-05","sit":"Realizado"},{"s":3,"militar":"3º SGT FERNANDO","c":1471,"n":1248,"d":"2026-08-06","sit":"Realizado"},{"s":0,"militar":"2º SGT RIBEIRO","c":2257,"n":1054,"d":"2026-05-06","sit":"Realizado"},{"s":1,"militar":"2º SGT RIBEIRO","c":2099,"n":1073,"d":"","sit":"Justificado"},{"s":2,"militar":"2º SGT RIBEIRO","c":2058,"n":1068,"d":"","sit":"Justificado"},{"s":3,"militar":"2º SGT RIBEIRO","c":2207,"n":1141,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT IGOR","c":2442,"n":1793,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT IGOR","c":2477,"n":1668,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT IGOR","c":2675,"n":1626,"d":"2026-06-03","sit":"Realizado"},{"s":3,"militar":"3º SGT IGOR","c":2354,"n":1746,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"3º SGT IGOR","c":0,"n":0,"d":"","sit":"FORÇA"},{"s":0,"militar":"3º SGT ANDRADE SILVA","c":2004,"n":1316,"d":"","sit":"Férias"},{"s":1,"militar":"3º SGT ANDRADE SILVA","c":2060,"n":1468,"d":"2026-05-09","sit":"Realizado"},{"s":2,"militar":"3º SGT ANDRADE SILVA","c":1960,"n":1252,"d":"2026-07-01","sit":"Realizado"},{"s":3,"militar":"3º SGT ANDRADE SILVA","c":1970,"n":1185,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"MAJ MARTINS","c":1430,"n":1253,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"MAJ MARTINS","c":1382,"n":1280,"d":"","sit":"Férias"},{"s":2,"militar":"MAJ MARTINS","c":1408,"n":1358,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT BELARMINO","c":1766,"n":2523,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT BELARMINO","c":1704,"n":2896,"d":"","sit":"Férias"},{"s":2,"militar":"3º SGT BELARMINO","c":1758,"n":2220,"d":"2026-06-03","sit":"Realizado"}]};
 
     async function importarPlanilha(){
-      if (!confirm('Importar os TAF 1 a 5 de 2026 com os tempos da planilha?\n\nAs 5 sessões serão criadas (ou atualizadas) e os resultados preenchidos.')) return;
+      if (!confirm('Importar os TAF 1 a 6 de 2026 com os tempos da planilha?\n\nAs 5 sessões serão criadas (ou atualizadas) e os resultados preenchidos.')) return;
       const idPorIx = {}, novas = [];
       SEED_TAF.sessoes.forEach((s,i)=>{
         let ex = sessoes.find(x=>x.ano===2026 && x.nome===s.nome);
@@ -767,9 +776,13 @@
           <td><input class="tempo" id="c_${ix}" placeholder="mm:ss" value="${r.corridaSeg?fmtTempo(r.corridaSeg):''}"/></td>
           <td><input class="tempo" id="n_${ix}" placeholder="mm:ss" value="${r.natacaoSeg?fmtTempo(r.natacaoSeg):''}"/></td>
           <td><input type="date" id="d_${ix}" value="${r.dataRealizada||''}"/></td>
-          <td><select id="s_${ix}">${SITUACOES.map(o=>`<option${o===sit?' selected':''}>${o}</option>`).join('')}</select></td>
+          <td><input id="s_${ix}" list="sitPresets" value="${(sit||'Realizado').replace(/"/g,'&quot;')}" placeholder="Realizado" style="min-width:120px"/></td>
         </tr>`;
       }).join('');
+      // sugestões de situação: presets + rótulos já usados (missões etc.)
+      const usados = [...new Set(resultados.map(r=>r.situacao).filter(x=>x&&x!=='Realizado'))];
+      const opts = [...new Set([...SITUACOES, ...usados])];
+      document.getElementById('sitPresets').innerHTML = opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}"></option>`).join('');
       BBM.openModal('modalResultados');
     }
     async function salvarResultados(){
@@ -783,11 +796,11 @@
         const cTxt = document.getElementById('c_'+ix).value.trim();
         const nTxt = document.getElementById('n_'+ix).value.trim();
         const data = document.getElementById('d_'+ix).value;
-        const sit = document.getElementById('s_'+ix).value;
+        const sit = (document.getElementById('s_'+ix).value || '').trim() || 'Realizado';
         const cSeg = parseTempo(cTxt), nSeg = parseTempo(nTxt);
         if (cTxt && cSeg===null) erroTempo = true;
         if (nTxt && nSeg===null) erroTempo = true;
-        const temAlgo = cSeg || nSeg || data || JUSTIFICADAS.has(sit);
+        const temAlgo = cSeg || nSeg || data || ehJust(sit);
         if (temAlgo){
           novos.push({ id:BBM.generateId(), sessaoId:sessaoAtual.id, militar:nome,
             corridaSeg:cSeg||0, natacaoSeg:nSeg||0, dataRealizada:data||'', situacao:sit });
@@ -811,7 +824,7 @@
           const soma = ps.pc+ps.pn;
           const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
           if (temTempo) return `<td>${soma.toFixed(2).replace('.',',')}</td>`;
-          if (ps.r && JUSTIFICADAS.has(ps.r.situacao)) return `<td>${ps.r.situacao.slice(0,3)}.</td>`;
+          if (ps.r && ehJust(ps.r.situacao)) return `<td>${ps.r.situacao.slice(0,3)}.</td>`;
           return '<td>—</td>';
         }).join('');
         return `<tr><td>${l.pos}º</td><td class="nome">${l.nome}</td>${cels}<td>${l.total.toFixed(2).replace('.',',')}</td><td>${l.desc?'−'+l.desc:'0'}</td><td><strong>${l.final.toFixed(2).replace('.',',')}</strong></td></tr>`;
