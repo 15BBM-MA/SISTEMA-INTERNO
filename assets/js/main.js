@@ -193,6 +193,7 @@ window.BBM = {
     if (key && key.indexOf('almoxarifado_') === 0) return { modulo: 'almoxarifado', colecao: key.slice(13) };
     if (key && key.indexOf('permutas_') === 0) return { modulo: 'permutas', colecao: key.slice(9) };
     if (key && key.indexOf('operacional_') === 0) return { modulo: 'operacional', colecao: key.slice(12) };
+    if (key && key.indexOf('taf_') === 0) return { modulo: 'taf', colecao: key.slice(4) };
     return null;
   },
 
@@ -317,6 +318,7 @@ window.BBM = {
     { key:'escala',         label:'Escala de Serviço' },
     { key:'operacional',    label:'Livro de Serviço Operacional' },
     { key:'permutas',       label:'Permutas de Serviço' },
+    { key:'taf',            label:'TAF — Aptidão Física' },
     { key:'bombeiro-mirim', label:'Bombeiro Mirim' },
     { key:'estrutura',      label:'Estrutura Interna' },
     { key:'manutencao',     label:'Manutenção' },
@@ -486,6 +488,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     a.className = 'nav-item';
     a.href = ROOT + 'modulos/operacional/index.html';
     a.innerHTML = '<span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="nav-text">Livro Operacional</span><span class="nav-arrow">›</span>';
+    navEl.appendChild(a);
+  }
+
+  // ---- Injeta o item TAF (Aptidão Física) no menu lateral ----
+  if (navEl && BBM.moduloAtual() !== 'taf' && BBM.nivel('taf') !== 'nenhum') {
+    const a = document.createElement('a');
+    a.className = 'nav-item';
+    a.href = ROOT + 'modulos/taf/index.html';
+    a.innerHTML = '<span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 6.5h11M6.5 17.5h11M4 6.5v11M20 6.5v11M2 9v6M22 9v6"/></svg></span><span class="nav-text">TAF</span><span class="nav-arrow">›</span>';
     navEl.appendChild(a);
   }
 
