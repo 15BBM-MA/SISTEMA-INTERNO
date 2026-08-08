@@ -54,6 +54,9 @@
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <select class="form-control" id="filtroAno" style="width:auto" onchange="render()"></select>
+          <button class="btn btn-ghost" onclick="importarPlanilha()" title="Preenche os TAF 1 a 5 de 2026 com os dados da planilha">
+            ⬇ Importar planilha 2026
+          </button>
           <button class="btn btn-ghost" onclick="atualizar()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             Atualizar
@@ -64,6 +67,9 @@
           </button>
         </div>
       </div>
+
+      <!-- Pódio gamificado -->
+      <div id="podium"></div>
 
       <!-- Resumo -->
       <div class="taf-cards" id="tafCards"></div>
@@ -165,6 +171,10 @@
     .taf-pos.p1 { color:#b8860b; } .taf-pos.p2 { color:#6b7280; } .taf-pos.p3 { color:#a0522d; }
     .taf-final { font-weight:800; color:#16a34a; }
     .taf-desc { color:#dc2626; }
+    .taf-table tr.lb1 td { background:linear-gradient(90deg, rgba(245,158,11,.16), transparent 60%) !important; }
+    .taf-table tr.lb2 td { background:linear-gradient(90deg, rgba(148,163,184,.18), transparent 60%) !important; }
+    .taf-table tr.lb3 td { background:linear-gradient(90deg, rgba(217,119,6,.15), transparent 60%) !important; }
+    .taf-table tr.lb1 td:first-child, .taf-table tr.lb2 td:first-child, .taf-table tr.lb3 td:first-child { font-size:1.1rem; }
 
     .ses-card { border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:12px; background:var(--surface); display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
     .ses-nome { font-size:.98rem; font-weight:700; color:var(--text); }
@@ -179,6 +189,52 @@
     .taf-entry td.nome { text-align:left; font-weight:600; }
     .taf-entry input, .taf-entry select { width:100%; padding:5px 7px; border:1px solid var(--border); border-radius:7px; font-size:.82rem; background:var(--surface); color:var(--text); }
     .taf-entry input.tempo { width:88px; text-align:center; }
+
+    /* ===== Pódio gamificado ===== */
+    .pod-arena {
+      position:relative; overflow:hidden; border-radius:18px; margin-bottom:20px;
+      padding:22px 18px 26px;
+      background:
+        radial-gradient(120% 90% at 50% -10%, rgba(56,189,248,.28), transparent 60%),
+        radial-gradient(80% 80% at 15% 120%, rgba(168,85,247,.28), transparent 60%),
+        linear-gradient(160deg, #0b1220 0%, #111a2e 45%, #0d1526 100%);
+      border:1px solid rgba(148,163,184,.22);
+      box-shadow:0 18px 40px -18px rgba(30,58,138,.7), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .pod-shine { position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(115deg, transparent 40%, rgba(255,255,255,.08) 48%, transparent 56%);
+      background-size:250% 250%; animation:podShine 6s linear infinite; }
+    @keyframes podShine { 0%{background-position:120% 0} 100%{background-position:-40% 0} }
+    .pod-title { position:relative; text-align:center; font-family:'Rajdhani',sans-serif; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; color:#e2e8f0; font-size:1.05rem; margin-bottom:16px; }
+    .pod-title span { filter:drop-shadow(0 0 6px rgba(250,204,21,.8)); }
+    .pod-row { position:relative; display:flex; justify-content:center; align-items:flex-end; gap:14px; flex-wrap:nowrap; }
+    .pod-col { flex:1 1 0; max-width:210px; display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0; }
+    .pod-crown { font-size:1.7rem; line-height:1; margin-bottom:2px; filter:drop-shadow(0 0 10px rgba(250,204,21,.9)); animation:podFloat 2.6s ease-in-out infinite; }
+    @keyframes podFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    .pod-av { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.12rem; color:#0b1220;
+      background:linear-gradient(145deg,#e2e8f0,#94a3b8); border:2px solid rgba(255,255,255,.5);
+      box-shadow:0 6px 16px -6px rgba(0,0,0,.6); margin-bottom:8px; }
+    .pod1 .pod-av { background:linear-gradient(145deg,#fde68a,#f59e0b); box-shadow:0 0 22px -2px rgba(245,158,11,.75); }
+    .pod2 .pod-av { background:linear-gradient(145deg,#f1f5f9,#cbd5e1); }
+    .pod3 .pod-av { background:linear-gradient(145deg,#fbbf77,#d97706); }
+    .pod-name { color:#f8fafc; font-weight:700; font-size:.86rem; line-height:1.2; margin-bottom:4px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+    .pod-medal { font-size:1.5rem; line-height:1; margin-bottom:10px; filter:drop-shadow(0 3px 5px rgba(0,0,0,.5)); }
+    .pod-base { width:100%; border-radius:12px 12px 8px 8px; color:#0b1220;
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:2px;
+      border:1px solid rgba(255,255,255,.35); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 12px 24px -12px rgba(0,0,0,.7); }
+    .pod-rank { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.4rem; margin-top:8px; }
+    .pod-score { font-weight:800; font-size:.98rem; padding-bottom:10px; }
+    .pod-score span { font-size:.66rem; font-weight:600; opacity:.7; margin-left:3px; }
+    .pod1 .pod-base { height:132px; background:linear-gradient(180deg,#fde68a,#f59e0b); }
+    .pod2 .pod-base { height:104px; background:linear-gradient(180deg,#f1f5f9,#cbd5e1); }
+    .pod3 .pod-base { height:82px;  background:linear-gradient(180deg,#fbbf77,#d97706); }
+    @media (max-width:560px){
+      .pod-av{width:42px;height:42px;font-size:.95rem} .pod-name{font-size:.72rem} .pod-medal{font-size:1.2rem}
+      .pod-rank{font-size:1.1rem} .pod-score{font-size:.82rem} .pod-row{gap:8px}
+    }
 
     #docTaf { display:none; }
     @media print {
@@ -245,60 +301,69 @@
     }
 
     function nomeMilitar(m){ return (m.posto?m.posto+' ':'') + m.nome; }
-    function resultadoDe(sessaoId, militar){ return resultados.find(r=>r.sessaoId===sessaoId && r.militar===militar); }
+    // normaliza nome p/ casar grafias (acentos, º/°, "BM", pontuação)
+    function _norm(s){
+      return (s||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+        .replace(/\bbm\b/g,' ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+    }
+    function resultadoDe(sessaoId, chave){ return resultados.find(r=>r.sessaoId===sessaoId && _norm(r.militar)===chave); }
 
     // ── Cálculo de pontos (ranking relativo, fiel à planilha) ────
-    // pontos = 10 − (colocação_no_tempo − 1) × 0,25 ; menor tempo = melhor
+    // pontos = 10 − (colocação_no_tempo − 1) × 0,25 ; menor tempo = melhor.
+    // Qualquer tempo lançado entra no ranking (mesmo em sessão justificada);
+    // a justificativa só isenta o desconto por atraso.
     function pontosEvento(sessaoId, campo){
-      const rs = resultados.filter(r=>r.sessaoId===sessaoId && !JUSTIFICADAS.has(r.situacao) && r[campo]>0);
+      const rs = resultados.filter(r=>r.sessaoId===sessaoId && r[campo]>0);
       const ord = [...rs].sort((a,b)=>a[campo]-b[campo]);
-      const rank = {};
-      ord.forEach((r,i)=>{
-        rank[r.militar] = (i>0 && r[campo]===ord[i-1][campo]) ? rank[ord[i-1].militar] : i+1;
-      });
       const pts = {};
-      rs.forEach(r=>{ pts[r.militar] = Math.max(0, 10 - (rank[r.militar]-1)*0.25); });
+      ord.forEach((r,i)=>{
+        const rank = (i>0 && r[campo]===ord[i-1][campo]) ? ord[i-1]._rk : i+1;
+        r._rk = rank;
+        pts[_norm(r.militar)] = Math.max(0, 10 - (rank-1)*0.25);
+      });
       return pts;
     }
 
-    // desconto por atraso de uma sessão para um militar
+    // desconto por atraso de uma sessão para um militar (fiel à fórmula da planilha)
     function atrasoDe(sessao, r){
       const prev = diasDe(sessao.dataPrevista);
       if (prev==null) return 0;
-      if (r && JUSTIFICADAS.has(r.situacao)) return 0;
+      if (r && JUSTIFICADAS.has(r.situacao)) return 0;         // ausência justificada não penaliza
       const real = r ? diasDe(r.dataRealizada) : null;
-      if (real!=null){
-        const d = real - prev;
-        return d>0 ? Math.floor(d/31)+1 : 0;
+      let a = 0;
+      if (real!=null && real>prev) a += Math.floor((real-prev)/31)+1;   // realizou atrasado
+      if (real==null){                                                   // não realizou → acumula com o tempo
+        const hoje = Math.floor(Date.now()/86400000);
+        if (hoje>prev) a += Math.floor((hoje-prev)/31)+1;
       }
-      // não realizou
-      const realizou = r && (r.corridaSeg>0 || r.natacaoSeg>0);
-      if (realizou) return 0; // realizou mas sem data informada → não penaliza
-      const hoje = Math.floor(Date.now()/86400000);
-      return hoje>prev ? Math.floor((hoje-prev)/31)+1 : 0;
+      return a;
     }
 
     // agrega a classificação do ano
     function calcularClassificacao(){
       const doAno = sessoes.filter(s=>s.ano===anoAtivo);
-      // pré-calcula pontos por sessão
+      // pré-calcula pontos por sessão (chaveados por nome normalizado)
       const ptsPorSessao = {};
       doAno.forEach(s=>{ ptsPorSessao[s.id] = { corrida:pontosEvento(s.id,'corridaSeg'), natacao:pontosEvento(s.id,'natacaoSeg') }; });
-      // militares que aparecem: todo o efetivo
-      const linhas = efetivo.map(m=>{
-        const nome = nomeMilitar(m);
+      // roster = efetivo do cadastro ∪ nomes presentes nos resultados do ano
+      const roster = new Map();
+      efetivo.forEach(m=>{ roster.set(_norm(nomeMilitar(m)), nomeMilitar(m)); });
+      doAno.forEach(s=> resultados.filter(r=>r.sessaoId===s.id).forEach(r=>{
+        const k=_norm(r.militar); if(!roster.has(k)) roster.set(k, r.militar);
+      }));
+      const linhas = [...roster.entries()].map(([chave, nome])=>{
         let total=0, desc=0;
         const porSessao = doAno.map(s=>{
-          const r = resultadoDe(s.id, nome);
-          const pc = ptsPorSessao[s.id].corrida[nome] || 0;
-          const pn = ptsPorSessao[s.id].natacao[nome] || 0;
+          const r = resultadoDe(s.id, chave);
+          const pc = ptsPorSessao[s.id].corrida[chave] || 0;
+          const pn = ptsPorSessao[s.id].natacao[chave] || 0;
           const a = atrasoDe(s, r);
           total += pc + pn; desc += a;
           return { sessaoId:s.id, pc, pn, atraso:a, r };
         });
-        return { nome, militar:m, total, desc, final: total - desc, porSessao };
+        return { chave, nome, total, desc, final: total - desc, porSessao };
       });
-      // ordena por final desc; coloca quem tem total 0 e sem participação ao fim
+      // ordena por final desc; empate → nome
       linhas.sort((a,b)=> b.final - a.final || a.nome.localeCompare(b.nome,'pt'));
       // colocação com empates
       let pos=0, prev=null;
@@ -323,6 +388,9 @@
       document.getElementById('tafCards').innerHTML = cards.map(c=>
         `<div class="taf-card"><div class="v">${c.v}</div><div class="l">${c.l}</div></div>`).join('');
 
+      // pódio gamificado (campeões do momento)
+      renderPodium(linhas);
+
       // classificação
       const el = document.getElementById('classificacao');
       if (!doAno.length){
@@ -332,14 +400,16 @@
         const rows = linhas.map(l=>{
           const cels = l.porSessao.map(ps=>{
             const soma = ps.pc + ps.pn;
+            const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
             const just = ps.r && JUSTIFICADAS.has(ps.r.situacao);
+            if (temTempo) return `<td${just?` title="${ps.r.situacao} — pontuou normalmente"`:''}>${soma.toFixed(2).replace('.',',')}${just?' <span style="color:#f59e0b">•</span>':''}</td>`;
             if (just) return `<td title="${ps.r.situacao}"><span style="color:#6b7280;font-size:.8rem">${ps.r.situacao.slice(0,3)}.</span></td>`;
-            if (soma===0 && !(ps.r && (ps.r.corridaSeg||ps.r.natacaoSeg))) return `<td style="color:#d1d5db">—</td>`;
-            return `<td>${soma.toFixed(2).replace('.',',')}</td>`;
+            return `<td style="color:#d1d5db">—</td>`;
           }).join('');
           const pcls = l.pos<=3 ? ' p'+l.pos : '';
-          return `<tr>
-            <td class="taf-pos${pcls}">${l.pos}º</td>
+          const medalha = l.pos===1?'🥇':l.pos===2?'🥈':l.pos===3?'🥉':'';
+          return `<tr class="${l.pos<=3?'lb'+l.pos:''}">
+            <td class="taf-pos${pcls}">${medalha||l.pos+'º'}</td>
             <td class="nome">${l.nome}</td>
             ${cels}
             <td>${l.total.toFixed(2).replace('.',',')}</td>
@@ -369,6 +439,63 @@
           </div>
         </div>`;
       }).join('') : '';
+    }
+
+    // ── Pódio gamificado ─────────────────────────────────────────
+    function iniciais(nome){
+      const stop = new Set(['sgt','ten','cap','maj','asp','cb','sd','bc','1º','2º','3º','1°','2°','3°','bm','p','do','da','de']);
+      const ws = nome.split(/\s+/).filter(w=>!stop.has(w.toLowerCase().replace(/[^\wº°]/g,'')));
+      const base = ws.length?ws:nome.split(/\s+/);
+      return (base.slice(0,2).map(w=>w[0]).join('')||'?').toUpperCase();
+    }
+    function renderPodium(linhas){
+      const podium = document.getElementById('podium');
+      const top = linhas.filter(l=>l.total>0).slice(0,3);
+      if (!top.length){ podium.innerHTML=''; return; }
+      const medal = ['🥇','🥈','🥉'];
+      const ordemVisual = [1,0,2].filter(i=>top[i]); // 2º, 1º, 3º
+      const cols = ordemVisual.map(i=>{
+        const l = top[i];
+        return `<div class="pod-col pod${i+1}">
+          ${i===0?'<div class="pod-crown">👑</div>':''}
+          <div class="pod-av">${iniciais(l.nome)}</div>
+          <div class="pod-name">${l.nome}</div>
+          <div class="pod-medal">${medal[i]}</div>
+          <div class="pod-base">
+            <div class="pod-rank">${i+1}º</div>
+            <div class="pod-score">${l.final.toFixed(2).replace('.',',')}<span>pts</span></div>
+          </div>
+        </div>`;
+      }).join('');
+      podium.innerHTML = `<div class="pod-arena">
+        <div class="pod-shine"></div>
+        <div class="pod-title"><span>🏆</span> Campeões do momento — ${anoAtivo}</div>
+        <div class="pod-row">${cols}</div>
+      </div>`;
+    }
+
+    // ── Importar dados da planilha (TAF 1–5 / 2026) ──────────────
+    const SEED_TAF = {"sessoes":[{"nome":"TAF 1","dataPrevista":"2026-03-05"},{"nome":"TAF 2","dataPrevista":"2026-04-08"},{"nome":"TAF 3","dataPrevista":"2026-05-06"},{"nome":"TAF 4","dataPrevista":"2026-06-03"},{"nome":"TAF 5","dataPrevista":"2026-07-01"}],"resultados":[{"s":0,"militar":"2° SGT COSTA BARROS","c":1378,"n":1162,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2° SGT COSTA BARROS","c":1349,"n":1050,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2° SGT COSTA BARROS","c":1341,"n":1043,"d":"2026-05-28","sit":"Férias"},{"s":3,"militar":"2° SGT COSTA BARROS","c":1370,"n":1048,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2° SGT COSTA BARROS","c":1302,"n":1073,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"1º TEN ARAÚJO","c":1534,"n":916,"d":"2026-03-19","sit":"Atestado"},{"s":1,"militar":"1º TEN ARAÚJO","c":1663,"n":906,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1º TEN ARAÚJO","c":1521,"n":929,"d":"2026-05-29","sit":"Justificado"},{"s":3,"militar":"1º TEN ARAÚJO","c":1530,"n":926,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1º TEN ARAÚJO","c":1470,"n":945,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT ISAC TEIXEIRA","c":1598,"n":1016,"d":"2026-03-19","sit":"Atestado"},{"s":1,"militar":"3º SGT ISAC TEIXEIRA","c":1495,"n":1076,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ISAC TEIXEIRA","c":1475,"n":1070,"d":"2026-05-28","sit":"Férias"},{"s":3,"militar":"3º SGT ISAC TEIXEIRA","c":1580,"n":1127,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT ISAC TEIXEIRA","c":1491,"n":1095,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"2º SGT DENE","c":1709,"n":936,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2º SGT DENE","c":1702,"n":918,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2º SGT DENE","c":1675,"n":918,"d":"2026-05-30","sit":"Justificado"},{"s":3,"militar":"2º SGT DENE","c":1666,"n":931,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2º SGT DENE","c":1641,"n":926,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"CAP DANIEL","c":1385,"n":1136,"d":"2026-03-06","sit":"Realizado"},{"s":1,"militar":"CAP DANIEL","c":1533,"n":1166,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP DANIEL","c":1729,"n":1299,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP DANIEL","c":1461,"n":1120,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP DANIEL","c":1404,"n":1097,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT LISBOA SANTOS","c":1755,"n":1068,"d":"2026-03-11","sit":"Atestado"},{"s":1,"militar":"3º SGT LISBOA SANTOS","c":1654,"n":1037,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT LISBOA SANTOS","c":1711,"n":1071,"d":"2026-05-28","sit":"Atestado"},{"s":3,"militar":"3º SGT LISBOA SANTOS","c":1714,"n":990,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT LISBOA SANTOS","c":1680,"n":1010,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"ASP FELIPE SOUZA","c":1579,"n":1229,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"ASP FELIPE SOUZA","c":1599,"n":1203,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"ASP FELIPE SOUZA","c":1536,"n":1217,"d":"2026-05-09","sit":"Justificado"},{"s":3,"militar":"ASP FELIPE SOUZA","c":1689,"n":1212,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"ASP FELIPE SOUZA","c":1631,"n":1240,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"1° TEN PAULO JOSÉ","c":1708,"n":1194,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"1° TEN PAULO JOSÉ","c":1807,"n":1143,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1° TEN PAULO JOSÉ","c":2107,"n":1159,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"1° TEN PAULO JOSÉ","c":1773,"n":1149,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1° TEN PAULO JOSÉ","c":1840,"n":1153,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"CAP OLIVEIRA","c":1574,"n":1398,"d":"2026-03-11","sit":"Realizado"},{"s":1,"militar":"CAP OLIVEIRA","c":1790,"n":1340,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP OLIVEIRA","c":1651,"n":1354,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP OLIVEIRA","c":1707,"n":1322,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP OLIVEIRA","c":1699,"n":1381,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT ELIZIANE","c":1685,"n":1748,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT ELIZIANE","c":1670,"n":1782,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ELIZIANE","c":1527,"n":1824,"d":"","sit":"Justificado"},{"s":3,"militar":"3º SGT ELIZIANE","c":1505,"n":1664,"d":"2026-06-03","sit":"Realizado"},{"s":0,"militar":"3º SGT IGOR","c":2442,"n":1793,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT IGOR","c":2477,"n":1668,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT IGOR","c":2675,"n":1626,"d":"2026-06-03","sit":"Realizado"},{"s":3,"militar":"3º SGT IGOR","c":2354,"n":1746,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"2º SGT RIBEIRO","c":2257,"n":1054,"d":"2026-05-06","sit":"Realizado"},{"s":1,"militar":"2º SGT RIBEIRO","c":2099,"n":1073,"d":"","sit":"Justificado"},{"s":2,"militar":"2º SGT RIBEIRO","c":2058,"n":1068,"d":"2026-05-29","sit":"Justificado"},{"s":0,"militar":"3º SGT BELARMINO","c":1766,"n":2523,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT BELARMINO","c":1704,"n":2896,"d":"","sit":"Férias"},{"s":2,"militar":"3º SGT BELARMINO","c":1758,"n":2220,"d":"2026-06-03","sit":"Realizado"},{"s":0,"militar":"3º SGT ANDRADE SILVA","c":2004,"n":1316,"d":"2026-04-24","sit":"Férias"},{"s":1,"militar":"3º SGT ANDRADE SILVA","c":2060,"n":1468,"d":"2026-05-09","sit":"Realizado"},{"s":2,"militar":"3º SGT ANDRADE SILVA","c":1960,"n":1252,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"MAJ MARTINS","c":1430,"n":1253,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"MAJ MARTINS","c":1382,"n":1280,"d":"","sit":"Férias"},{"s":0,"militar":"3º SGT FERNANDO","c":1583,"n":1241,"d":"2026-04-04","sit":"Realizado"},{"s":1,"militar":"3º SGT FERNANDO","c":1663,"n":1295,"d":"","sit":"Justificado"}]};
+
+    async function importarPlanilha(){
+      if (!confirm('Importar os TAF 1 a 5 de 2026 com os tempos da planilha?\n\nAs 5 sessões serão criadas (ou atualizadas) e os resultados preenchidos.')) return;
+      const idPorIx = {}, novas = [];
+      SEED_TAF.sessoes.forEach((s,i)=>{
+        let ex = sessoes.find(x=>x.ano===2026 && x.nome===s.nome);
+        if (!ex){ ex = { id:BBM.generateId(), nome:s.nome, ano:2026, dataPrevista:s.dataPrevista, criadoEm:new Date().toISOString(), criadoPor:'Importação da planilha' }; novas.push(ex); }
+        else ex.dataPrevista = s.dataPrevista;
+        idPorIx[i] = ex.id;
+      });
+      sessoes = [...sessoes, ...novas];
+      const ids = Object.values(idPorIx);
+      resultados = resultados.filter(r=>!ids.includes(r.sessaoId));
+      SEED_TAF.resultados.forEach(r=>{
+        resultados.push({ id:BBM.generateId(), sessaoId:idPorIx[r.s], militar:r.militar, corridaSeg:r.c, natacaoSeg:r.n, dataRealizada:r.d, situacao:r.sit });
+      });
+      anoAtivo = 2026; carregarFiltroAno();
+      render();
+      await salvar(KEY_S, sessoes, null);
+      await salvar(KEY_R, resultados, 'Planilha importada! Confira a classificação.');
     }
 
     // ── Sessão: criar/editar ─────────────────────────────────────
