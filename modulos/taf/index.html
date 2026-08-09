@@ -395,21 +395,28 @@
 
     #docTaf { display:none; }
     @media print {
-      body * { visibility:hidden; }
-      #docTaf, #docTaf * { visibility:visible; }
-      #docTaf { display:block; position:absolute; left:0; top:0; width:100%; color:#000; font-family:Arial,Helvetica,sans-serif; }
-      #docTaf .doc-head { text-align:center; font-size:9pt; line-height:1.35; margin-bottom:6px; letter-spacing:.02em; }
-      #docTaf h2 { text-align:center; font-size:14pt; margin:8px 0 2px; letter-spacing:.03em; }
-      #docTaf .doc-sub { text-align:center; font-size:8.5pt; color:#333; margin-bottom:14px; }
-      #docTaf table.print-rk { width:100%; border-collapse:collapse; font-size:8.5pt; }
-      #docTaf .print-rk th, #docTaf .print-rk td { border:1px solid #b9b9b9; padding:4px 5px; text-align:center; }
-      #docTaf .print-rk thead th { background:#1f2937 !important; color:#fff !important; text-transform:uppercase; font-size:7.5pt; letter-spacing:.03em; }
+      /* esconde TODO o app (display:none não deixa espaço → sem páginas em branco) */
+      body > *:not(#docTaf) { display:none !important; }
+      html, body { margin:0 !important; padding:0 !important; background:#fff !important; height:auto !important; }
+      #docTaf { display:block; position:static; width:100%; color:#000; font-family:Arial,Helvetica,sans-serif; }
+      #docTaf .doc-head { text-align:center; font-size:9pt; line-height:1.3; margin-bottom:5px; letter-spacing:.02em; }
+      #docTaf h2 { text-align:center; font-size:13pt; margin:6px 0 2px; letter-spacing:.03em; }
+      #docTaf .doc-sub { text-align:center; font-size:8pt; color:#333; margin-bottom:10px; }
+      /* table-layout fixed + width 100% → cabe sempre na LARGURA da página */
+      #docTaf table.print-rk { width:100%; border-collapse:collapse; font-size:8pt; table-layout:fixed; }
+      #docTaf .print-rk th, #docTaf .print-rk td { border:1px solid #b9b9b9; padding:3px 4px; text-align:center;
+        overflow:hidden; text-overflow:ellipsis; word-break:break-word; }
+      #docTaf .print-rk thead { display:table-header-group; }   /* repete títulos a cada página */
+      #docTaf .print-rk tr { break-inside:avoid; page-break-inside:avoid; }
+      #docTaf .print-rk thead th { background:#1f2937 !important; color:#fff !important; text-transform:uppercase; font-size:7pt; letter-spacing:.02em; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
       #docTaf .print-rk th.grp { background:#374151 !important; border-bottom:2px solid #111 !important; }
-      #docTaf .print-rk th.grp .grp-d { font-weight:400; font-size:6.5pt; opacity:.85; }
+      #docTaf .print-rk th.grp .grp-d { font-weight:400; font-size:6pt; opacity:.85; }
       #docTaf .print-rk th.sub-pt, #docTaf .print-rk td.sub-pt { background:#eef2f7 !important; }
+      #docTaf .print-rk col.c-col { width:22px; } #docTaf .print-rk col.c-nome { width:15%; }
+      #docTaf .print-rk col.c-tot, #docTaf .print-rk col.c-desc, #docTaf .print-rk col.c-fin { width:34px; }
       #docTaf .print-rk td.nome, #docTaf .print-rk th.nome { text-align:left; font-weight:600; white-space:nowrap; }
       #docTaf .print-rk td.col { font-weight:700; }
-      #docTaf .print-rk td small { color:#555; font-size:7pt; }
+      #docTaf .print-rk td small { color:#555; font-size:6.5pt; }
       #docTaf .print-rk td.vazio { color:#999; font-style:italic; }
       #docTaf .print-rk td.tot { font-weight:700; }
       #docTaf .print-rk td.fin { font-weight:800; background:#eafaf0 !important; }
@@ -419,9 +426,13 @@
       #docTaf .print-rk tr.top2 td { background:#eef1f5 !important; }
       #docTaf .print-rk tr.top3 td { background:#fbeede !important; }
       #docTaf .print-rk tr.top1 td.col { color:#b8860b; }
-      #docTaf .doc-calc { font-size:7.5pt; color:#333; margin-top:10px; line-height:1.5; border-top:1px solid #ccc; padding-top:6px; }
-      #docTaf .doc-ass { display:flex; justify-content:space-around; gap:30px; margin-top:34px; text-align:center; font-size:8pt; }
-      @page { size:A4 landscape; margin:12mm; }
+      /* modo denso p/ muitos TAF (ex.: "todos") */
+      #docTaf .print-rk.dense { font-size:6.8pt; }
+      #docTaf .print-rk.dense th, #docTaf .print-rk.dense td { padding:2px 2px; }
+      #docTaf .print-rk.dense thead th { font-size:6pt; }
+      #docTaf .doc-calc { font-size:7pt; color:#333; margin-top:9px; line-height:1.45; border-top:1px solid #ccc; padding-top:5px; break-inside:avoid; }
+      #docTaf .doc-ass { display:flex; justify-content:space-around; gap:30px; margin-top:26px; text-align:center; font-size:8pt; break-inside:avoid; }
+      @page { size:A4 landscape; margin:10mm; }
     }
   </style>
 
@@ -1071,12 +1082,17 @@
         </tr>`;
       }).join('');
 
-      const nCols = 3 + sel.length*(mostrarTempos?3:2) + 3;
+      // colgroup: fixa larguras de Col./Nome/Total/Desc/Final; colunas de TAF dividem o resto
+      const perTaf = mostrarTempos ? 3 : 2;
+      const colsMeio = sel.map(()=> '<col>'.repeat(perTaf)).join('');
+      const colgroup = `<colgroup><col class="c-col"><col class="c-nome">${colsMeio}<col class="c-tot"><col class="c-desc"><col class="c-fin"></colgroup>`;
+      const denso = sel.length > 3 ? ' dense' : '';
       document.getElementById('docTaf').innerHTML = `
         <div class="doc-head">ESTADO DO MARANHÃO — CORPO DE BOMBEIROS MILITAR<br/>15º BATALHÃO DE BOMBEIROS MILITAR — CHAPADINHA/MA</div>
         <h2>RANKING DO TESTE DE APTIDÃO FÍSICA — ${anoAtivo}</h2>
         <div class="doc-sub">Comparativo dos ${sel.length===1?'TAF':'últimos '+sel.length+' TAF'} • pontuação por ranking (corrida + natação) • descontos por atraso • emitido em ${new Date().toLocaleDateString('pt-BR')}</div>
-        <table class="print-rk">
+        <table class="print-rk${denso}">
+          ${colgroup}
           <thead>
             <tr><th rowspan="2" class="col">Col.</th><th rowspan="2" class="nome">Militar</th>${grupoHead}<th rowspan="2">Total</th><th rowspan="2">Desc.</th><th rowspan="2">Final</th></tr>
             <tr>${subHead}</tr>
