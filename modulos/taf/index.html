@@ -950,12 +950,23 @@
       document.getElementById('sitPresets').innerHTML = opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}"></option>`).join('');
       BBM.openModal('modalResultados');
     }
+    // uma sessão está "pendente" (devida) para um militar? sem tempo e sem justificativa
+    function sessaoPendente(sid, chave){
+      const r = resultados.find(x=>x.sessaoId===sid && canon(x.militar).chave===chave);
+      if (!r) return true;
+      if (r.corridaSeg>0 || r.natacaoSeg>0) return false;
+      return !ehJust(r.situacao);
+    }
     async function salvarResultados(){
       if (!sessaoAtual) return;
       const err = document.getElementById('resErro');
       const linhas = [...document.querySelectorAll('#resBody tr')];
+      // deslocamento de reposição só quando lançando o TAF MAIS RECENTE do ano
+      const doAnoOrd = sessoes.filter(s=>s.ano===sessaoAtual.ano)
+        .sort((a,b)=>(a.dataPrevista||'').localeCompare(b.dataPrevista||''));
+      const ehMaisRecente = doAnoOrd.length && doAnoOrd[doAnoOrd.length-1].id === sessaoAtual.id;
       let erroTempo = false;
-      const novos = [];
+      const novos = [], movimentos = [];
       linhas.forEach((tr,ix)=>{
         const nome = tr.getAttribute('data-nome');
         const cTxt = document.getElementById('c_'+ix).value.trim();
@@ -965,18 +976,38 @@
         const cSeg = parseTempo(cTxt), nSeg = parseTempo(nTxt);
         if (cTxt && cSeg===null) erroTempo = true;
         if (nTxt && nSeg===null) erroTempo = true;
+        const temTempo = !!(cSeg || nSeg);
         const temAlgo = cSeg || nSeg || data || ehJust(sit);
-        if (temAlgo){
-          novos.push({ id:BBM.generateId(), sessaoId:sessaoAtual.id, militar:nome,
-            corridaSeg:cSeg||0, natacaoSeg:nSeg||0, dataRealizada:data||'', situacao:sit });
+        if (!temAlgo) return;
+        // reposição: se o militar deve um TAF anterior, joga o tempo no mais antigo pendente
+        let alvo = sessaoAtual.id;
+        if (ehMaisRecente && temTempo){
+          const chave = canon(nome).chave;
+          const pend = doAnoOrd.find(s => (s.dataPrevista||'') < (sessaoAtual.dataPrevista||'') && sessaoPendente(s.id, chave));
+          if (pend){ alvo = pend.id; movimentos.push({ nome, taf:pend.nome }); }
         }
+        novos.push({ id:BBM.generateId(), sessaoId:alvo, militar:nome,
+          corridaSeg:cSeg||0, natacaoSeg:nSeg||0, dataRealizada:data||'', situacao:sit });
       });
       if (erroTempo){ err.textContent='Há tempo em formato inválido. Use min:seg, ex.: 12:30.'; err.style.display='block'; return; }
-      // substitui os resultados desta sessão
-      resultados = resultados.filter(r=>r.sessaoId!==sessaoAtual.id).concat(novos);
+      // remove os resultados da sessão atual…
+      resultados = resultados.filter(r=>r.sessaoId!==sessaoAtual.id);
+      // …e, para cada tempo deslocado, o resultado anterior do militar no TAF alvo
+      for (const n of novos){
+        if (n.sessaoId!==sessaoAtual.id){
+          const chave = canon(n.militar).chave;
+          resultados = resultados.filter(r=> !(r.sessaoId===n.sessaoId && canon(r.militar).chave===chave));
+        }
+      }
+      resultados = resultados.concat(novos);
       BBM.closeModal('modalResultados');
       render();
-      await salvar(KEY_R, resultados, 'Resultados salvos.');
+      let msg = 'Resultados salvos.';
+      if (movimentos.length){
+        const lista = movimentos.map(m=>`${m.nome.split(' ').slice(-1)[0]}→${m.taf}`).join(', ');
+        msg = `Resultados salvos. ${movimentos.length} reposição(ões) lançada(s) no TAF pendente mais antigo: ${lista}.`;
+      }
+      await salvar(KEY_R, resultados, msg);
     }
 
     // ── Impressão da classificação (configurável) ────────────────
