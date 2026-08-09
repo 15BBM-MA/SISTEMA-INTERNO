@@ -215,6 +215,13 @@
     .taf-taf tbody tr { cursor:pointer; }
     .taf-taf tbody tr.semdado td { color:#9ca3af; }
     .taf-taf tbody tr.aberto td { background:#eff6ff !important; }
+    /* coluna de nome FIXA no ranking por TAF */
+    .taf-taf th.nome, .taf-taf td.nome { position:sticky; left:0; z-index:2; background:var(--surface); border-right:1px solid var(--border); }
+    .taf-taf thead th.nome { z-index:3; background:var(--surface-2,#f8fafc); }
+    .taf-taf tbody tr.aberto td.nome { background:#eff6ff !important; }
+    .taf-taf tr.lb1 td.nome { background:#fff8e6; box-shadow:inset 4px 0 0 #f59e0b; }
+    .taf-taf tr.lb2 td.nome { background:#f3f5f8; box-shadow:inset 4px 0 0 #94a3b8; }
+    .taf-taf tr.lb3 td.nome { background:#fdf1e5; box-shadow:inset 4px 0 0 #d97706; }
     .taf-tag { font-size:.66rem; font-weight:700; color:#92400e; background:#fef3c7; padding:1px 7px; border-radius:8px; margin-left:4px; }
     .taf-info { color:#94a3b8; font-size:.8rem; }
     .taf-detrow td { padding:0 !important; background:#f8fafc; }
@@ -268,23 +275,48 @@
     .lb-print { background:rgba(255,255,255,.08); color:#e2e8f0; border:1px solid rgba(148,163,184,.3);
       border-radius:8px; padding:4px 10px; font-size:.72rem; cursor:pointer; }
     .lb-print:hover { background:rgba(255,255,255,.16); }
-    .lb-scroll { overflow-x:auto; }
-    .lb-table { width:100%; border-collapse:collapse; font-size:.84rem; color:#e5e7eb; }
-    .lb-table th, .lb-table td { padding:9px 12px; text-align:center; border-bottom:1px solid rgba(148,163,184,.12); white-space:nowrap; }
-    .lb-table th { font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; background:rgba(255,255,255,.03); position:sticky; top:0; }
-    .lb-table td.nome, .lb-table th.nome { text-align:left; font-weight:600; color:#f8fafc; }
-    .lb-table tbody tr:hover td { background:rgba(255,255,255,.04); }
-    .lb-table .taf-pos { font-weight:800; font-size:1rem; }
+    .lb-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .lb-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+    .lb-table th, .lb-table td { padding:9px 12px; text-align:center; border-bottom:1px solid rgba(148,163,184,.12); white-space:nowrap; color:#eef2f8; }
+    .lb-table th { font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#9fb0c3; background:#0e1830; }
+    .lb-table td { font-weight:600; }
+    .lb-table .lb-tot { color:#ffffff; font-weight:800; }
     .lb-table .taf-final { color:#4ade80; font-weight:800; }
     .lb-table .taf-desc { color:#f87171; }
-    .lb-just { color:#cbd5e1; font-size:.78rem; }
-    .lb-dash { color:#475569; }
-    .lb-table tr.lb1 td { background:rgba(245,158,11,.16); }
-    .lb-table tr.lb2 td { background:rgba(148,163,184,.16); }
-    .lb-table tr.lb3 td { background:rgba(217,119,6,.15); }
-    .lb-table tr.lb1 td:first-child { box-shadow:inset 4px 0 0 #f59e0b; }
-    .lb-table tr.lb2 td:first-child { box-shadow:inset 4px 0 0 #94a3b8; }
-    .lb-table tr.lb3 td:first-child { box-shadow:inset 4px 0 0 #d97706; }
+    .lb-just { color:#e2e8f0; font-size:.78rem; }
+    .lb-dash { color:#64748b; }
+    /* coluna de nome FIXA (congela ao rolar horizontal) */
+    .lb-table th.nome, .lb-table td.nome { position:sticky; left:0; z-index:2; text-align:left; font-weight:700;
+      color:#f8fafc; background:#0c1526; border-right:1px solid rgba(148,163,184,.22); }
+    .lb-table thead th.nome { z-index:3; background:#0e1830; }
+    .lb-rk { display:inline-block; min-width:26px; margin-right:6px; text-align:center; }
+    .lb-num { font-weight:800; color:#9fb0c3; }
+    /* destaque colorido do top 3 (linha inteira + barra lateral + nome fixo) */
+    .lb-table tr.lb1 td { background:rgba(245,158,11,.15); }
+    .lb-table tr.lb2 td { background:rgba(148,163,184,.15); }
+    .lb-table tr.lb3 td { background:rgba(217,119,6,.14); }
+    .lb-table tr.lb1 td.nome { background:#2a2211; box-shadow:inset 4px 0 0 #f59e0b; }
+    .lb-table tr.lb2 td.nome { background:#20252d; box-shadow:inset 4px 0 0 #94a3b8; }
+    .lb-table tr.lb3 td.nome { background:#291d10; box-shadow:inset 4px 0 0 #d97706; }
+    .lb-table tr.lb1 .lb-num, .lb-table tr.lb1 td.nome { color:#fde68a; }
+    .lb-table tr.lb2 td.nome { color:#e2e8f0; }
+    .lb-table tr.lb3 td.nome { color:#fbbf77; }
+
+    /* responsividade + leveza */
+    @media (max-width:640px){
+      .arena { padding:18px 12px; border-radius:16px; }
+      .arena-title { font-size:1.05rem; letter-spacing:.05em; margin-bottom:14px; }
+      .arena .pod-row { margin-bottom:16px; gap:8px; }
+      .rec-row { gap:10px; margin-bottom:16px; }
+      .rec-card { padding:11px 12px; gap:10px; }
+      .rec-ico { font-size:1.6rem; }
+      .rec-time { font-size:1.35rem; }
+      .lb-table th, .lb-table td { padding:7px 9px; font-size:.8rem; }
+      .lb-table th.nome, .lb-table td.nome { max-width:44vw; overflow:hidden; text-overflow:ellipsis; }
+      .taf-taf th, .taf-taf td { padding:6px 8px; font-size:.78rem; }
+      .taf-taf th.nome, .taf-taf td.nome { max-width:42vw; overflow:hidden; text-overflow:ellipsis; }
+    }
+    @media (prefers-reduced-motion: reduce){ .pod-crown { animation:none; } }
 
     /* ===== Pódio gamificado ===== */
     .pod-arena {
@@ -583,7 +615,7 @@
     function renderArena(linhas, doAno){
       const arena = document.getElementById('arena');
       if (!doAno.length){
-        arena.innerHTML = `<div class="arena"><div class="arena-shine"></div>
+        arena.innerHTML = `<div class="arena">
           <div class="arena-title"><span>🏆</span> RANKING TAF — ${anoAtivo}</div>
           <div class="arena-empty">Nenhuma sessão de TAF neste ano.${podeEditar()?' Crie a primeira em “Nova sessão de TAF”.':''}</div></div>`;
         return;
@@ -629,12 +661,11 @@
           if (just) return `<td title="${ps.r.situacao}"><span class="lb-just">${ps.r.situacao.slice(0,3)}.</span></td>`;
           return `<td class="lb-dash">—</td>`;
         }).join('');
-        const medalha = l.pos===1?'🥇':l.pos===2?'🥈':l.pos===3?'🥉':l.pos+'º';
+        const medalha = l.pos===1?'🥇':l.pos===2?'🥈':l.pos===3?'🥉':`<span class="lb-num">${l.pos}º</span>`;
         return `<tr class="${l.pos<=3?'lb'+l.pos:''}">
-          <td class="taf-pos">${medalha}</td>
-          <td class="nome">${l.nome}</td>
+          <td class="nome"><span class="lb-rk">${medalha}</span>${l.nome}</td>
           ${cels}
-          <td>${l.total.toFixed(2).replace('.',',')}</td>
+          <td class="lb-tot">${l.total.toFixed(2).replace('.',',')}</td>
           <td class="taf-desc">${l.desc? '−'+l.desc : '0'}</td>
           <td class="taf-final">${l.final.toFixed(2).replace('.',',')}</td>
         </tr>`;
@@ -643,12 +674,11 @@
         <div class="lb-head"><span>📋 Classificação Geral</span>
           <button class="lb-print" onclick="imprimirClassificacao()">🖨️ Imprimir</button></div>
         <div class="lb-scroll"><table class="lb-table">
-          <thead><tr><th>Col.</th><th class="nome">Militar</th>${colsSessao}<th>Total</th><th>Desc.</th><th>Final</th></tr></thead>
+          <thead><tr><th class="nome">Militar</th>${colsSessao}<th>Total</th><th>Desc.</th><th>Final</th></tr></thead>
           <tbody>${rows}</tbody></table></div>
       </div>`;
 
       arena.innerHTML = `<div class="arena">
-        <div class="arena-shine"></div>
         <div class="arena-title"><span>🏆</span> RANKING TAF — ${anoAtivo}</div>
         ${podio}
         ${recordes}
@@ -721,11 +751,11 @@
           if (l.r&&(l.r.corridaSeg||l.r.natacaoSeg)) bits.push(`<b>Soma do TAF:</b> ${l.pc.toFixed(2).replace('.',',')} + ${l.pn.toFixed(2).replace('.',',')} = <b>${l.total.toFixed(2).replace('.',',')}</b> pts`);
           if (l.motivo) bits.push(`<b>Desconto por atraso:</b> ${l.motivo}`);
           if (!bits.length) bits.push('Sem lançamento neste TAF.');
-          detalhe = `<tr class="taf-detrow"><td colspan="6"><div class="taf-explica">${bits.join('<br>')}</div></td></tr>`;
+          detalhe = `<tr class="taf-detrow"><td colspan="5"><div class="taf-explica">${bits.join('<br>')}</div></td></tr>`;
         }
+        const medalTxt = l.pos<=3 && l.temTempo ? medal : `<span class="lb-num">${medal}</span>`;
         return `<tr class="${cls}${expandido?' aberto':''}" onclick="toggleExpandir('${l.chave}')" title="Clique para ver o cálculo">
-          <td class="taf-pos">${medal}</td>
-          <td class="nome">${l.nome}${just?` <span class="taf-tag">${l.r.situacao}</span>`:''}</td>
+          <td class="nome"><span class="lb-rk">${medalTxt}</span>${l.nome}${just?` <span class="taf-tag">${l.r.situacao}</span>`:''}</td>
           <td>${cCorr}</td>
           <td>${cNat}</td>
           <td><strong>${l.temTempo? l.total.toFixed(2).replace('.',','):'—'}</strong></td>
@@ -739,8 +769,8 @@
             <span class="taf-det-sub">prova prevista para ${fmtData(sessao.dataPrevista)} • ${nC} na corrida, ${nN} na natação</span></div>
           ${podeEditar()?`<button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirResultados('${sessao.id}')">✎ Lançar / editar tempos</button>`:''}
         </div>
-        <div style="overflow:auto"><table class="taf-table taf-taf">
-          <thead><tr><th>Col.</th><th class="nome">Militar</th><th>Corrida · pts</th><th>Natação · pts</th><th>Total TAF</th><th>Desc.</th></tr></thead>
+        <div class="lb-scroll"><table class="taf-table taf-taf">
+          <thead><tr><th class="nome">Militar</th><th>Corrida · pts</th><th>Natação · pts</th><th>Total TAF</th><th>Desc.</th></tr></thead>
           <tbody>${rows}</tbody></table></div>
         <div class="taf-legenda">Ranking individual deste TAF • tempos em min:seg • clique numa linha para ver o cálculo dos pontos e de eventual desconto.</div>`;
     }
