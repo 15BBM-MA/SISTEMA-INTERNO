@@ -54,40 +54,30 @@
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <select class="form-control" id="filtroAno" style="width:auto" onchange="render()"></select>
-          <button class="btn btn-ghost" onclick="importarPlanilha()" title="Preenche os TAF 1 a 5 de 2026 com os dados da planilha">
+          <button class="btn btn-ghost" id="btnImportar" onclick="importarPlanilha()" style="display:none" title="Preenche os TAF do ano com os dados da planilha">
             ⬇ Importar planilha 2026
           </button>
           <button class="btn btn-ghost" onclick="atualizar()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             Atualizar
           </button>
-          <button class="btn btn-primary" onclick="abrirNovaSessao()">
+          <button class="btn btn-primary" id="btnNovaSessao" onclick="abrirNovaSessao()" style="display:none">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nova sessão de TAF
           </button>
         </div>
       </div>
 
-      <!-- Pódio gamificado -->
-      <div id="podium"></div>
-
-      <!-- Resumo -->
-      <div class="taf-cards" id="tafCards"></div>
-
-      <!-- Classificação anual -->
-      <div class="section-label" style="margin-top:22px;display:flex;justify-content:space-between;align-items:center">
-        <span id="lblClassif">Classificação anual</span>
-        <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="imprimirClassificacao()">🖨️ Imprimir</button>
-      </div>
-      <div id="classificacao"></div>
+      <!-- Arena gamificada: pódio + recordes + classificação -->
+      <div id="arena"></div>
 
       <!-- Ranking por TAF (navegação horizontal) -->
       <div class="section-label" style="margin-top:26px">Ranking por TAF — tempos e pontuação de cada prova</div>
       <div id="tafNav" class="taf-nav"></div>
       <div id="tafDetalhe"></div>
 
-      <!-- Sessões -->
-      <div class="section-label" style="margin-top:26px">Sessões de TAF do ano</div>
+      <!-- Sessões (somente edição) -->
+      <div class="section-label" id="secSessoes" style="margin-top:26px">Sessões de TAF do ano</div>
       <div id="listaSessoes"></div>
     </div>
   </main>
@@ -234,6 +224,67 @@
       .taf-taf tbody tr.aberto td { background:rgba(37,99,235,.14) !important; }
       .taf-detrow td { background:rgba(148,163,184,.08); }
     }
+
+    /* ===== Arena gamificada (pódio + recordes + classificação) ===== */
+    .arena {
+      position:relative; overflow:hidden; border-radius:20px; margin-bottom:22px;
+      padding:26px 22px 24px;
+      background:
+        radial-gradient(120% 80% at 50% -20%, rgba(56,189,248,.30), transparent 60%),
+        radial-gradient(90% 90% at 12% 120%, rgba(168,85,247,.28), transparent 55%),
+        radial-gradient(90% 90% at 90% 110%, rgba(16,185,129,.18), transparent 55%),
+        linear-gradient(160deg, #0a1120 0%, #10192e 45%, #0b1424 100%);
+      border:1px solid rgba(148,163,184,.22);
+      box-shadow:0 26px 60px -26px rgba(30,58,138,.75), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .arena-shine { position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(115deg, transparent 40%, rgba(255,255,255,.06) 48%, transparent 56%);
+      background-size:250% 250%; animation:podShine 7s linear infinite; }
+    .arena-title { position:relative; text-align:center; font-family:'Rajdhani',sans-serif; font-weight:700;
+      letter-spacing:.12em; text-transform:uppercase; color:#f1f5f9; font-size:1.35rem; margin-bottom:20px; }
+    .arena-title span { filter:drop-shadow(0 0 8px rgba(250,204,21,.85)); margin-right:6px; }
+    .arena-empty { position:relative; text-align:center; color:#94a3b8; padding:26px 10px; font-size:.9rem; }
+    .arena .pod-row { margin-bottom:22px; }
+
+    /* recordes do ano */
+    .rec-row { position:relative; display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; }
+    .rec-card { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:14px;
+      background:linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      border:1px solid rgba(148,163,184,.25); border-left:4px solid var(--rec);
+      box-shadow:0 10px 26px -16px rgba(0,0,0,.8); }
+    .rec-ico { font-size:2rem; line-height:1; filter:drop-shadow(0 0 10px color-mix(in srgb, var(--rec) 70%, transparent)); }
+    .rec-tit { font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; font-weight:600; }
+    .rec-time { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.7rem; color:#f8fafc; line-height:1.1; }
+    .rec-time span { font-size:.7rem; font-weight:600; color:#94a3b8; margin-left:4px; }
+    .rec-who { font-size:.82rem; color:var(--rec); font-weight:700; }
+    @media (max-width:560px){ .rec-row{ grid-template-columns:1fr; } .arena-title{ font-size:1.1rem; } }
+
+    /* leaderboard (tabela de classificação estilo game) */
+    .lb-wrap { position:relative; border-radius:14px; overflow:hidden;
+      background:rgba(2,6,23,.45); border:1px solid rgba(148,163,184,.2); }
+    .lb-head { display:flex; justify-content:space-between; align-items:center; padding:11px 16px;
+      font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+      color:#e2e8f0; font-size:.9rem; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(148,163,184,.18); }
+    .lb-print { background:rgba(255,255,255,.08); color:#e2e8f0; border:1px solid rgba(148,163,184,.3);
+      border-radius:8px; padding:4px 10px; font-size:.72rem; cursor:pointer; }
+    .lb-print:hover { background:rgba(255,255,255,.16); }
+    .lb-scroll { overflow-x:auto; }
+    .lb-table { width:100%; border-collapse:collapse; font-size:.84rem; color:#e5e7eb; }
+    .lb-table th, .lb-table td { padding:9px 12px; text-align:center; border-bottom:1px solid rgba(148,163,184,.12); white-space:nowrap; }
+    .lb-table th { font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; background:rgba(255,255,255,.03); position:sticky; top:0; }
+    .lb-table td.nome, .lb-table th.nome { text-align:left; font-weight:600; color:#f8fafc; }
+    .lb-table tbody tr:hover td { background:rgba(255,255,255,.04); }
+    .lb-table .taf-pos { font-weight:800; font-size:1rem; }
+    .lb-table .taf-final { color:#4ade80; font-weight:800; }
+    .lb-table .taf-desc { color:#f87171; }
+    .lb-just { color:#cbd5e1; font-size:.78rem; }
+    .lb-dash { color:#475569; }
+    .lb-table tr.lb1 td { background:rgba(245,158,11,.16); }
+    .lb-table tr.lb2 td { background:rgba(148,163,184,.16); }
+    .lb-table tr.lb3 td { background:rgba(217,119,6,.15); }
+    .lb-table tr.lb1 td:first-child { box-shadow:inset 4px 0 0 #f59e0b; }
+    .lb-table tr.lb2 td:first-child { box-shadow:inset 4px 0 0 #94a3b8; }
+    .lb-table tr.lb3 td:first-child { box-shadow:inset 4px 0 0 #d97706; }
 
     /* ===== Pódio gamificado ===== */
     .pod-arena {
@@ -476,73 +527,133 @@
       anoAtivo = Number(document.getElementById('filtroAno').value) || anoAtivo;
       const { linhas, sessoes:doAno, ptsPorSessao } = calcularClassificacao();
       _ctx = { doAno, ptsPorSessao };
-      document.getElementById('lblClassif').textContent = 'Classificação anual — ' + anoAtivo;
+      const editar = podeEditar();
 
-      // cards resumo
-      const participaram = new Set(resultados.filter(r=>doAno.some(s=>s.id===r.sessaoId)).map(r=>r.militar));
-      const cards = [
-        { v: doAno.length, l:'Sessões no ano' },
-        { v: efetivo.length, l:'Militares no efetivo' },
-        { v: participaram.size, l:'Já participaram' },
-        { v: linhas[0] ? linhas[0].final.toFixed(2).replace('.',',') : '—', l:'Maior pontuação' },
-      ];
-      document.getElementById('tafCards').innerHTML = cards.map(c=>
-        `<div class="taf-card"><div class="v">${c.v}</div><div class="l">${c.l}</div></div>`).join('');
+      // botões de edição só para quem tem nível de edição
+      const bImp = document.getElementById('btnImportar'), bNova = document.getElementById('btnNovaSessao');
+      if (bImp)  bImp.style.display  = editar ? '' : 'none';
+      if (bNova) bNova.style.display = editar ? '' : 'none';
 
-      // pódio gamificado (campeões do momento)
-      renderPodium(linhas);
-
-      // classificação
-      const el = document.getElementById('classificacao');
-      if (!doAno.length){
-        el.innerHTML = '<div class="empty-state"><p>Nenhuma sessão de TAF neste ano. Crie a primeira em “Nova sessão de TAF”.</p></div>';
-      } else {
-        const colsSessao = doAno.map(s=>`<th title="${s.nome}">${s.nome}</th>`).join('');
-        const rows = linhas.map(l=>{
-          const cels = l.porSessao.map(ps=>{
-            const soma = ps.pc + ps.pn;
-            const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
-            const just = ps.r && ehJust(ps.r.situacao);
-            if (temTempo) return `<td${just?` title="${ps.r.situacao} — pontuou normalmente"`:''}>${soma.toFixed(2).replace('.',',')}${just?' <span style="color:#f59e0b">•</span>':''}</td>`;
-            if (just) return `<td title="${ps.r.situacao}"><span style="color:#6b7280;font-size:.8rem">${ps.r.situacao.slice(0,3)}.</span></td>`;
-            return `<td style="color:#d1d5db">—</td>`;
-          }).join('');
-          const pcls = l.pos<=3 ? ' p'+l.pos : '';
-          const medalha = l.pos===1?'🥇':l.pos===2?'🥈':l.pos===3?'🥉':'';
-          return `<tr class="${l.pos<=3?'lb'+l.pos:''}">
-            <td class="taf-pos${pcls}">${medalha||l.pos+'º'}</td>
-            <td class="nome">${l.nome}</td>
-            ${cels}
-            <td>${l.total.toFixed(2).replace('.',',')}</td>
-            <td class="taf-desc">${l.desc? '−'+l.desc : '0'}</td>
-            <td class="taf-final">${l.final.toFixed(2).replace('.',',')}</td>
-          </tr>`;
-        }).join('');
-        el.innerHTML = `<div style="overflow:auto"><table class="taf-table">
-          <thead><tr><th>Col.</th><th class="nome">Militar</th>${colsSessao}<th>Total</th><th>Desc.</th><th>Final</th></tr></thead>
-          <tbody>${rows}</tbody></table></div>`;
-      }
+      // arena gamificada (pódio + recordes + classificação)
+      renderArena(linhas, doAno);
 
       // ranking por TAF (navegação horizontal)
       renderTafSecao(doAno, ptsPorSessao);
 
-      // sessões
+      // sessões (visíveis/editáveis só com edição)
+      const secSessoes = document.getElementById('secSessoes');
       const ls = document.getElementById('listaSessoes');
-      ls.innerHTML = doAno.length ? [...doAno].sort((a,b)=>(b.dataPrevista||'').localeCompare(a.dataPrevista||'')).map(s=>{
-        const n = resultados.filter(r=>r.sessaoId===s.id && (r.corridaSeg>0||r.natacaoSeg>0||ehJust(r.situacao))).length;
-        const ok = n>0;
-        return `<div class="ses-card">
-          <div>
-            <div class="ses-nome">${s.nome}</div>
-            <div class="ses-sub">Prevista para ${fmtData(s.dataPrevista)} • ${n} lançamento${n!==1?'s':''}</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <span class="ses-badge ${ok?'ok':'pend'}">${ok?'Com resultados':'Sem resultados'}</span>
-            <button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirResultados('${s.id}')">Lançar / editar resultados</button>
-            <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="abrirEditarSessao('${s.id}')">Editar</button>
-          </div>
+      if (!editar){ if(secSessoes) secSessoes.style.display='none'; ls.innerHTML=''; }
+      else {
+        if(secSessoes) secSessoes.style.display='';
+        ls.innerHTML = doAno.length ? [...doAno].sort((a,b)=>(b.dataPrevista||'').localeCompare(a.dataPrevista||'')).map(s=>{
+          const n = resultados.filter(r=>r.sessaoId===s.id && (r.corridaSeg>0||r.natacaoSeg>0||ehJust(r.situacao))).length;
+          const ok = n>0;
+          return `<div class="ses-card">
+            <div>
+              <div class="ses-nome">${s.nome}</div>
+              <div class="ses-sub">Prevista para ${fmtData(s.dataPrevista)} • ${n} lançamento${n!==1?'s':''}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="ses-badge ${ok?'ok':'pend'}">${ok?'Com resultados':'Sem resultados'}</span>
+              <button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirResultados('${s.id}')">Lançar / editar resultados</button>
+              <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="abrirEditarSessao('${s.id}')">Editar</button>
+            </div>
+          </div>`;
+        }).join('') : '<div class="empty-state"><p>Nenhuma sessão de TAF neste ano.</p></div>';
+      }
+    }
+
+    function podeEditar(){ return (BBM.nivel && BBM.nivel('taf')) === 'edicao'; }
+
+    // recorde do ano em cada prova (menor tempo)
+    function recordesDoAno(doAno){
+      const ids = new Set(doAno.map(s=>s.id));
+      let rc=null, rn=null;
+      resultados.filter(r=>ids.has(r.sessaoId)).forEach(r=>{
+        const nome = canon(r.militar).display;
+        const sNome = (doAno.find(s=>s.id===r.sessaoId)||{}).nome || '';
+        if (r.corridaSeg>0 && (!rc || r.corridaSeg<rc.seg)) rc={ seg:r.corridaSeg, nome, taf:sNome };
+        if (r.natacaoSeg>0 && (!rn || r.natacaoSeg<rn.seg)) rn={ seg:r.natacaoSeg, nome, taf:sNome };
+      });
+      return { rc, rn };
+    }
+
+    // arena: pódio + recordes + tabela de classificação, tudo no fundo gamificado
+    function renderArena(linhas, doAno){
+      const arena = document.getElementById('arena');
+      if (!doAno.length){
+        arena.innerHTML = `<div class="arena"><div class="arena-shine"></div>
+          <div class="arena-title"><span>🏆</span> RANKING TAF — ${anoAtivo}</div>
+          <div class="arena-empty">Nenhuma sessão de TAF neste ano.${podeEditar()?' Crie a primeira em “Nova sessão de TAF”.':''}</div></div>`;
+        return;
+      }
+      // pódio (top 3 com pontuação)
+      const top = linhas.filter(l=>l.total>0).slice(0,3);
+      const medal = ['🥇','🥈','🥉'];
+      const podio = top.length ? `<div class="pod-row">${[1,0,2].filter(i=>top[i]).map(i=>{
+        const l = top[i];
+        return `<div class="pod-col pod${i+1}">
+          ${i===0?'<div class="pod-crown">👑</div>':''}
+          <div class="pod-av">${iniciais(l.nome)}</div>
+          <div class="pod-name">${l.nome}</div>
+          <div class="pod-medal">${medal[i]}</div>
+          <div class="pod-base"><div class="pod-rank">${i+1}º</div>
+            <div class="pod-score">${l.final.toFixed(2).replace('.',',')}<span>pts</span></div></div>
         </div>`;
-      }).join('') : '';
+      }).join('')}</div>` : '';
+
+      // recordes do ano
+      const { rc, rn } = recordesDoAno(doAno);
+      const recCard = (icon, titulo, rec, cor) => `<div class="rec-card" style="--rec:${cor}">
+        <div class="rec-ico">${icon}</div>
+        <div class="rec-body">
+          <div class="rec-tit">Recorde de ${titulo} — ${anoAtivo}</div>
+          ${rec ? `<div class="rec-time">${fmtTempo(rec.seg)}<span>min</span></div>
+                   <div class="rec-who">${rec.nome} • ${rec.taf}</div>`
+                : `<div class="rec-time">—</div><div class="rec-who">sem registros</div>`}
+        </div></div>`;
+      const recordes = `<div class="rec-row">
+        ${recCard('🏃', 'Corrida', rc, '#38bdf8')}
+        ${recCard('🏊', 'Natação', rn, '#a78bfa')}
+      </div>`;
+
+      // tabela de classificação (estilo leaderboard escuro)
+      const colsSessao = doAno.map(s=>`<th title="${s.nome}">${s.nome}</th>`).join('');
+      const rows = linhas.map(l=>{
+        const cels = l.porSessao.map(ps=>{
+          const soma = ps.pc + ps.pn;
+          const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
+          const just = ps.r && ehJust(ps.r.situacao);
+          if (temTempo) return `<td${just?` title="${ps.r.situacao} — pontuou normalmente"`:''}>${soma.toFixed(2).replace('.',',')}${just?' <span style="color:#fbbf24">•</span>':''}</td>`;
+          if (just) return `<td title="${ps.r.situacao}"><span class="lb-just">${ps.r.situacao.slice(0,3)}.</span></td>`;
+          return `<td class="lb-dash">—</td>`;
+        }).join('');
+        const medalha = l.pos===1?'🥇':l.pos===2?'🥈':l.pos===3?'🥉':l.pos+'º';
+        return `<tr class="${l.pos<=3?'lb'+l.pos:''}">
+          <td class="taf-pos">${medalha}</td>
+          <td class="nome">${l.nome}</td>
+          ${cels}
+          <td>${l.total.toFixed(2).replace('.',',')}</td>
+          <td class="taf-desc">${l.desc? '−'+l.desc : '0'}</td>
+          <td class="taf-final">${l.final.toFixed(2).replace('.',',')}</td>
+        </tr>`;
+      }).join('');
+      const tabela = `<div class="lb-wrap">
+        <div class="lb-head"><span>📋 Classificação Geral</span>
+          <button class="lb-print" onclick="imprimirClassificacao()">🖨️ Imprimir</button></div>
+        <div class="lb-scroll"><table class="lb-table">
+          <thead><tr><th>Col.</th><th class="nome">Militar</th>${colsSessao}<th>Total</th><th>Desc.</th><th>Final</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>
+      </div>`;
+
+      arena.innerHTML = `<div class="arena">
+        <div class="arena-shine"></div>
+        <div class="arena-title"><span>🏆</span> RANKING TAF — ${anoAtivo}</div>
+        ${podio}
+        ${recordes}
+        ${tabela}
+      </div>`;
     }
 
     // ── Ranking por TAF (navegação horizontal) ──────────────────
@@ -626,7 +737,7 @@
         <div class="taf-det-head">
           <div><span class="taf-det-nome">${sessao.nome}</span>
             <span class="taf-det-sub">prova prevista para ${fmtData(sessao.dataPrevista)} • ${nC} na corrida, ${nN} na natação</span></div>
-          <button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirResultados('${sessao.id}')">✎ Lançar / editar tempos</button>
+          ${podeEditar()?`<button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirResultados('${sessao.id}')">✎ Lançar / editar tempos</button>`:''}
         </div>
         <div style="overflow:auto"><table class="taf-table taf-taf">
           <thead><tr><th>Col.</th><th class="nome">Militar</th><th>Corrida · pts</th><th>Natação · pts</th><th>Total TAF</th><th>Desc.</th></tr></thead>
@@ -642,37 +753,12 @@
       if (base.length===1) return (base[0].slice(0,2)||'?').toUpperCase();
       return (base.slice(0,2).map(w=>w[0]).join('')||'?').toUpperCase();
     }
-    function renderPodium(linhas){
-      const podium = document.getElementById('podium');
-      const top = linhas.filter(l=>l.total>0).slice(0,3);
-      if (!top.length){ podium.innerHTML=''; return; }
-      const medal = ['🥇','🥈','🥉'];
-      const ordemVisual = [1,0,2].filter(i=>top[i]); // 2º, 1º, 3º
-      const cols = ordemVisual.map(i=>{
-        const l = top[i];
-        return `<div class="pod-col pod${i+1}">
-          ${i===0?'<div class="pod-crown">👑</div>':''}
-          <div class="pod-av">${iniciais(l.nome)}</div>
-          <div class="pod-name">${l.nome}</div>
-          <div class="pod-medal">${medal[i]}</div>
-          <div class="pod-base">
-            <div class="pod-rank">${i+1}º</div>
-            <div class="pod-score">${l.final.toFixed(2).replace('.',',')}<span>pts</span></div>
-          </div>
-        </div>`;
-      }).join('');
-      podium.innerHTML = `<div class="pod-arena">
-        <div class="pod-shine"></div>
-        <div class="pod-title"><span>🏆</span> Campeões do momento — ${anoAtivo}</div>
-        <div class="pod-row">${cols}</div>
-      </div>`;
-    }
-
     // ── Importar dados da planilha (TAF 1–5 / 2026) ──────────────
     const SEED_TAF = {"sessoes":[{"nome":"TAF 1","dataPrevista":"2026-03-05"},{"nome":"TAF 2","dataPrevista":"2026-04-08"},{"nome":"TAF 3","dataPrevista":"2026-05-06"},{"nome":"TAF 4","dataPrevista":"2026-06-03"},{"nome":"TAF 5","dataPrevista":"2026-07-01"},{"nome":"TAF 6","dataPrevista":"2026-08-05"}],"resultados":[{"s":0,"militar":"2° SGT COSTA BARROS","c":1378,"n":1162,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2° SGT COSTA BARROS","c":1349,"n":1050,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2° SGT COSTA BARROS","c":1341,"n":1043,"d":"","sit":"Férias"},{"s":3,"militar":"2° SGT COSTA BARROS","c":1370,"n":1048,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2° SGT COSTA BARROS","c":1302,"n":1073,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"2° SGT COSTA BARROS","c":1288,"n":1084,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"1º TEN ARAÚJO","c":1534,"n":916,"d":"","sit":"Atestado"},{"s":1,"militar":"1º TEN ARAÚJO","c":1663,"n":906,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1º TEN ARAÚJO","c":1521,"n":929,"d":"","sit":"Justificado"},{"s":3,"militar":"1º TEN ARAÚJO","c":1530,"n":926,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1º TEN ARAÚJO","c":1470,"n":945,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"1º TEN ARAÚJO","c":1428,"n":913,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT ISAC TEIXEIRA","c":1598,"n":1016,"d":"","sit":"Atestado"},{"s":1,"militar":"3º SGT ISAC TEIXEIRA","c":1495,"n":1076,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ISAC TEIXEIRA","c":1475,"n":1070,"d":"","sit":"Férias"},{"s":3,"militar":"3º SGT ISAC TEIXEIRA","c":1580,"n":1127,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT ISAC TEIXEIRA","c":1491,"n":1095,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"3º SGT ISAC TEIXEIRA","c":1581,"n":1082,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"2º SGT DENE","c":1709,"n":936,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"2º SGT DENE","c":1702,"n":918,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"2º SGT DENE","c":1675,"n":918,"d":"","sit":"Justificado"},{"s":3,"militar":"2º SGT DENE","c":1666,"n":931,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"2º SGT DENE","c":1641,"n":926,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"2º SGT DENE","c":1711,"n":935,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"CAP DANIEL","c":1385,"n":1136,"d":"2026-03-06","sit":"Realizado"},{"s":1,"militar":"CAP DANIEL","c":1533,"n":1166,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP DANIEL","c":1729,"n":1299,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP DANIEL","c":1461,"n":1120,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP DANIEL","c":1404,"n":1097,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"CAP DANIEL","c":1417,"n":1085,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"ASP FELIPE SOUZA","c":1579,"n":1229,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"ASP FELIPE SOUZA","c":1599,"n":1203,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"ASP FELIPE SOUZA","c":1536,"n":1217,"d":"","sit":"Justificado"},{"s":3,"militar":"ASP FELIPE SOUZA","c":1689,"n":1212,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"ASP FELIPE SOUZA","c":1631,"n":1240,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"ASP FELIPE SOUZA","c":1472,"n":1334,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT LISBOA SANTOS","c":1755,"n":1068,"d":"","sit":"Atestado"},{"s":1,"militar":"3º SGT LISBOA SANTOS","c":1654,"n":1037,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT LISBOA SANTOS","c":1711,"n":1071,"d":"","sit":"Atestado"},{"s":3,"militar":"3º SGT LISBOA SANTOS","c":1714,"n":990,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"3º SGT LISBOA SANTOS","c":1680,"n":1010,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"3º SGT LISBOA SANTOS","c":0,"n":0,"d":"","sit":"Férias"},{"s":0,"militar":"1° TEN PAULO JOSÉ","c":1708,"n":1194,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"1° TEN PAULO JOSÉ","c":1807,"n":1143,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"1° TEN PAULO JOSÉ","c":2107,"n":1159,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"1° TEN PAULO JOSÉ","c":1773,"n":1149,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"1° TEN PAULO JOSÉ","c":1840,"n":1153,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"1° TEN PAULO JOSÉ","c":0,"n":0,"d":"","sit":"BIOMA"},{"s":0,"militar":"CAP OLIVEIRA","c":1574,"n":1398,"d":"2026-03-11","sit":"Realizado"},{"s":1,"militar":"CAP OLIVEIRA","c":1790,"n":1340,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"CAP OLIVEIRA","c":1651,"n":1354,"d":"2026-05-06","sit":"Realizado"},{"s":3,"militar":"CAP OLIVEIRA","c":1707,"n":1322,"d":"2026-06-03","sit":"Realizado"},{"s":4,"militar":"CAP OLIVEIRA","c":1699,"n":1381,"d":"2026-07-01","sit":"Realizado"},{"s":0,"militar":"3º SGT ELIZIANE","c":1685,"n":1748,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT ELIZIANE","c":1670,"n":1782,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT ELIZIANE","c":1527,"n":1824,"d":"","sit":"Justificado"},{"s":3,"militar":"3º SGT ELIZIANE","c":1505,"n":1664,"d":"2026-06-03","sit":"Realizado"},{"s":5,"militar":"3º SGT ELIZIANE","c":0,"n":0,"d":"","sit":"Justificado"},{"s":0,"militar":"3º SGT FERNANDO","c":1583,"n":1241,"d":"2026-04-04","sit":"Realizado"},{"s":1,"militar":"3º SGT FERNANDO","c":1663,"n":1295,"d":"","sit":"Justificado"},{"s":2,"militar":"3º SGT FERNANDO","c":1480,"n":1279,"d":"2026-08-05","sit":"Realizado"},{"s":3,"militar":"3º SGT FERNANDO","c":1471,"n":1248,"d":"2026-08-06","sit":"Realizado"},{"s":0,"militar":"2º SGT RIBEIRO","c":2257,"n":1054,"d":"2026-05-06","sit":"Realizado"},{"s":1,"militar":"2º SGT RIBEIRO","c":2099,"n":1073,"d":"","sit":"Justificado"},{"s":2,"militar":"2º SGT RIBEIRO","c":2058,"n":1068,"d":"","sit":"Justificado"},{"s":3,"militar":"2º SGT RIBEIRO","c":2207,"n":1141,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT IGOR","c":2442,"n":1793,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT IGOR","c":2477,"n":1668,"d":"2026-04-08","sit":"Realizado"},{"s":2,"militar":"3º SGT IGOR","c":2675,"n":1626,"d":"2026-06-03","sit":"Realizado"},{"s":3,"militar":"3º SGT IGOR","c":2354,"n":1746,"d":"2026-07-01","sit":"Realizado"},{"s":5,"militar":"3º SGT IGOR","c":0,"n":0,"d":"","sit":"FORÇA"},{"s":0,"militar":"3º SGT ANDRADE SILVA","c":2004,"n":1316,"d":"","sit":"Férias"},{"s":1,"militar":"3º SGT ANDRADE SILVA","c":2060,"n":1468,"d":"2026-05-09","sit":"Realizado"},{"s":2,"militar":"3º SGT ANDRADE SILVA","c":1960,"n":1252,"d":"2026-07-01","sit":"Realizado"},{"s":3,"militar":"3º SGT ANDRADE SILVA","c":1970,"n":1185,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"MAJ MARTINS","c":1430,"n":1253,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"MAJ MARTINS","c":1382,"n":1280,"d":"","sit":"Férias"},{"s":2,"militar":"MAJ MARTINS","c":1408,"n":1358,"d":"2026-08-05","sit":"Realizado"},{"s":0,"militar":"3º SGT BELARMINO","c":1766,"n":2523,"d":"2026-03-05","sit":"Realizado"},{"s":1,"militar":"3º SGT BELARMINO","c":1704,"n":2896,"d":"","sit":"Férias"},{"s":2,"militar":"3º SGT BELARMINO","c":1758,"n":2220,"d":"2026-06-03","sit":"Realizado"}]};
 
     async function importarPlanilha(){
-      if (!confirm('Importar os TAF 1 a 6 de 2026 com os tempos da planilha?\n\nAs 5 sessões serão criadas (ou atualizadas) e os resultados preenchidos.')) return;
+      if (!podeEditar()) return;
+      if (!confirm('Importar os TAF 1 a 6 de 2026 com os tempos da planilha?\n\nAs sessões serão criadas (ou atualizadas) e os resultados preenchidos.')) return;
       const idPorIx = {}, novas = [];
       SEED_TAF.sessoes.forEach((s,i)=>{
         let ex = sessoes.find(x=>x.ano===2026 && x.nome===s.nome);
@@ -694,6 +780,7 @@
 
     // ── Sessão: criar/editar ─────────────────────────────────────
     function abrirNovaSessao(){
+      if (!podeEditar()) return;
       document.getElementById('sesTitulo').textContent = 'Nova sessão de TAF';
       document.getElementById('sesId').value = '';
       const nDoAno = sessoes.filter(s=>s.ano===anoAtivo).length;
@@ -705,6 +792,7 @@
       BBM.openModal('modalSessao');
     }
     function abrirEditarSessao(id){
+      if (!podeEditar()) return;
       const s = sessoes.find(x=>x.id===id); if(!s) return;
       document.getElementById('sesTitulo').textContent = 'Editar sessão';
       document.getElementById('sesId').value = s.id;
@@ -758,6 +846,7 @@
     // ── Resultados ───────────────────────────────────────────────
     let sessaoAtual = null;
     function abrirResultados(id){
+      if (!podeEditar()) return;
       const s = sessoes.find(x=>x.id===id); if(!s) return;
       sessaoAtual = s;
       document.getElementById('resTitulo').textContent = 'Resultados — ' + s.nome + ' (' + fmtData(s.dataPrevista) + ')';
