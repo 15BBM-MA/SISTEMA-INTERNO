@@ -153,6 +153,32 @@
     </div>
   </div>
 
+  <!-- MODAL IMPRIMIR RANKING -->
+  <div class="modal-overlay" id="modalImprimir">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <span class="modal-title">Imprimir ranking</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalImprimir')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Quantos TAF incluir na comparação</label>
+          <select class="form-control" id="impQtd"></select>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="impTempos" checked/> Mostrar os tempos (min:seg) além da pontuação
+        </label>
+        <div style="font-size:.76rem;color:#6b7280;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:12px">
+          Gera um comparativo dos TAF selecionados (tempos e pontos de corrida e natação), com o total, o desconto por atraso e a pontuação final — ordenado pela classificação.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalImprimir')">Cancelar</button>
+        <button class="btn btn-primary" onclick="gerarImpressao()">🖨️ Gerar impressão</button>
+      </div>
+    </div>
+  </div>
+
   <div id="docTaf" aria-hidden="true"></div>
 
   <style>
@@ -301,6 +327,9 @@
     .lb-table tr.lb1 .lb-num, .lb-table tr.lb1 td.nome { color:#fde68a; }
     .lb-table tr.lb2 td.nome { color:#e2e8f0; }
     .lb-table tr.lb3 td.nome { color:#fbbf77; }
+    /* hover escuro (sobrepõe o hover claro global) — preserva contraste do texto claro */
+    .lb-table tbody tr:hover td { background:#1b2a45 !important; }
+    .lb-table tbody tr:hover td.nome { background:#1b2a45 !important; }
 
     /* responsividade + leveza */
     @media (max-width:640px){
@@ -368,14 +397,31 @@
     @media print {
       body * { visibility:hidden; }
       #docTaf, #docTaf * { visibility:visible; }
-      #docTaf { display:block; position:absolute; left:0; top:0; width:100%; color:#000; }
-      #docTaf .doc-head { text-align:center; font-size:9.5pt; line-height:1.35; margin-bottom:10px; }
-      #docTaf h2 { text-align:center; font-size:13pt; margin:6px 0 2px; }
-      #docTaf .doc-sub { text-align:center; font-size:9pt; margin-bottom:14px; }
-      #docTaf table { width:100%; border-collapse:collapse; font-size:9pt; }
-      #docTaf th, #docTaf td { border:1px solid #000; padding:4px 6px; text-align:center; }
-      #docTaf td.nome, #docTaf th.nome { text-align:left; }
-      @page { size:A4; margin:16mm; }
+      #docTaf { display:block; position:absolute; left:0; top:0; width:100%; color:#000; font-family:Arial,Helvetica,sans-serif; }
+      #docTaf .doc-head { text-align:center; font-size:9pt; line-height:1.35; margin-bottom:6px; letter-spacing:.02em; }
+      #docTaf h2 { text-align:center; font-size:14pt; margin:8px 0 2px; letter-spacing:.03em; }
+      #docTaf .doc-sub { text-align:center; font-size:8.5pt; color:#333; margin-bottom:14px; }
+      #docTaf table.print-rk { width:100%; border-collapse:collapse; font-size:8.5pt; }
+      #docTaf .print-rk th, #docTaf .print-rk td { border:1px solid #b9b9b9; padding:4px 5px; text-align:center; }
+      #docTaf .print-rk thead th { background:#1f2937 !important; color:#fff !important; text-transform:uppercase; font-size:7.5pt; letter-spacing:.03em; }
+      #docTaf .print-rk th.grp { background:#374151 !important; border-bottom:2px solid #111 !important; }
+      #docTaf .print-rk th.grp .grp-d { font-weight:400; font-size:6.5pt; opacity:.85; }
+      #docTaf .print-rk th.sub-pt, #docTaf .print-rk td.sub-pt { background:#eef2f7 !important; }
+      #docTaf .print-rk td.nome, #docTaf .print-rk th.nome { text-align:left; font-weight:600; white-space:nowrap; }
+      #docTaf .print-rk td.col { font-weight:700; }
+      #docTaf .print-rk td small { color:#555; font-size:7pt; }
+      #docTaf .print-rk td.vazio { color:#999; font-style:italic; }
+      #docTaf .print-rk td.tot { font-weight:700; }
+      #docTaf .print-rk td.fin { font-weight:800; background:#eafaf0 !important; }
+      #docTaf .print-rk td.desc { color:#b91c1c; }
+      #docTaf .print-rk tbody tr:nth-child(even) td { background:#f7f8fa; }
+      #docTaf .print-rk tr.top1 td { background:#fff6da !important; }
+      #docTaf .print-rk tr.top2 td { background:#eef1f5 !important; }
+      #docTaf .print-rk tr.top3 td { background:#fbeede !important; }
+      #docTaf .print-rk tr.top1 td.col { color:#b8860b; }
+      #docTaf .doc-calc { font-size:7.5pt; color:#333; margin-top:10px; line-height:1.5; border-top:1px solid #ccc; padding-top:6px; }
+      #docTaf .doc-ass { display:flex; justify-content:space-around; gap:30px; margin-top:34px; text-align:center; font-size:8pt; }
+      @page { size:A4 landscape; margin:12mm; }
     }
   </style>
 
@@ -672,7 +718,7 @@
       }).join('');
       const tabela = `<div class="lb-wrap">
         <div class="lb-head"><span>📋 Classificação Geral</span>
-          <button class="lb-print" onclick="imprimirClassificacao()">🖨️ Imprimir</button></div>
+          <button class="lb-print" onclick="abrirImprimir()">🖨️ Imprimir</button></div>
         <div class="lb-scroll"><table class="lb-table">
           <thead><tr><th class="nome">Militar</th>${colsSessao}<th>Total</th><th>Desc.</th><th>Final</th></tr></thead>
           <tbody>${rows}</tbody></table></div>
@@ -933,28 +979,83 @@
       await salvar(KEY_R, resultados, 'Resultados salvos.');
     }
 
-    // ── Impressão da classificação ───────────────────────────────
-    function imprimirClassificacao(){
-      const { linhas, sessoes:doAno } = calcularClassificacao();
+    // ── Impressão da classificação (configurável) ────────────────
+    function abrirImprimir(){
+      const doAno = sessoes.filter(s=>s.ano===anoAtivo);
       if (!doAno.length){ BBM.toast('Não há sessões neste ano para imprimir.','error'); return; }
-      const colsSessao = doAno.map(s=>`<th>${s.nome}</th>`).join('');
+      const sel = document.getElementById('impQtd');
+      const n = doAno.length;
+      const opts = [`<option value="${n}">Todos os ${n} TAF</option>`];
+      for (let k=Math.min(3,n); k>=1; k--) if(k<n) opts.push(`<option value="${k}">Últimos ${k} TAF</option>`);
+      // ordena: "Últimos 3" como padrão quando houver ≥3
+      sel.innerHTML = opts.join('');
+      sel.value = n>=3 ? '3' : String(n);
+      BBM.openModal('modalImprimir');
+    }
+
+    function gerarImpressao(){
+      const qtd = Number(document.getElementById('impQtd').value) || 3;
+      const mostrarTempos = document.getElementById('impTempos').checked;
+      const { linhas, sessoes:doAno } = calcularClassificacao();
+      if (!doAno.length){ BBM.toast('Não há sessões neste ano.','error'); return; }
+      const ordenadas = [...doAno].sort((a,b)=>(a.dataPrevista||'').localeCompare(b.dataPrevista||''));
+      const sel = ordenadas.slice(Math.max(0, ordenadas.length - qtd)); // últimos N (cronológico)
+      const idxById = {}; doAno.forEach((s,i)=>idxById[s.id]=i);
+      const br = v => v.toFixed(2).replace('.',',');
+
+      const grupoHead = sel.map(s=>`<th colspan="${mostrarTempos?3:2}" class="grp">${s.nome}<br><span class="grp-d">${fmtData(s.dataPrevista)}</span></th>`).join('');
+      const subHead = sel.map(()=> mostrarTempos
+        ? `<th>🏃 tempo</th><th>🏊 tempo</th><th class="sub-pt">pontos</th>`
+        : `<th>🏃 pts</th><th>🏊 pts</th>`).join('');
+
       const rows = linhas.map(l=>{
-        const cels = l.porSessao.map(ps=>{
-          const soma = ps.pc+ps.pn;
-          const temTempo = ps.r && (ps.r.corridaSeg>0 || ps.r.natacaoSeg>0);
-          if (temTempo) return `<td>${soma.toFixed(2).replace('.',',')}</td>`;
-          if (ps.r && ehJust(ps.r.situacao)) return `<td>${ps.r.situacao.slice(0,3)}.</td>`;
-          return '<td>—</td>';
+        const cels = sel.map(s=>{
+          const ps = l.porSessao[idxById[s.id]];
+          const r = ps && ps.r;
+          const temTempo = r && (r.corridaSeg>0 || r.natacaoSeg>0);
+          const just = r && ehJust(r.situacao);
+          if (mostrarTempos){
+            if (temTempo){
+              const soma = ps.pc+ps.pn;
+              return `<td>${r.corridaSeg?fmtTempo(r.corridaSeg):'—'}<br><small>${br(ps.pc)}</small></td>
+                      <td>${r.natacaoSeg?fmtTempo(r.natacaoSeg):'—'}<br><small>${br(ps.pn)}</small></td>
+                      <td class="sub-pt"><strong>${br(soma)}</strong></td>`;
+            }
+            const marca = just ? r.situacao.slice(0,3)+'.' : '—';
+            return `<td colspan="3" class="vazio">${marca}</td>`;
+          } else {
+            if (temTempo) return `<td>${br(ps.pc)}</td><td>${br(ps.pn)}</td>`;
+            const marca = just ? r.situacao.slice(0,3)+'.' : '—';
+            return `<td colspan="2" class="vazio">${marca}</td>`;
+          }
         }).join('');
-        return `<tr><td>${l.pos}º</td><td class="nome">${l.nome}</td>${cels}<td>${l.total.toFixed(2).replace('.',',')}</td><td>${l.desc?'−'+l.desc:'0'}</td><td><strong>${l.final.toFixed(2).replace('.',',')}</strong></td></tr>`;
+        const medal = l.pos===1?'①':l.pos===2?'②':l.pos===3?'③':l.pos+'º';
+        return `<tr class="${l.pos<=3?'top'+l.pos:''}">
+          <td class="col">${medal}</td>
+          <td class="nome">${l.nome}</td>
+          ${cels}
+          <td class="tot">${br(l.total)}</td>
+          <td class="desc">${l.desc?'−'+l.desc:'0'}</td>
+          <td class="fin">${br(l.final)}</td>
+        </tr>`;
       }).join('');
+
+      const nCols = 3 + sel.length*(mostrarTempos?3:2) + 3;
       document.getElementById('docTaf').innerHTML = `
-        <div class="doc-head">ESTADO DO MARANHÃO<br/>CORPO DE BOMBEIROS MILITAR<br/>15º BATALHÃO DE BOMBEIROS MILITAR — CHAPADINHA/MA</div>
-        <h2>CLASSIFICAÇÃO DO TESTE DE APTIDÃO FÍSICA — ${anoAtivo}</h2>
-        <div class="doc-sub">Pontuação por ranking (corrida + natação) • descontos por atraso • emitida em ${new Date().toLocaleDateString('pt-BR')}</div>
-        <table><thead><tr><th>Col.</th><th class="nome">Militar</th>${colsSessao}<th>Total</th><th>Desc.</th><th>Final</th></tr></thead>
-        <tbody>${rows}</tbody></table>`;
-      window.print();
+        <div class="doc-head">ESTADO DO MARANHÃO — CORPO DE BOMBEIROS MILITAR<br/>15º BATALHÃO DE BOMBEIROS MILITAR — CHAPADINHA/MA</div>
+        <h2>RANKING DO TESTE DE APTIDÃO FÍSICA — ${anoAtivo}</h2>
+        <div class="doc-sub">Comparativo dos ${sel.length===1?'TAF':'últimos '+sel.length+' TAF'} • pontuação por ranking (corrida + natação) • descontos por atraso • emitido em ${new Date().toLocaleDateString('pt-BR')}</div>
+        <table class="print-rk">
+          <thead>
+            <tr><th rowspan="2" class="col">Col.</th><th rowspan="2" class="nome">Militar</th>${grupoHead}<th rowspan="2">Total</th><th rowspan="2">Desc.</th><th rowspan="2">Final</th></tr>
+            <tr>${subHead}</tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="doc-calc"><strong>Cálculo:</strong> em cada TAF, o melhor tempo vale 10 pts e cada colocação abaixo perde 0,25 (corrida e natação somam até 20). <strong>Total</strong> = soma de todos os TAF do ano. <strong>Desconto</strong> = −1 ponto a cada 31 dias de atraso na realização. <strong>Final</strong> = Total − Desconto.</div>
+        <div class="doc-ass"><div>______________________________<br/>Responsável pelo TAF</div><div>______________________________<br/>Comandante do 15º BBM</div></div>`;
+      BBM.closeModal('modalImprimir');
+      setTimeout(()=>window.print(), 150);
     }
 
     // ── Persistência ─────────────────────────────────────────────
