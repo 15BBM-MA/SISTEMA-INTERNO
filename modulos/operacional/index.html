@@ -61,6 +61,7 @@
       <!-- ===== NOVA PARTE ===== -->
       <div id="tabNova">
         <div id="bloqueadoBanner" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.85rem;color:#1d4ed8"></div>
+        <div id="devolucaoBanner" style="display:none;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.85rem;color:#92400e"></div>
         <div class="form-card" id="formCard">
           <input type="hidden" id="op_id"/>
           <div class="fc-sec">Período</div>
@@ -128,6 +129,9 @@
       <div class="modal-body">
         <input type="hidden" id="assId"/><input type="hidden" id="assPapel"/>
         <div id="assResumo" style="font-size:.85rem;color:#374151;margin-bottom:12px"></div>
+        <div class="form-group" id="assMotivoWrap" style="display:none"><label class="form-label">Motivo da devolução / correções necessárias *</label>
+          <textarea class="form-control" id="assMotivo" rows="3" placeholder="Descreva o que precisa ser corrigido pelo Cmt de Guarnição"></textarea>
+        </div>
         <div class="form-group" style="margin:0"><label class="form-label">Sua senha de acesso *</label>
           <input class="form-control" id="assSenha" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')confirmarAssinatura()"/>
         </div>
@@ -169,6 +173,7 @@
     .hist-item.urgente { border-color:#f59e0b;background:#fffbeb; }
     .hist-data { font-weight:700;color:var(--text);text-transform:capitalize; }
     .hist-meta { font-size:.8rem;color:var(--text-light);margin-top:2px; }
+    .hist-dev { font-size:.78rem;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:5px 9px;margin-top:6px; }
     .hist-acoes { display:flex;gap:8px;flex-wrap:wrap; }
     .st { font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap;margin-left:8px; }
     .st.rascunho { background:#f1f5f9;color:#475569; }
@@ -328,6 +333,7 @@
         criadoEm: anterior?anterior.criadoEm:new Date().toISOString(),
         assCmt: anterior?anterior.assCmt:null,
         assChefe: anterior?anterior.assChefe:null,
+        devolucao: anterior?anterior.devolucao:null,
       };
     }
 
@@ -360,6 +366,8 @@
         document.getElementById('assPapel').value = 'cmt';
         document.getElementById('assTitulo').textContent = 'Assinar como Cmt de Guarnição';
         document.getElementById('assResumo').innerHTML = 'Ao assinar, a parte é enviada ao <strong>Chefe de Socorro</strong> para conferência e não poderá mais ser editada.';
+        document.getElementById('assMotivoWrap').style.display='none';
+        document.getElementById('btnAssinar').textContent='Assinar';
         document.getElementById('assSenha').value='';
         document.getElementById('assErro').style.display='none';
         BBM.openModal('modalAssinar');
@@ -373,10 +381,28 @@
       document.getElementById('assPapel').value = 'chefe';
       document.getElementById('assTitulo').textContent = 'Assinar como Chefe de Socorro';
       document.getElementById('assResumo').innerHTML = `Parte diária de <strong>${esc(brData(p.data))}</strong>. Ao assinar, fica finalizada e visível a todos como assinada.`;
+      document.getElementById('assMotivoWrap').style.display='none';
       document.getElementById('assSenha').value='';
       document.getElementById('assErro').style.display='none';
+      document.getElementById('btnAssinar').textContent='Assinar';
       BBM.openModal('modalAssinar');
       setTimeout(()=>document.getElementById('assSenha').focus(),200);
+    }
+
+    // Chefe de Socorro devolve a parte ao Cmt de Guarnição para correção
+    function abrirDevolver(id){
+      const p = partes.find(x=>x.id===id); if(!p) return;
+      document.getElementById('assId').value = id;
+      document.getElementById('assPapel').value = 'devolver';
+      document.getElementById('assTitulo').textContent = 'Devolver ao Cmt para correção';
+      document.getElementById('assResumo').innerHTML = `Parte diária de <strong>${esc(brData(p.data))}</strong>. Ela voltará ao <strong>${esc(p.criadoPor)||'Cmt de Guarnição'}</strong> como rascunho editável; a assinatura do Cmt será cancelada.`;
+      document.getElementById('assMotivoWrap').style.display='';
+      document.getElementById('assMotivo').value='';
+      document.getElementById('assSenha').value='';
+      document.getElementById('assErro').style.display='none';
+      document.getElementById('btnAssinar').textContent='Devolver';
+      BBM.openModal('modalAssinar');
+      setTimeout(()=>document.getElementById('assMotivo').focus(),200);
     }
 
     async function conferirSenha(senha){
@@ -395,17 +421,24 @@
       const err=document.getElementById('assErro');
       const p=partes.find(x=>x.id===id); if(!p) return;
       const u=eu();
-      if(papel==='chefe' && !ehMesma(u?.nome, p.chefeNome)){ err.textContent='Só o Chefe de Socorro indicado pode assinar.'; err.style.display='block'; return; }
+      const rotulo = papel==='devolver' ? 'Devolver' : 'Assinar';
+      if((papel==='chefe'||papel==='devolver') && !ehMesma(u?.nome, p.chefeNome)){ err.textContent='Apenas o Chefe de Socorro indicado pode '+(papel==='devolver'?'devolver':'assinar')+' esta parte.'; err.style.display='block'; return; }
+      let motivo='';
+      if(papel==='devolver'){ motivo=(val('assMotivo')||'').trim(); if(!motivo){ err.textContent='Descreva o motivo da devolução.'; err.style.display='block'; return; } }
       if(!senha){ err.textContent='Informe sua senha.'; err.style.display='block'; return; }
       const btn=document.getElementById('btnAssinar'); btn.disabled=true; btn.textContent='Verificando…';
       const ok=await conferirSenha(senha);
-      if(!ok){ btn.disabled=false; btn.textContent='Assinar'; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
+      if(!ok){ btn.disabled=false; btn.textContent=rotulo; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
       const agora=new Date().toISOString();
-      if(papel==='cmt'){ p.assCmt={nome:u.nome, em:agora}; p.status='aguardando_chefe'; }
+      if(papel==='cmt'){ p.assCmt={nome:u.nome, em:agora}; p.status='aguardando_chefe'; p.devolucao=null; }
       if(papel==='chefe'){ p.assChefe={nome:u.nome, em:agora}; p.status='assinado'; }
+      if(papel==='devolver'){ p.status='rascunho'; p.assCmt=null; p.devolucao={ por:u.nome, em:agora, motivo }; }
       BBM.closeModal('modalAssinar');
-      const okSave = await persistir(p, papel==='cmt'?'Assinado e enviado ao Chefe de Socorro.':'Parte assinada e finalizada.');
-      btn.disabled=false; btn.textContent='Assinar';
+      const msg = papel==='cmt' ? 'Assinado e enviado ao Chefe de Socorro.'
+                : papel==='chefe' ? 'Parte assinada e finalizada.'
+                : 'Parte devolvida ao Cmt para correção.';
+      const okSave = await persistir(p, msg);
+      btn.disabled=false; btn.textContent=rotulo;
       if(okSave){ if(papel==='cmt'){ limpar(); showTab('tabHist', document.querySelectorAll('.tab-btn')[1]); } else renderHist(); }
     }
 
@@ -418,6 +451,7 @@
       setGuarnicao(null);
       setPermutas([]);
       setBloqueado(false);
+      const devBanner=document.getElementById('devolucaoBanner'); if(devBanner) devBanner.style.display='none';
     }
     function setBloqueado(b, msg){
       bloqueado=b;
@@ -439,6 +473,11 @@
       ['jornada','atestado','viaturas','ocorrencias','outros','passagem'].forEach(k=>document.getElementById('op_'+k).value=p[k]||'');
       const podeEditar = p.status==='rascunho' && (!p.criadoPorId || p.criadoPorId===eu()?.id);
       setBloqueado(!podeEditar, p.status==='rascunho'?'Rascunho de outro usuário — somente leitura.':'Parte já assinada pelo Cmt — somente leitura.');
+      const devBanner=document.getElementById('devolucaoBanner');
+      if(p.status==='rascunho' && p.devolucao){
+        devBanner.style.display='block';
+        devBanner.innerHTML=`↩ <strong>Devolvida para correção</strong> por ${esc(p.devolucao.por)} em ${new Date(p.devolucao.em).toLocaleDateString('pt-BR')}: <em>${esc(p.devolucao.motivo)}</em>. Corrija e assine novamente para reenviar ao Chefe de Socorro.`;
+      } else devBanner.style.display='none';
       document.querySelector('.tab-btn').click();
       document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
     }
@@ -529,13 +568,17 @@
         const souChefe = p.status==='aguardando_chefe' && ehMesma(u?.nome, p.chefeNome);
         const souCriador = p.status==='rascunho' && (!p.criadoPorId || p.criadoPorId===u?.id);
         let acoes=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verDoc('${p.id}')">🖨️ Ver / Imprimir</button>`;
-        if(souChefe) acoes=`<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinarChefe('${p.id}')">✍ Assinar como Chefe</button>`+acoes;
+        if(souChefe) acoes=`<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinarChefe('${p.id}')">✍ Assinar como Chefe</button>`
+                           +`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#b45309;border-color:#fcd34d" onclick="abrirDevolver('${p.id}')">↩ Devolver p/ correção</button>`+acoes;
         if(souCriador) acoes+=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="editar('${p.id}')">✎ Editar</button>
                                <button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#dc2626;border-color:#fca5a5" onclick="excluir('${p.id}')">🗑</button>`;
+        const notaDev = (p.status==='rascunho' && p.devolucao)
+          ? `<div class="hist-dev">↩ Devolvida para correção por ${esc(p.devolucao.por)} — <em>${esc(p.devolucao.motivo)}</em></div>` : '';
         return `<div class="hist-item${souChefe?' urgente':''}">
           <div>
             <div class="hist-data">${p.data?new Date(p.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}${stBadge(p.status)}</div>
             <div class="hist-meta">Chefe: ${esc(p.chefeNome)||'—'}${p.criadoPor?' · registro de '+esc(p.criadoPor):''}</div>
+            ${notaDev}
           </div>
           <div class="hist-acoes">${acoes}</div>
         </div>`;

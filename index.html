@@ -429,6 +429,11 @@
           nt.push({ cls:'livro', tipo:'Livro de serviço',
             desc:`Parte diária de ${_brData(p.data)} aguarda sua assinatura como Chefe de Socorro.`,
             href:'modulos/operacional/index.html', label:'Assinar' });
+        // parte devolvida pelo Chefe → o Cmt que registrou precisa corrigir
+        if (p.status==='rascunho' && p.devolucao && (!p.criadoPorId || p.criadoPorId===user.id))
+          nt.push({ cls:'livro', tipo:'Livro de serviço',
+            desc:`Parte diária de ${_brData(p.data)} foi <b>devolvida para correção</b> pelo Chefe de Socorro: ${p.devolucao.motivo||''}`,
+            href:'modulos/operacional/index.html', label:'Corrigir' });
       });
 
       if (!nt.length){

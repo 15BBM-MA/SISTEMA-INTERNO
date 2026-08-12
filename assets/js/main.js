@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Retira qualquer "Permutas" de topo (será reposicionado como subitem da Escala)
     let permA = null;
     navEl.querySelectorAll('a.nav-item').forEach(a => {
-      if (href(a).includes('modulos/permutas/')) { permA = a; a.remove(); }
+      if (href(a).includes('permutas/')) { permA = a; a.remove(); }
     });
     // Ordena os itens de topo em ordem alfabética (o rótulo "Módulos" permanece no topo)
     [...navEl.querySelectorAll('a.nav-item')]
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       permA.className = 'nav-item' + (ativo ? ' active' : '');
       permA.style.paddingLeft = '2.6rem';   // recuo indica subordinação à Escala
       permA.style.fontSize = '.86rem';
-      const escala = [...navEl.querySelectorAll('a.nav-item')].find(a => href(a).includes('modulos/escala/'));
+      const escala = [...navEl.querySelectorAll('a.nav-item')].find(a => href(a).includes('escala/'));
       if (escala) navEl.insertBefore(permA, escala.nextSibling);
       else navEl.appendChild(permA);
     }
