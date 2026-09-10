@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TAF — Aptidão Física — 15º BBM</title>
   <link rel="stylesheet" href="../../assets/css/main.css"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"/>
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -434,6 +434,131 @@
       #docTaf .doc-ass { display:flex; justify-content:space-around; gap:30px; margin-top:26px; text-align:center; font-size:8pt; break-inside:avoid; }
       @page { size:A4 landscape; margin:10mm; }
     }
+
+    /* ================= TEMA AURORA (design system) — escopo da página TAF ================= */
+    :root{
+      --bg:#030304; --surface:#111116; --surface-2:#0c0c11; --surface-solid:#111116;
+      --border:rgba(255,255,255,.08); --text:#F4F4F6; --text-mid:#b9b9c2; --text-light:#888894;
+      --blue:#33D2FF; --blue-light:rgba(51,210,255,.12);
+      --shadow:0 1px 4px rgba(0,0,0,.5), 0 10px 34px -8px rgba(0,0,0,.6); --radius:12px; --radius-lg:16px;
+      --acc:#33D2FF; --acc2:#4A8CFF;
+    }
+    body{ font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); }
+    .mod-title,.arena-title,.taf-det-nome,.pod-av,.pod-rank,.pod-score,.rec-time,.lb-head{ font-family:'Outfit',system-ui,sans-serif; }
+    body::before{ content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(74,140,255,.06), transparent 42%),
+        radial-gradient(circle at 88% 18%, rgba(51,210,255,.05), transparent 42%),
+        radial-gradient(circle at 50% 112%, rgba(74,140,255,.04), transparent 55%); }
+    .main,.sidebar,.content,.topbar{ position:relative; z-index:1; }
+
+    /* Sidebar / topbar — glass escuro */
+    .sidebar{ background:#08080A; border-right:1px solid var(--border); }
+    .sidebar .nav-item{ color:var(--text-light); }
+    .sidebar .nav-item:hover{ background:rgba(255,255,255,.04); color:var(--text); }
+    .sidebar .nav-item.active{ background:rgba(51,210,255,.10); color:var(--acc); }
+    .sidebar-title-main{ color:var(--text); } .sidebar-title-sub,.sidebar-footer-text,.nav-label{ color:var(--text-light); }
+    .topbar{ background:rgba(8,8,10,.72); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
+    .topbar-breadcrumb a,.topbar-date{ color:var(--text-light); } .breadcrumb-current{ color:var(--text); }
+    .menu-toggle span{ background:var(--text); }
+
+    /* Cabeçalho do módulo */
+    .mod-icon{ background:rgba(51,210,255,.12)!important; color:var(--acc)!important; }
+    .mod-title{ color:var(--text); } .mod-subtitle{ color:var(--text-light); }
+    .section-label{ color:var(--text-light); text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; }
+
+    /* Botões / campos */
+    .btn-primary{ background:var(--acc); color:#041014; border:none; box-shadow:0 0 20px -6px rgba(51,210,255,.5); }
+    .btn-primary:hover{ filter:brightness(1.06); }
+    .btn-ghost{ background:rgba(255,255,255,.04); color:var(--text); border:1px solid var(--border); }
+    .btn-ghost:hover{ background:rgba(51,210,255,.10); border-color:rgba(51,210,255,.4); color:var(--text); }
+    .form-control{ background:var(--surface-2); border:1px solid var(--border); color:var(--text); }
+    .form-control:focus{ border-color:rgba(51,210,255,.55); box-shadow:0 0 0 3px rgba(51,210,255,.14); outline:none; }
+
+    /* Arena */
+    .arena{
+      background:
+        radial-gradient(120% 80% at 50% -20%, rgba(51,210,255,.14), transparent 60%),
+        radial-gradient(90% 90% at 88% 120%, rgba(74,140,255,.12), transparent 55%),
+        linear-gradient(160deg,#0a0a0e,#0d0f16 55%,#08080b);
+      border:1px solid var(--border);
+      box-shadow:0 30px 70px -30px rgba(51,210,255,.22), inset 0 1px 0 rgba(255,255,255,.05); }
+    .arena-title{ color:#EAFBFF; letter-spacing:.14em; }
+    .arena-title span{ filter:drop-shadow(0 0 8px rgba(51,210,255,.85)); }
+    .arena-empty{ color:var(--text-light); }
+
+    /* Pódio */
+    .pod-av{ color:var(--acc); border:1px solid rgba(51,210,255,.4); box-shadow:0 0 18px -6px rgba(51,210,255,.4); background:linear-gradient(145deg,#1a1a22,#0c0c12); }
+    .pod1 .pod-av{ background:linear-gradient(145deg,#33D2FF,#4A8CFF); color:#041014; box-shadow:0 0 26px -4px rgba(51,210,255,.75); }
+    .pod2 .pod-av{ background:linear-gradient(145deg,#2a2f3a,#171a21); color:#cfe9ff; }
+    .pod3 .pod-av{ background:linear-gradient(145deg,#243b46,#122029); color:#9fe0ff; }
+    .pod-name{ color:#f2f6ff; }
+    .pod-base{ color:#041014; border:1px solid rgba(255,255,255,.25); }
+    .pod1 .pod-base{ background:linear-gradient(180deg,#7fe6ff,#33D2FF); }
+    .pod2 .pod-base{ background:linear-gradient(180deg,#dfe7f2,#aab6c8); }
+    .pod3 .pod-base{ background:linear-gradient(180deg,#7fd0ec,#3f9dc0); }
+    .pod-crown{ filter:drop-shadow(0 0 10px rgba(51,210,255,.9)); }
+
+    /* Recordes */
+    .rec-card{ background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02)); border:1px solid var(--border); border-left:4px solid var(--rec); }
+    .rec-tit{ color:var(--text-light); } .rec-time{ color:#EAFBFF; } .rec-time span{ color:var(--text-light); }
+
+    /* Leaderboard */
+    .lb-wrap{ background:rgba(10,10,14,.5); border:1px solid var(--border); }
+    .lb-head{ background:rgba(255,255,255,.03); color:#EAFBFF; border-bottom:1px solid var(--border); }
+    .lb-print{ background:rgba(51,210,255,.12); color:var(--acc); border:1px solid rgba(51,210,255,.35); }
+    .lb-print:hover{ background:rgba(51,210,255,.2); }
+    .lb-table th{ background:#0d0f14; color:#9fb0c3; }
+    .lb-table td{ color:#e9edf3; }
+    .lb-table .lb-tot{ color:#fff; } .lb-table .taf-final{ color:var(--acc); }
+    .lb-table th.nome, .lb-table td.nome{ background:#0a0d14; color:#f2f6ff; border-right:1px solid var(--border); }
+    .lb-table thead th.nome{ background:#0d0f14; }
+    .lb-table tbody tr:hover td{ background:rgba(51,210,255,.08)!important; }
+    .lb-table tbody tr:hover td.nome{ background:#0e1b26!important; }
+    .lb-table tr.lb1 td{ background:rgba(51,210,255,.12); } .lb-table tr.lb1 td.nome{ background:#0e2630; box-shadow:inset 4px 0 0 var(--acc); color:#bff0ff; }
+    .lb-table tr.lb2 td{ background:rgba(148,163,184,.12); } .lb-table tr.lb2 td.nome{ background:#171a21; box-shadow:inset 4px 0 0 #94a3b8; }
+    .lb-table tr.lb3 td{ background:rgba(74,140,255,.12); } .lb-table tr.lb3 td.nome{ background:#122029; box-shadow:inset 4px 0 0 #4A8CFF; color:#bcd6ff; }
+
+    /* Navegação por TAF */
+    .taf-pill{ background:var(--surface); border:1px solid var(--border); color:var(--text); }
+    .taf-pill:hover{ border-color:rgba(51,210,255,.5); }
+    .taf-pill.active{ background:linear-gradient(135deg,#33D2FF,#4A8CFF); color:#041014; box-shadow:0 6px 18px -8px rgba(51,210,255,.8); }
+    .taf-pill-n{ background:rgba(0,0,0,.25); } .taf-pill.active .taf-pill-n{ background:rgba(4,16,20,.25); }
+    .taf-arrow{ background:var(--surface); border:1px solid var(--border); color:var(--text); }
+    .taf-det-nome{ color:#EAFBFF; } .taf-det-sub{ color:var(--text-light); }
+
+    /* Tabela por TAF (glass escuro) */
+    .taf-table th{ background:#0d0f14; color:#9fb0c3; border-bottom-color:var(--border); }
+    .taf-table td{ border-bottom-color:var(--border); color:#e9edf3; }
+    .taf-table tr:hover td{ background:rgba(51,210,255,.06); }
+    .taf-taf th.nome, .taf-taf td.nome{ background:#0a0d14; border-right-color:var(--border); }
+    .taf-taf thead th.nome{ background:#0d0f14; }
+    .taf-taf tbody tr.semdado td{ color:#6b7280; }
+    .taf-taf tbody tr.aberto td{ background:rgba(51,210,255,.10)!important; }
+    .taf-taf tbody tr.aberto td.nome{ background:#0e2630!important; }
+    .taf-taf tr.lb1 td.nome{ background:#0e2630; box-shadow:inset 4px 0 0 var(--acc); }
+    .taf-taf tr.lb2 td.nome{ background:#171a21; box-shadow:inset 4px 0 0 #94a3b8; }
+    .taf-taf tr.lb3 td.nome{ background:#122029; box-shadow:inset 4px 0 0 #4A8CFF; }
+    .taf-detrow td{ background:rgba(255,255,255,.03); }
+    .taf-explica{ color:var(--text); border-left:3px solid var(--acc); }
+    .taf-explica b{ color:#bff0ff; }
+    .taf-tag{ background:rgba(51,210,255,.14); color:#bff0ff; }
+    .taf-info{ color:var(--text-light); } .taf-legenda{ color:var(--text-light); }
+
+    /* Cards de sessão + badges */
+    .ses-card{ background:var(--surface); border:1px solid var(--border); }
+    .ses-nome{ color:var(--text); } .ses-sub{ color:var(--text-light); }
+    .ses-badge.ok{ background:rgba(51,210,255,.14); color:#bff0ff; }
+    .ses-badge.pend{ background:rgba(148,163,184,.14); color:#cbd5e1; }
+
+    /* Modais + entrada */
+    .modal{ background:var(--surface-solid); border:1px solid var(--border); color:var(--text); }
+    .modal-title{ color:var(--text); } .modal-close{ color:var(--text-light); }
+    .form-label{ color:var(--text-mid); }
+    .taf-entry th{ background:var(--surface); color:var(--text-light); }
+    .taf-entry td, .taf-entry th{ border-bottom-color:var(--border); }
+    .taf-entry input, .taf-entry select{ background:var(--surface-2); border:1px solid var(--border); color:var(--text); }
+    .empty-state{ color:var(--text-light); }
   </style>
 
   <script src="../../assets/js/main.js"></script>
