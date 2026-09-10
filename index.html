@@ -408,6 +408,11 @@
           nt.push({ cls:'check', tipo:'Checklist de viatura',
             desc:`Checklist da <b>${c.viaturaNome||'viatura'}</b> de ${_brData(c.data)} aguarda sua assinatura como Chefe de Socorro.`,
             href:'modulos/viaturas/index.html', label:'Assinar' });
+        // checklist devolvido pelo Chefe → o motorista precisa corrigir
+        if (c.status==='rascunho' && c.devolucao && ((c.criadorId && c.criadorId===user.id) || _ehMeu(c.motorista, user.nome)))
+          nt.push({ cls:'check', tipo:'Checklist de viatura',
+            desc:`Checklist da <b>${c.viaturaNome||'viatura'}</b> de ${_brData(c.data)} foi <b>devolvido para correção</b> pelo Chefe de Socorro: ${c.devolucao.motivo||''}`,
+            href:'modulos/viaturas/index.html', label:'Corrigir' });
       });
 
       // 2) Permutas — quem precisa completar a assinatura (substituto/escalante)
