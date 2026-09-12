@@ -3,6 +3,10 @@
 -- para os demais módulos lerem (Escala, Estrutura) sem cadastro próprio.
 -- Cole no Supabase → SQL Editor → Run.
 -- ============================================================
+-- Precisa apagar antes: o Postgres não deixa "create or replace" mudar as
+-- colunas de retorno (erro 42P13). O grant é reaplicado no fim.
+drop function if exists public.listar_militares();
+
 create or replace function public.listar_militares()
 returns table(nome text, posto text, categoria text, role text, login text, id uuid)
 language sql security definer stable
