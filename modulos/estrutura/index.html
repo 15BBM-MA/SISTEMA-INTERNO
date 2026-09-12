@@ -112,15 +112,26 @@
       'Analista Técnico','Manutenção das Instalações','Bombeiro Mirim','Responsável pelas Viaturas',
     ];
     let oficiais = [];
-    let deleg = {};   // funcao -> nome do oficial
+    let deleg = {};   // funcao -> CHAVE ESTÁVEL do oficial (login; nome só como fallback)
     let ehAdmin = false;
+
+    // Chave estável: o login não muda em promoção (o nome/posto muda). Enquanto o
+    // banco não expõe login, cai para o nome (comportamento antigo, sem regressão).
+    function chaveDe(o){ return (o && (o.login || o.nome)) || ''; }
+    function oficialPorChave(k){ return oficiais.find(o=>chaveDe(o)===k) || null; }
+    // Núcleo do nome (ignora posto/graduação) para recuperar vínculos após promoção.
+    function _norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
+    const POSTOS = new Set(['aspirante','asp','tenente','ten','capitao','cap','major','maj','coronel','cel','tc','subtenente','subten','sub','sargento','sgt','cabo','cb','soldado','sd','bombeiro','civil','bc','bm','1','2','3','o','a']);
+    function nucleoNome(nome){ return _norm(nome).split(' ').filter(t=>t && !POSTOS.has(t)).join(' '); }
+    function mesmoNucleo(a,b){ const na=nucleoNome(a), nb=nucleoNome(b); return !!na && na===nb; }
+    function oficialPorNome(nome){ return oficiais.find(o=>o.nome===nome) || oficiais.find(o=>mesmoNucleo(o.nome,nome)) || null; }
 
     const HIERARQUIA = ['Major Martins','Capitão Oliveira','Capitão Daniel','1º Ten Araújo','1º Ten Paulo José','Aspirante Felipe Souza'];
     const hierSort = (a,b)=>{ const ia=HIERARQUIA.indexOf(a.nome), ib=HIERARQUIA.indexOf(b.nome); return (ia<0?99:ia)-(ib<0?99:ib); };
     function nivelClasse(o){ return /Maj/.test(o.posto)?'n1':(/Cap/.test(o.posto)?'n2':(/Ten/.test(o.posto)?'n3':'n4')); }
     function cardOficial(o, rotulo){
       if(!o) return '';
-      const funcs = FUNCOES.filter(f=>deleg[f]===o.nome);
+      const funcs = FUNCOES.filter(f=>deleg[f]===chaveDe(o));
       return `<div class="org-node ${nivelClasse(o)}">
         <div class="org-card">
           ${rotulo?`<div class="org-rotulo">${rotulo}</div>`:''}
@@ -133,9 +144,9 @@
     function renderQuadro(){
       const q = document.getElementById('quadro');
       const ord = [...oficiais].sort(hierSort);
-      const byNome = n => oficiais.find(o=>o.nome===n);
-      let comandante = oficiais.find(o=>deleg['Comando']===o.nome) || byNome(HIERARQUIA[0]) || ord[0];
-      let sub = oficiais.find(o=>deleg['Subcomandante']===o.nome) || byNome(HIERARQUIA[1]) || ord[1];
+      const byNome = n => oficiais.find(o=>o.nome===n) || oficiais.find(o=>mesmoNucleo(o.nome,n));
+      let comandante = oficiais.find(o=>deleg['Comando']===chaveDe(o)) || byNome(HIERARQUIA[0]) || ord[0];
+      let sub = oficiais.find(o=>deleg['Subcomandante']===chaveDe(o)) || byNome(HIERARQUIA[1]) || ord[1];
       const demais = ord.filter(o=>o && o!==comandante && o!==sub);
       let html = '';
       if(comandante) html += cardOficial(comandante, 'Comando');
@@ -148,17 +159,23 @@
 
     function renderDeleg(){
       const tb = document.getElementById('tabelaDeleg');
-      const opts = nome => '<option value="">— a definir —</option>' + oficiais.map(o=>`<option ${o.nome===nome?'selected':''}>${o.nome}</option>`).join('');
+      const opts = chave => '<option value="">— a definir —</option>' +
+        oficiais.map(o=>`<option value="${chaveDe(o).replace(/"/g,'&quot;')}" ${chaveDe(o)===chave?'selected':''}>${o.posto?o.posto+' ':''}${o.nome}</option>`).join('');
       tb.innerHTML = FUNCOES.map(f=>`<tr>
         <td><strong>${f}</strong></td>
         <td><select class="deleg-sel" onchange="setDeleg('${f.replace(/'/g,"\\'")}', this.value)">${opts(deleg[f]||'')}</select></td>
       </tr>`).join('');
     }
-    async function setDeleg(funcao, nome){
-      if(nome) deleg[funcao]=nome; else delete deleg[funcao];
-      // salva como lista de itens {id:funcao, funcao, oficial}
-      const arr = FUNCOES.filter(f=>deleg[f]).map(f=>({ id:f, funcao:f, oficial:deleg[f] }));
-      BBM.save('estrutura_funcoes', arr);
+    // Monta a lista para salvar: chave estável (login) + nome atual (snapshot p/ leitura dos outros módulos).
+    function montarArr(){
+      return FUNCOES.filter(f=>deleg[f]).map(f=>{
+        const o = oficialPorChave(deleg[f]);
+        return { id:f, funcao:f, oficialLogin:(o&&o.login)||'', oficial:(o&&o.nome)||deleg[f] };
+      });
+    }
+    async function setDeleg(funcao, chave){
+      if(chave) deleg[funcao]=chave; else delete deleg[funcao];
+      await BBM.save('estrutura_funcoes', montarArr());
       renderQuadro();
       BBM.toast('Delegação salva.');
     }
@@ -169,8 +186,22 @@
       // oficiais vêm do cadastro central (Controle de Acessos)
       const efetivo = await BBM.militares();
       oficiais = efetivo.filter(p => (p.categoria||'').toLowerCase().indexOf('ofic')===0);
-      const fa = BBM.load('estrutura_funcoes');
-      deleg = {}; fa.forEach(x=>{ deleg[x.funcao]=x.oficial; });
+      const fa = BBM.load('estrutura_funcoes') || [];
+      deleg = {};
+      fa.forEach(x=>{
+        // 1) chave já estável (login) salva anteriormente
+        let o = x.oficialLogin ? oficiais.find(of=>of.login===x.oficialLogin) : null;
+        // 2) recupera vínculo antigo (só nome) — casa por nome exato ou pelo núcleo
+        //    do nome, tolerando promoção (Aspirante → Tenente etc.)
+        if(!o && x.oficial) o = oficialPorNome(x.oficial);
+        if(o) deleg[x.funcao] = chaveDe(o);
+      });
+      // Auto-cura: se a lista normalizada mudou (recuperação ou nome atualizado),
+      // re-grava para manter o snapshot de nome correto para os demais módulos.
+      if (ehAdmin) {
+        const novo = montarArr();
+        if (JSON.stringify(novo) !== JSON.stringify(fa)) BBM.save('estrutura_funcoes', novo);
+      }
       renderQuadro();
       if (ehAdmin) { document.getElementById('areaAdmin').style.display='block'; renderDeleg(); }
       else { document.getElementById('avisoRestrito').style.display='block'; }

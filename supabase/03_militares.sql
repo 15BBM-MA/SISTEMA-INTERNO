@@ -4,10 +4,10 @@
 -- Cole no Supabase → SQL Editor → Run.
 -- ============================================================
 create or replace function public.listar_militares()
-returns table(nome text, posto text, categoria text, role text)
+returns table(nome text, posto text, categoria text, role text, login text, id uuid)
 language sql security definer stable
 set search_path = public as $$
-  select nome, posto, categoria, role
+  select nome, posto, categoria, role, login, id
   from public.perfis
   order by
     case when posto ilike 'Maj%' then 1
