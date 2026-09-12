@@ -328,8 +328,8 @@ window.BBM = {
   // ---------- SUPABASE / AUTENTICAÇÃO ----------
   SB_URL: (window.SUPABASE_URL || 'https://czujticzdtmmiugjajgh.supabase.co'),
   SB_KEY: (window.SUPABASE_KEY || 'sb_publishable_YFyNxDKAGSpZiGESF7f55w_3EpkAUB-'),
-  // Chave pública VAPID das notificações push (gerada por você no Supabase).
-  VAPID_PUBLIC: (window.BBM_VAPID_PUBLIC || ''),
+  // Chave pública VAPID das notificações push (segura para publicar).
+  VAPID_PUBLIC: (window.BBM_VAPID_PUBLIC || 'BBJaVvn2cxwxaxXiFgeamagaJWIXOnHP3swimK8cZAxYbBFrkfExv6jyBIyNla8S0Lm-Qwwg_RUVEHwA7nkj8wA'),
   _sb: null,
   _perfil: null,
   _authReady: false,
