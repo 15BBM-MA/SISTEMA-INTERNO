@@ -328,6 +328,8 @@ window.BBM = {
   // ---------- SUPABASE / AUTENTICAÇÃO ----------
   SB_URL: (window.SUPABASE_URL || 'https://czujticzdtmmiugjajgh.supabase.co'),
   SB_KEY: (window.SUPABASE_KEY || 'sb_publishable_YFyNxDKAGSpZiGESF7f55w_3EpkAUB-'),
+  // Chave pública VAPID das notificações push (gerada por você no Supabase).
+  VAPID_PUBLIC: (window.BBM_VAPID_PUBLIC || ''),
   _sb: null,
   _perfil: null,
   _authReady: false,
@@ -419,6 +421,64 @@ window.BBM = {
     if (p.role === 'admin') return 'edicao';
     if (modKey === 'acessos') return 'nenhum';
     return (p.permissoes && p.permissoes[modKey]) || 'nenhum';
+  },
+
+  // ---------- NOTIFICAÇÕES PUSH ----------
+  _b64ToUint8(b64) {
+    const pad = '='.repeat((4 - b64.length % 4) % 4);
+    const base = (b64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base), arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  },
+  notificacoesSuportadas() {
+    return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+  },
+  // Estado atual: 'ativo' | 'bloqueado' | 'inativo' | 'nao-suportado' | 'sem-chave'
+  async estadoNotificacoes() {
+    if (!this.notificacoesSuportadas()) return 'nao-suportado';
+    if (!this.VAPID_PUBLIC) return 'sem-chave';
+    if (Notification.permission === 'denied') return 'bloqueado';
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      return sub ? 'ativo' : 'inativo';
+    } catch { return 'inativo'; }
+  },
+  // Pede permissão, inscreve o aparelho e salva no Supabase.
+  async ativarNotificacoes() {
+    if (!this.notificacoesSuportadas()) { this.toast('Este aparelho não suporta notificações.', 'error'); return false; }
+    if (!this.VAPID_PUBLIC) { this.toast('Notificações ainda não configuradas (falta a chave VAPID).', 'error'); return false; }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { this.toast('Permissão de notificação negada. Ative nas configurações do navegador.', 'error'); return false; }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: this._b64ToUint8(this.VAPID_PUBLIC) });
+      await this._salvarInscricao(sub);
+      this.toast('Notificações ativadas neste aparelho.');
+      return true;
+    } catch (e) { console.error(e); this.toast('Não foi possível ativar as notificações.', 'error'); return false; }
+  },
+  async _salvarInscricao(sub) {
+    const u = this.currentUser(); if (!u) return;
+    const j = sub.toJSON();
+    try {
+      const sb = await this.sb();
+      await sb.from('push_subscriptions').upsert({
+        endpoint: j.endpoint, user_id: u.id,
+        p256dh: j.keys.p256dh, auth: j.keys.auth,
+        atualizado: new Date().toISOString(),
+      }, { onConflict: 'endpoint' });
+    } catch (e) { console.warn('salvar inscrição push', e); }
+  },
+  // Dispara um push para um destinatário. `para` = {login} | {id} | {nome}.
+  // Best-effort e silencioso: nunca quebra o fluxo de quem gerou a ação.
+  async notificar(para, payload) {
+    try {
+      const sb = await this.sb();
+      await sb.functions.invoke('enviar-push', { body: { para, ...payload } });
+    } catch (e) { /* push é opcional */ }
   },
 
 };

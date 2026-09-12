@@ -327,6 +327,10 @@
       BBM.closeModal('modalSolicitar');
       render();
       await salvarPermutas('Permuta solicitada e assinada. Aguardando o substituto.');
+      BBM.notificar({ nome:p.substitutoNome }, {
+        title:'Permuta aguardando você',
+        body:`${p.solicitanteNome} pediu permuta do serviço de ${fmtData(p.data)} — assine como substituto.`,
+        url:'modulos/permutas/index.html', tag:'perm-'+p.id });
       btn.disabled=false; btn.textContent='Assinar e solicitar';
     }
 
@@ -362,6 +366,10 @@
       BBM.closeModal('modalAssinar');
       render();
       await salvarPermutas(papel==='escalante'?'Permuta finalizada e assinada por todos.':'Assinatura registrada. Encaminhada ao próximo assinante.');
+      if (papel==='substituto' && p.escalanteNome) BBM.notificar({ nome:p.escalanteNome }, {
+        title:'Permuta aguardando o escalante',
+        body:`Permuta de ${p.solicitanteNome} → ${p.substitutoNome} aguarda sua assinatura como escalante.`,
+        url:'modulos/permutas/index.html', tag:'perm-'+p.id });
       btn.disabled=false; btn.textContent='Assinar';
     }
 

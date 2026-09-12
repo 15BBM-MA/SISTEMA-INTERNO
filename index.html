@@ -137,6 +137,13 @@
         <div class="hero-date" id="heroDate"></div>
       </div>
 
+      <!-- ATIVAR NOTIFICAÇÕES PUSH (por aparelho) -->
+      <div id="pushBar" style="display:none;align-items:center;gap:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 16px;margin-bottom:16px">
+        <span style="font-size:1.3rem">🔔</span>
+        <div style="flex:1;font-size:.86rem;color:#1e3a5f" id="pushBarTxt">Receba um aviso no celular quando tiver algo aguardando você (assinaturas, devoluções, permutas).</div>
+        <button class="btn btn-primary" id="btnAtivarPush" style="white-space:nowrap">Ativar neste aparelho</button>
+      </div>
+
       <!-- NOTIFICAÇÕES / PENDÊNCIAS DE ASSINATURA -->
       <div id="notificacoes"></div>
 
@@ -471,9 +478,32 @@
     // Coleções LEVES primeiro → a home pinta rápido. Os checklists de viatura
     // (pesados por causa das fotos em base64) carregam em segundo plano e só
     // atualizam as notificações, sem travar o primeiro render.
+    // Barra "Ativar notificações" — aparece só quando faz sentido pedir.
+    async function renderPushBar(){
+      const bar = document.getElementById('pushBar');
+      if (!bar || !BBM.notificacoesSuportadas || !BBM.notificacoesSuportadas()) return;
+      const estado = await BBM.estadoNotificacoes();
+      const txt = document.getElementById('pushBarTxt');
+      if (estado === 'inativo') {
+        bar.style.display = 'flex';
+      } else if (estado === 'bloqueado') {
+        bar.style.display = 'flex';
+        txt.textContent = 'As notificações estão bloqueadas neste navegador. Libere nas configurações do site para receber avisos.';
+        document.getElementById('btnAtivarPush').style.display = 'none';
+      } else { bar.style.display = 'none'; }
+    }
+    const _bp = document.getElementById('btnAtivarPush');
+    if (_bp) _bp.addEventListener('click', async () => {
+      _bp.disabled = true; _bp.textContent = 'Ativando…';
+      const ok = await BBM.ativarNotificacoes();
+      _bp.disabled = false; _bp.textContent = 'Ativar neste aparelho';
+      if (ok) document.getElementById('pushBar').style.display = 'none';
+    });
+
     BBM.ready(['escala_registros','permutas_solicitacoes','operacional_partes'], () => {
       const user = BBM.currentUser && BBM.currentUser();
       renderNotificacoes(user);
+      renderPushBar();
       BBM.refresh('viaturas_checklist')
         .then(() => renderNotificacoes(BBM.currentUser && BBM.currentUser()))
         .catch(() => {});

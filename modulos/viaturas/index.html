@@ -1444,6 +1444,10 @@
           toast: 'Checklist assinado e enviado ao Chefe de Socorro!',
           erro:  'Assinatura registrada só neste aparelho — o Chefe de Socorro NÃO recebeu. Verifique a conexão e salve novamente.',
         });
+        if (cl.chefeLogin) BBM.notificar({ login: cl.chefeLogin }, {
+          title: 'Checklist para assinar',
+          body: `Checklist da ${cl.viaturaNome} de ${formatBR(cl.data)} aguarda sua assinatura.`,
+          url: 'modulos/viaturas/index.html', tag: 'cl-' + cl.id });
       } catch (err) {
         document.getElementById('senhaErro').style.display = 'block';
       } finally {
@@ -1572,6 +1576,11 @@
             toast: 'Checklist devolvido ao motorista para correção.',
             erro:  'Devolução registrada só neste aparelho — verifique a conexão.',
           });
+          const alvo = checklists[idx].criadorId ? { id: checklists[idx].criadorId } : { nome: checklists[idx].motorista };
+          BBM.notificar(alvo, {
+            title: 'Checklist devolvido para correção',
+            body: `O Chefe de Socorro devolveu o checklist da ${checklists[idx].viaturaNome}: ${motivo}`,
+            url: 'modulos/viaturas/index.html', tag: 'cldev-' + checklists[idx].id });
         }
       } catch (e) {
         err.textContent = 'Senha incorreta.'; err.style.display = 'block';

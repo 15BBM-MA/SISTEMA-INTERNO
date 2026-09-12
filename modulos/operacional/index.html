@@ -437,6 +437,15 @@
                 : papel==='chefe' ? 'Parte assinada e finalizada.'
                 : 'Parte devolvida ao Cmt para correção.';
       const okSave = await persistir(p, msg);
+      // push: assinou → avisa o Chefe; devolveu → avisa o Cmt que registrou
+      if(okSave && papel==='cmt' && p.chefeLogin) BBM.notificar({ login:p.chefeLogin }, {
+        title:'Parte diária para assinar',
+        body:`Parte de ${brData(p.data)} aguarda sua assinatura como Chefe de Socorro.`,
+        url:'modulos/operacional/index.html', tag:'op-'+p.id });
+      if(okSave && papel==='devolver' && p.criadoPorId) BBM.notificar({ id:p.criadoPorId }, {
+        title:'Parte devolvida para correção',
+        body:`O Chefe de Socorro devolveu a parte de ${brData(p.data)}: ${motivo}`,
+        url:'modulos/operacional/index.html', tag:'opdev-'+p.id });
       btn.disabled=false; btn.textContent=rotulo;
       if(okSave){ if(papel==='cmt'){ limpar(); showTab('tabHist', document.querySelectorAll('.tab-btn')[1]); } else renderHist(); }
     }
