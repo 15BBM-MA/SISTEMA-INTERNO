@@ -496,58 +496,33 @@
     </div>
   </div>
 
-  <!-- ══════════════ MODAL — Assinatura do Oficial ══════════════ -->
+  <!-- ══ MODAL — Assinatura do Oficial (também faz a Devolução) ══ -->
   <div class="modal-overlay" id="modalAssinaturaOficial">
-    <div class="modal" style="max-width:400px">
+    <div class="modal" style="max-width:420px">
       <div class="modal-header">
-        <span class="modal-title">Confirmar Assinatura — Chefe de Socorro</span>
+        <span class="modal-title" id="oficialTitulo">Confirmar Assinatura — Chefe de Socorro</span>
         <button class="modal-close" onclick="BBM.closeModal('modalAssinaturaOficial')">×</button>
       </div>
       <div class="modal-body">
         <div id="modalOficialInfo" style="font-size:.84rem;color:#374151;background:#f9fafb;border-radius:6px;padding:10px 12px;margin-bottom:14px;line-height:1.6"></div>
-        <p style="font-size:.84rem;color:#374151;margin-bottom:14px">
+        <p id="oficialAvisoAssinar" style="font-size:.84rem;color:#374151;margin-bottom:14px">
           Ao assinar, o checklist ficará <strong>finalizado e bloqueado</strong> permanentemente.
         </p>
+        <div class="form-group" id="oficialMotivoWrap" style="display:none">
+          <label class="form-label">O que precisa ser corrigido *</label>
+          <textarea class="form-control" id="oficialMotivo" rows="3" placeholder="Descreva o que falta / precisa corrigir"></textarea>
+          <p style="font-size:.78rem;color:#6b7280;margin-top:6px">O checklist volta a <strong>rascunho editável</strong> pelo motorista; a assinatura dele é cancelada e ele corrige e assina de novo.</p>
+        </div>
         <div class="form-group" style="margin:0">
           <label class="form-label">Sua senha de acesso</label>
           <input class="form-control" id="modalSenhaOficialInput" type="password" placeholder="••••••••"
-            onkeydown="if(event.key==='Enter')confirmarAssinaturaOficial()"/>
+            onkeydown="if(event.key==='Enter')confirmarOficialAcao()"/>
         </div>
         <div id="senhaOficialErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none">Senha incorreta.</div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalAssinaturaOficial')">Cancelar</button>
-        <button class="btn btn-primary" id="btnConfirmarOficial" onclick="confirmarAssinaturaOficial()">Assinar e Finalizar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════════════ MODAL — Devolver ao motorista ══════════════ -->
-  <div class="modal-overlay" id="modalDevolverChecklist">
-    <div class="modal" style="max-width:420px">
-      <div class="modal-header">
-        <span class="modal-title">Devolver checklist ao motorista</span>
-        <button class="modal-close" onclick="BBM.closeModal('modalDevolverChecklist')">×</button>
-      </div>
-      <div class="modal-body">
-        <div id="devolverInfo" style="font-size:.84rem;color:#374151;background:#f9fafb;border-radius:6px;padding:10px 12px;margin-bottom:14px;line-height:1.6"></div>
-        <p style="font-size:.82rem;color:#374151;margin-bottom:12px">
-          O checklist volta a <strong>rascunho editável</strong> pelo motorista; a assinatura dele é cancelada e ele precisa corrigir e assinar de novo.
-        </p>
-        <div class="form-group">
-          <label class="form-label">O que precisa ser corrigido *</label>
-          <textarea class="form-control" id="devolverMotivo" rows="3" placeholder="Descreva o que falta / precisa corrigir"></textarea>
-        </div>
-        <div class="form-group" style="margin:0">
-          <label class="form-label">Sua senha de acesso</label>
-          <input class="form-control" id="devolverSenha" type="password" placeholder="••••••••"
-            onkeydown="if(event.key==='Enter')confirmarDevolverChecklist()"/>
-        </div>
-        <div id="devolverErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="BBM.closeModal('modalDevolverChecklist')">Cancelar</button>
-        <button class="btn btn-primary" id="btnConfirmarDevolver" style="background:#b45309" onclick="confirmarDevolverChecklist()">↩ Devolver</button>
+        <button class="btn btn-primary" id="btnConfirmarOficial" onclick="confirmarOficialAcao()">Assinar e Finalizar</button>
       </div>
     </div>
   </div>
@@ -1477,10 +1452,16 @@
     }
 
     // ── Assinar (oficial) ─────────────────────────────────────────
+    let _modoOficial = 'assinar';   // 'assinar' | 'devolver'
     function assinarComoOficial(clId) {
       _clParaAssinar = clId;
+      _modoOficial = 'assinar';
       const cl = checklists.find(c => c.id === clId);
       if (!cl) return;
+      document.getElementById('oficialTitulo').textContent = 'Confirmar Assinatura — Chefe de Socorro';
+      document.getElementById('oficialAvisoAssinar').style.display = '';
+      document.getElementById('oficialMotivoWrap').style.display = 'none';
+      const b = document.getElementById('btnConfirmarOficial'); b.textContent = 'Assinar e Finalizar'; b.style.background = '';
       document.getElementById('modalOficialInfo').innerHTML =
         `<b>Viatura:</b> ${cl.viaturaNome}<br>
          <b>Data:</b> ${formatBR(cl.data)}<br>
@@ -1490,6 +1471,12 @@
       document.getElementById('senhaOficialErro').style.display = 'none';
       BBM.openModal('modalAssinaturaOficial');
       setTimeout(() => document.getElementById('modalSenhaOficialInput').focus(), 200);
+    }
+
+    // Dispatcher do botão principal do modal do oficial
+    function confirmarOficialAcao(){
+      if (_modoOficial === 'devolver') return confirmarDevolverChecklist();
+      return confirmarAssinaturaOficial();
     }
 
     async function confirmarAssinaturaOficial() {
@@ -1534,26 +1521,33 @@
     }
 
     // ── Devolver ao motorista (Chefe de Socorro) ──────────────────
+    // Reusa o MESMO modal da assinatura do oficial (modalAssinaturaOficial),
+    // apenas em "modo devolver" (mostra o campo de observação).
     let _clParaDevolver = null;
     function abrirDevolverChecklist(clId) {
-      _clParaDevolver = clId;
       const cl = checklists.find(c => c.id === clId); if (!cl) return;
-      document.getElementById('devolverInfo').innerHTML =
+      _clParaDevolver = clId;
+      _modoOficial = 'devolver';
+      document.getElementById('oficialTitulo').textContent = 'Devolver checklist ao motorista';
+      document.getElementById('oficialAvisoAssinar').style.display = 'none';
+      document.getElementById('oficialMotivoWrap').style.display = '';
+      document.getElementById('oficialMotivo').value = '';
+      const b = document.getElementById('btnConfirmarOficial'); b.textContent = '↩ Devolver'; b.style.background = '#b45309';
+      document.getElementById('modalOficialInfo').innerHTML =
         `<b>Viatura:</b> ${cl.viaturaNome}<br><b>Data:</b> ${formatBR(cl.data)}<br><b>Motorista:</b> ${cl.motorista||'—'}`;
-      document.getElementById('devolverMotivo').value = '';
-      document.getElementById('devolverSenha').value = '';
-      document.getElementById('devolverErro').style.display = 'none';
-      BBM.openModal('modalDevolverChecklist');
-      setTimeout(() => document.getElementById('devolverMotivo').focus(), 200);
+      document.getElementById('modalSenhaOficialInput').value = '';
+      document.getElementById('senhaOficialErro').style.display = 'none';
+      BBM.openModal('modalAssinaturaOficial');
+      setTimeout(() => document.getElementById('oficialMotivo').focus(), 200);
     }
 
     async function confirmarDevolverChecklist() {
-      const err = document.getElementById('devolverErro');
-      const motivo = (document.getElementById('devolverMotivo').value || '').trim();
-      const senha = document.getElementById('devolverSenha').value;
+      const err = document.getElementById('senhaOficialErro');
+      const motivo = (document.getElementById('oficialMotivo').value || '').trim();
+      const senha = document.getElementById('modalSenhaOficialInput').value;
       if (!motivo) { err.textContent = 'Descreva o que precisa ser corrigido.'; err.style.display = 'block'; return; }
       if (!senha)  { err.textContent = 'Informe sua senha.'; err.style.display = 'block'; return; }
-      const btn = document.getElementById('btnConfirmarDevolver');
+      const btn = document.getElementById('btnConfirmarOficial');
       btn.textContent = 'Verificando…'; btn.disabled = true; err.style.display = 'none';
       try {
         const sb = await BBM.sb();
@@ -1564,7 +1558,7 @@
         if (sessaoAtual) await sb.auth.setSession({ access_token: sessaoAtual.access_token, refresh_token: sessaoAtual.refresh_token });
 
         const idx = checklists.findIndex(c => c.id === _clParaDevolver);
-        BBM.closeModal('modalDevolverChecklist');
+        BBM.closeModal('modalAssinaturaOficial');
         if (idx >= 0) {
           checklists[idx] = {
             ...checklists[idx],
