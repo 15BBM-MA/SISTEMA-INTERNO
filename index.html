@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="theme-color" content="#0D1B2A"/>
   <title>Sistema de Gestão — 15º BBM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link rel="stylesheet" href="assets/css/main.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"/>
 </head>
@@ -466,9 +468,15 @@
       </div>`;
     }
 
-    BBM.ready(['escala_registros','viaturas_checklist','permutas_solicitacoes','operacional_partes'], () => {
+    // Coleções LEVES primeiro → a home pinta rápido. Os checklists de viatura
+    // (pesados por causa das fotos em base64) carregam em segundo plano e só
+    // atualizam as notificações, sem travar o primeiro render.
+    BBM.ready(['escala_registros','permutas_solicitacoes','operacional_partes'], () => {
       const user = BBM.currentUser && BBM.currentUser();
       renderNotificacoes(user);
+      BBM.refresh('viaturas_checklist')
+        .then(() => renderNotificacoes(BBM.currentUser && BBM.currentUser()))
+        .catch(() => {});
       const box = document.getElementById('meusServicos');
       if (!user || !box) return;
       const hoje = new Date().toISOString().slice(0,10);
