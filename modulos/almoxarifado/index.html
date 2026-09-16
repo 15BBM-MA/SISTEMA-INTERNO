@@ -171,6 +171,33 @@
     </div>
   </div>
 
+  <!-- MODAL INICIAR CONFERÊNCIA (escolha de ambientes) -->
+  <div class="modal-overlay" id="modalIniciarConf">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <span class="modal-title">Iniciar conferência</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalIniciarConf')">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:.84rem;color:var(--text-light);margin-bottom:12px">Escolha o que conferir. Todos os itens dos ambientes marcados voltam a ficar <b>pendentes</b> para toda a guarnição.</p>
+        <label style="display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:10px;cursor:pointer;background:#f9fafb">
+          <input type="radio" name="confEscopo" value="todos" checked onchange="_toggleConfAmb()"/>
+          <span style="font-weight:700;font-size:.9rem">Todo o estoque <span style="font-weight:500;color:var(--text-light)">(todos os ambientes)</span></span>
+        </label>
+        <label style="display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:10px;cursor:pointer">
+          <input type="radio" name="confEscopo" value="alguns" onchange="_toggleConfAmb()"/>
+          <span style="font-weight:700;font-size:.9rem">Escolher ambientes</span>
+        </label>
+        <div id="confAmbLista" style="display:none;padding:4px 2px 0"></div>
+        <div id="confIniErro" style="color:#dc2626;font-size:.78rem;margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalIniciarConf')">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarIniciarConf()">Iniciar conferência</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ÁREA DE IMPRESSÃO (folha de contagem) -->
   <div id="folhaContagem" aria-hidden="true"></div>
 
@@ -606,13 +633,44 @@
     function conferido(i) {
       return i.ultimaAlteracao && conferencia.inicio && i.ultimaAlteracao >= conferencia.inicio;
     }
+    // Está no escopo da conferência atual? (ambientes vazio/ausente = todos)
+    function noEscopo(i) {
+      const amb = conferencia.ambientes;
+      return !amb || !amb.length || amb.includes(i.ambiente);
+    }
 
-    async function iniciarConferencia() {
-      if (!confirm('Iniciar uma nova conferência? Todos os itens voltam a ficar PENDENTES de contagem para toda a guarnição.')) return;
+    function iniciarConferencia() {
+      // marca "Todo o estoque" e monta os checkboxes por ambiente
+      const r = document.querySelector('input[name="confEscopo"][value="todos"]'); if (r) r.checked = true;
+      document.getElementById('confAmbLista').innerHTML = AMBIENTES.map(a=>{
+        const n = itens.filter(i=>i.ambiente===a).length;
+        return `<label style="display:flex;align-items:center;gap:9px;padding:6px 4px;cursor:pointer">
+          <input type="checkbox" class="conf-amb-chk" value="${a.replace(/"/g,'&quot;')}" checked/>
+          <span style="font-size:.86rem">${a} <span style="color:var(--text-light)">(${n})</span></span></label>`;
+      }).join('');
+      _toggleConfAmb();
+      document.getElementById('confIniErro').style.display = 'none';
+      BBM.openModal('modalIniciarConf');
+    }
+    function _toggleConfAmb() {
+      const alguns = document.querySelector('input[name="confEscopo"]:checked')?.value === 'alguns';
+      document.getElementById('confAmbLista').style.display = alguns ? 'block' : 'none';
+    }
+    async function confirmarIniciarConf() {
+      const err = document.getElementById('confIniErro');
+      const modo = document.querySelector('input[name="confEscopo"]:checked')?.value || 'todos';
+      let ambientes = [];
+      if (modo === 'alguns') {
+        ambientes = [...document.querySelectorAll('.conf-amb-chk:checked')].map(c=>c.value);
+        if (!ambientes.length) { err.textContent = 'Selecione ao menos um ambiente.'; err.style.display = 'block'; return; }
+        if (ambientes.length === AMBIENTES.length) ambientes = []; // todos marcados = todos
+      }
       const agora = new Date().toISOString();
-      conferencia = { id:'atual', inicio:agora, por:(BBM.currentUser&&BBM.currentUser()?.nome)||'—', em:agora };
+      conferencia = { id:'atual', inicio:agora, por:(BBM.currentUser&&BBM.currentUser()?.nome)||'—', em:agora, ambientes };
+      BBM.closeModal('modalIniciarConf');
       renderConferencia();
-      await salvar(KEY_C, [conferencia], { sucesso:'Conferência iniciada.' });
+      const escopoTxt = ambientes.length ? ambientes.join(', ') : 'todo o estoque';
+      await salvar(KEY_C, [conferencia], { sucesso:`Conferência iniciada (${escopoTxt}).` });
     }
 
     function renderConferencia() {
@@ -625,14 +683,17 @@
         lista.innerHTML = '<div class="empty-state"><p>Sem conferência ativa.</p></div>';
         return;
       }
-      const total = itens.length;
-      const feitos = itens.filter(conferido).length;
-      info.innerHTML = `Conferência iniciada por <b>${conferencia.por||'—'}</b> em <b>${fmtQuando(conferencia.inicio)}</b>. Atualiza sozinho a cada 20s.`;
+      const escopo = itens.filter(noEscopo);
+      const total = escopo.length;
+      const feitos = escopo.filter(conferido).length;
+      const ambTxt = (conferencia.ambientes && conferencia.ambientes.length)
+        ? `<b>${conferencia.ambientes.join(', ')}</b>` : '<b>todo o estoque</b>';
+      info.innerHTML = `Conferindo ${ambTxt} — iniciada por <b>${conferencia.por||'—'}</b> em <b>${fmtQuando(conferencia.inicio)}</b>. Atualiza sozinho a cada 20s.`;
       pw.style.display = 'flex';
       document.getElementById('confProgressFill').style.width = (total?Math.round(feitos/total*100):0) + '%';
       document.getElementById('confProgressTxt').textContent = `${feitos}/${total} conferidos`;
       const grupos = {};
-      for (const i of itens) (grupos[i.categoria] = grupos[i.categoria] || []).push(i);
+      for (const i of escopo) (grupos[i.categoria] = grupos[i.categoria] || []).push(i);
       let html = '';
       for (const cat of Object.keys(grupos)) {
         html += `<div class="conf-cat">${cat}</div>`;
@@ -700,10 +761,13 @@
 
     // ── Folha de contagem para impressão ──────────────────────────
     function imprimirContagem() {
+      // Respeita o escopo da conferência ativa (ambientes escolhidos).
+      const base = (conferencia.inicio) ? itens.filter(noEscopo) : itens;
       const grupos = {};
-      for (const i of itens) (grupos[i.categoria] = grupos[i.categoria] || []).push(i);
+      for (const i of base) (grupos[i.categoria] = grupos[i.categoria] || []).push(i);
       const hoje = new Date().toLocaleDateString('pt-BR');
-      let html = `<h1>15º BBM — Folha de Contagem de Estoque</h1><div class="fc-sub">Patrimônio • Emitida em ${hoje} • ${itens.length} itens</div>`;
+      const escopoTxt = (conferencia.ambientes && conferencia.ambientes.length) ? conferencia.ambientes.join(', ') : 'todos os ambientes';
+      let html = `<h1>15º BBM — Folha de Contagem de Estoque</h1><div class="fc-sub">Patrimônio • ${escopoTxt} • Emitida em ${hoje} • ${base.length} itens</div>`;
       for (const cat of Object.keys(grupos)) {
         html += `<div class="fc-cat">${cat}</div>`;
         html += `<table><thead><tr><th style="width:44%">Item</th><th>Un.</th><th>Registrado</th><th style="width:22%">Contagem física</th><th style="width:8%">OK</th></tr></thead><tbody>`;
