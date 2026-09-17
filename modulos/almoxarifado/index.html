@@ -52,10 +52,10 @@
             <div class="mod-subtitle">Controle de materiais do quartel por ambiente (almoxarifado, oficina, alojamentos…)</div>
           </div>
         </div>
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-ghost" onclick="abrirMovimento()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-            Movimentação
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="abrirCautela()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Cautelar materiais
           </button>
           <button class="btn btn-primary" onclick="novoItem()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -68,13 +68,14 @@
         <div class="status-card sc-click" id="scTodos" onclick="filtrarSituacao('')"><div class="status-value" id="totItens">0</div><div class="status-label">Itens Cadastrados</div></div>
         <div class="status-card sc-click" id="scBaixo" onclick="filtrarSituacao('baixo')"><div class="status-value" id="totBaixo">0</div><div class="status-label">Estoque Baixo ⧩</div></div>
         <div class="status-card sc-click" id="scZero" onclick="filtrarSituacao('zero')"><div class="status-value" id="totZero">0</div><div class="status-label">Sem Estoque ⧩</div></div>
-        <div class="status-card sc-click" id="scMov" onclick="document.querySelector('.tab-btn:nth-child(3)').click()"><div class="status-value" id="totMov">0</div><div class="status-label">Movimentações →</div></div>
+        <div class="status-card sc-click" id="scMov" onclick="document.querySelector('.tab-btn:nth-child(4)').click()"><div class="status-value" id="totMov">0</div><div class="status-label">Movimentações →</div></div>
       </div>
 
       <!-- TABS -->
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap">
         <button class="tab-btn active" onclick="showTab('tabEstoque',this)">Estoque</button>
         <button class="tab-btn" onclick="showTab('tabConferencia',this)">Conferência de Estoque</button>
+        <button class="tab-btn" onclick="showTab('tabCautelas',this)">Cautelas</button>
         <button class="tab-btn" onclick="showTab('tabMovimentos',this)">Histórico de Movimentos</button>
       </div>
 
@@ -105,6 +106,18 @@
             <tbody id="tabelaItens"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- CAUTELAS -->
+      <div id="tabCautelas" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+          <div class="section-label" style="margin:0">Documentos de cautela</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" style="font-size:.78rem" onclick="importarCautelaAntiga()" id="btnImportarCautela" title="Cria uma única cautela com o que já foi movimentado antes deste recurso">⇩ Gerar cautela dos movimentos anteriores</button>
+            <button class="btn btn-primary" style="font-size:.82rem" onclick="abrirCautela()">+ Nova cautela</button>
+          </div>
+        </div>
+        <div id="cautelasLista"></div>
       </div>
 
       <div id="tabMovimentos" style="display:none">
@@ -264,6 +277,75 @@
     </div>
   </div>
 
+  <!-- MODAL CAUTELA (composição + assinatura do usuário) -->
+  <div class="modal-overlay" id="modalCautela">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <span class="modal-title" id="modalCautelaTitulo">Nova cautela de materiais</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalCautela')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ctId"/>
+        <div class="form-group">
+          <label class="form-label">Materiais a cautelar *</label>
+          <input class="form-control" id="ctBusca" placeholder="Filtrar itens…" oninput="renderCtItens(this.value)" style="margin-bottom:8px"/>
+          <div class="ct-lista-box" id="ctItensLista"></div>
+          <div style="font-size:.74rem;color:var(--text-light);margin-top:5px">Marque os itens e informe a quantidade. O número ao lado é o que há em estoque.</div>
+        </div>
+        <div class="form-group"><label class="form-label">Responsável (militar ou civil) *</label>
+          <input class="form-control" id="ctResp" list="ctRespList" placeholder="Nome de quem recebe os materiais"/>
+          <datalist id="ctRespList"></datalist>
+        </div>
+        <div class="form-group"><label class="form-label">Evento ou atividade</label>
+          <input class="form-control" id="ctAtiv" placeholder="Finalidade de uso dos materiais"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Devolver até</label><input class="form-control" id="ctDev" type="date"/></div>
+          <div class="form-group"><label class="form-label">Chefe de Socorro *</label><select class="form-control" id="ctChefe"></select></div>
+        </div>
+        <div class="form-group" style="margin-bottom:6px"><label class="form-label">Sua senha (para assinar) *</label>
+          <input class="form-control" id="ctSenha" type="password" placeholder="Senha do seu login" autocomplete="current-password"/>
+        </div>
+        <div id="ctErro" style="color:#dc2626;font-size:.8rem;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalCautela')">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmarCautela" onclick="confirmarCautela()">Assinar e enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ASSINAR CAUTELA (Chefe de Socorro) -->
+  <div class="modal-overlay" id="modalAssinarCautela">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <span class="modal-title">Assinar cautela</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAssinarCautela')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="caId"/>
+        <p id="caResumo" style="font-size:.86rem;color:var(--text-light);margin-bottom:12px"></p>
+        <div class="form-group" style="margin-bottom:6px"><label class="form-label">Sua senha *</label>
+          <input class="form-control" id="caSenha" type="password" placeholder="Senha do seu login" autocomplete="current-password" onkeydown="if(event.key==='Enter')confirmarAssinarCautela()"/>
+        </div>
+        <div id="caErro" style="color:#dc2626;font-size:.8rem;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAssinarCautela')">Cancelar</button>
+        <button class="btn btn-primary" id="btnAssinarCautela" onclick="confirmarAssinarCautela()">Assinar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY DO DOCUMENTO DE CAUTELA (preview + impressão) -->
+  <div id="cautelaOverlay">
+    <div class="doc-bar no-print">
+      <button class="btn btn-ghost" onclick="fecharCautela()">← Voltar</button>
+      <button class="btn btn-primary" onclick="imprimirCautela()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+    <div id="cautelaView"></div>
+  </div>
+
   <style>
     .tab-btn { background:none;border:none;padding:10px 20px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;transition:all .18s; }
     .tab-btn.active { color:var(--red);border-bottom-color:var(--red); }
@@ -323,6 +405,56 @@
       #folhaContagem .fc-blank { height:20px; }
       @page { margin:10mm; }
     }
+
+    /* ── Cautela de materiais: histórico ── */
+    .hist-item { border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; }
+    .hist-item.urgente { border-color:#f59e0b;background:#fffbeb; }
+    .hist-data { font-weight:700;color:var(--text);display:flex;align-items:center;flex-wrap:wrap;gap:4px; }
+    .hist-meta { font-size:.8rem;color:var(--text-light);margin-top:3px; }
+    .hist-acoes { display:flex;gap:8px;flex-wrap:wrap; }
+    .st { font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap; }
+    .st.aguardando_chefe { background:#fef3c7;color:#92400e; }
+    .st.assinado { background:#dcfce7;color:#15803d; }
+
+    /* Seleção de itens no modal de cautela */
+    .ct-lista-box { border:1px solid var(--border);border-radius:10px;max-height:260px;overflow:auto;background:#fff; }
+    .ct-row { display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer; }
+    .ct-row:last-child { border-bottom:none; }
+    .ct-row-nome { flex:1;min-width:0;font-size:.86rem;font-weight:600;color:var(--text);display:flex;flex-direction:column; }
+    .ct-row-sub { font-size:.72rem;font-weight:400;color:var(--text-light);margin-top:1px; }
+    .ct-qtd { width:72px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:.82rem; }
+
+    /* Documento (preview em tela) */
+    #cautelaOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
+    #cautelaOverlay.open { display:block; }
+    .doc-bar { position:fixed;top:0;left:0;right:0;z-index:10;display:flex;gap:10px;justify-content:center;padding:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px); }
+    .doc-bar .btn { color:#fff !important; }
+    .doc-bar .btn-ghost { border-color:rgba(255,255,255,.6) !important;background:transparent !important; }
+    .doc-bar .btn-primary { background:var(--red) !important; }
+    #cautelaView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4); }
+    .doc { font-family:'Times New Roman',serif;color:#000;font-size:12pt;line-height:1.45;position:relative; }
+    .doc-head { text-align:center;line-height:1.3;margin-bottom:6px; }
+    .doc-head img { width:96px;height:96px;object-fit:contain;display:block;margin:0 auto 4px; }
+    .doc-head .l { font-weight:bold;font-size:11pt;text-transform:uppercase; }
+    .doc-titulo { text-align:center;font-weight:bold;font-size:14pt;text-transform:uppercase;letter-spacing:.02em;margin:12px 0 4px;padding-bottom:6px;border-bottom:2px solid #000; }
+    .doc p { margin:6px 0;text-align:justify; }
+    .doc .b { font-weight:bold; }
+    .doc .status-tag { text-align:center;font-weight:bold;padding:4px;border:1px dashed #999;margin:10px 0;font-size:10pt; }
+    .doc table.ct-tab { width:100%;border-collapse:collapse;margin-top:12px;font-size:10.5pt; }
+    .doc table.ct-tab th, .doc table.ct-tab td { border:1px solid #000;padding:4px 8px; }
+    .doc table.ct-tab th { background:#f0f0f0; }
+    .doc .assinaturas { margin-top:40px;display:flex;flex-direction:column;gap:30px;align-items:center; }
+    .doc .assin-linha { text-align:center;width:340px; }
+    .doc .assin-linha .ln { border-top:1px solid #000;padding-top:3px;font-size:10pt; }
+    .doc .assin-linha .st2 { font-size:8.5pt;color:#166534; }
+    @media(max-width:600px){ #cautelaView { padding:20px 16px;margin:70px 8px 24px; } }
+
+    @media print {
+      #cautelaOverlay.open, #cautelaOverlay.open * { visibility:visible; }
+      #cautelaOverlay.open { position:absolute;left:0;top:0;width:100%;background:#fff;overflow:visible; }
+      #cautelaOverlay .doc-bar { display:none !important; }
+      #cautelaView { margin:0 !important;max-width:none;box-shadow:none;padding:0; }
+    }
   </style>
 
   <script src="../../assets/js/main.js"></script>
@@ -330,6 +462,7 @@
     const KEY_I = 'almoxarifado_itens';
     const KEY_M = 'almoxarifado_movimentos';
     const KEY_C = 'almoxarifado_conferencia'; // estado da conferência (compartilhado)
+    const KEY_CT = 'almoxarifado_cautelas';   // cautelas de materiais (documentos)
 
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
@@ -339,6 +472,8 @@
     const CATEGORIAS = ['Incêndio Urbano','Incêndio Florestal','Salvamento Aquático','Salvamento Terrestre','APH','Mergulho','Captura de Animal','Ferramentas','EPI','Material de Escritório','Mobiliário','Eletrodoméstico','Cama/Enxoval','Limpeza','Combustível','Outros'];
 
     let itens = [], movimentos = [];
+    let cautelas = [], oficiais = [], militaresList = [];
+    let ctSel = {}; // seleção atual do modal de cautela: { itemId: qtd }
     let conferencia = { id:'atual', inicio:null, por:'', em:null }; // sessão de contagem
     let ambienteAtivo = ''; // '' = todos
     let situacaoAtiva = ''; // '' | 'baixo' | 'zero' — vem dos cards de resumo
@@ -375,22 +510,27 @@
     })();
 
     // ── Carga inicial (nuvem, compartilhada entre todos) ──────────
-    BBM.ready([KEY_I, KEY_M, KEY_C], () => {
+    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT], async () => {
       itens = (BBM.load(KEY_I) || []).map(normAmbiente);
       movimentos = BBM.load(KEY_M) || [];
+      cautelas = BBM.load(KEY_CT) || [];
       const c = (BBM.load(KEY_C) || [])[0];
       if (c) conferencia = c;
       renderAmbientes();
       renderItens();
       atualizarCards();
+      // listas para a cautela (militares p/ autocompletar responsável, oficiais p/ Chefe de Socorro)
+      try { militaresList = await BBM.militares(); } catch(e) { militaresList = []; }
+      try { const sb = await BBM.sb(); const { data } = await sb.rpc('listar_oficiais'); oficiais = data || []; } catch(e) { oficiais = []; }
     });
 
     function showTab(id, btn) {
-      ['tabEstoque','tabConferencia','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
+      ['tabEstoque','tabConferencia','tabCautelas','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).style.display='block';
       btn.classList.add('active');
       if (id === 'tabMovimentos') renderMovimentos();
+      if (id === 'tabCautelas') renderCautelas();
       if (id === 'tabConferencia') { renderConferencia(); iniciarPolling(); }
       else pararPolling();
     }
@@ -477,7 +617,8 @@
           <td><span class="badge ${cls}">${sit}</span></td>
           <td style="font-size:.76rem;color:var(--text-light);white-space:nowrap">${i.ultimaAlteracao?`${fmtQuando(i.ultimaAlteracao)}<br><span style="font-size:.7rem">${i.alteradoPor||''}</span>`:'—'}</td>
           <td style="display:flex;gap:6px">
-            <button class="action-btn" onclick="editarItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="action-btn" title="Movimentar (entrada/saída)" onclick="abrirMovimento('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
+            <button class="action-btn" title="Editar" onclick="editarItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
             <button class="action-btn" onclick="excluirItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
           </td>
         </tr>`;
@@ -589,12 +730,14 @@
     }
 
     // ── Movimentação ──────────────────────────────────────────────
-    function abrirMovimento() {
+    function abrirMovimento(itemId) {
       const sel = document.getElementById('mItem');
       const lista = ambienteAtivo ? itens.filter(i=>i.ambiente===ambienteAtivo) : itens;
-      sel.innerHTML = lista.length
-        ? lista.map(i=>`<option value="${i.id}">${i.nome} — ${i.ambiente} (${i.qtd} ${i.unidade})</option>`).join('')
+      const base = (itemId && !lista.some(i=>i.id===itemId)) ? itens : lista; // garante o item pré-selecionado
+      sel.innerHTML = base.length
+        ? base.map(i=>`<option value="${i.id}">${i.nome} — ${i.ambiente} (${i.qtd} ${i.unidade})</option>`).join('')
         : '<option value="">Nenhum item cadastrado</option>';
+      if (itemId) sel.value = itemId;
       document.getElementById('mQtd').value='';
       document.getElementById('mResp').value='';
       document.getElementById('mObs').value='';
@@ -778,6 +921,265 @@
       }
       document.getElementById('folhaContagem').innerHTML = html;
       window.print();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  CAUTELA DE MATERIAIS
+    //  Fluxo: usuário compõe → assina (senha) → vai ao Chefe de Socorro
+    //  para assinatura. Cada cautela é um documento salvo no histórico.
+    // ═══════════════════════════════════════════════════════════════
+    const BASE_CT = location.origin + location.pathname.replace(/modulos\/almoxarifado\/.*/, '');
+    const LOGO_CT = BASE_CT + 'assets/img/logo.png';
+    const MESES_CT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const escC = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    function euC(){ return BBM.currentUser && BBM.currentUser(); }
+    function _normC(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\bbm\b/g,'').replace(/\s+/g,' ').trim(); }
+    function ehMesmaC(a,b){ const x=_normC(a),y=_normC(b); return !!x&&!!y&&(x===y||x.includes(y)||y.includes(x)); }
+    function brDataC(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+    function extensoC(iso){ if(!iso||!/^\d{4}-\d{2}-\d{2}/.test(iso)) return '______ de ____________ de ______'; const [y,m,d]=iso.slice(0,10).split('-'); return d+' de '+MESES_CT[+m-1]+' de '+y; }
+    function proximoNumeroCt(){ const ano=new Date().getFullYear(); const n=cautelas.filter(c=>String(c.numero||'').endsWith('/'+ano)).length+1; return String(n).padStart(3,'0')+'/'+ano; }
+    function showCtErro(msg){ const e=document.getElementById('ctErro'); e.textContent=msg; e.style.display='block'; }
+
+    // confere a senha reautenticando o próprio usuário (sem perder a sessão)
+    async function conferirSenhaCt(senha){
+      const u=euC(); if(!u) return false;
+      try {
+        const sb=await BBM.sb();
+        const { data:{ session } } = await sb.auth.getSession();
+        const { error } = await sb.auth.signInWithPassword({ email:(u.login||'').trim().toLowerCase()+'@15bbm.app', password:senha });
+        if(session) await sb.auth.setSession({ access_token:session.access_token, refresh_token:session.refresh_token });
+        return !error;
+      } catch(e){ console.error(e); return false; }
+    }
+
+    function popularChefeCt(sel){
+      const el=document.getElementById('ctChefe');
+      el.innerHTML='<option value="">— selecione o Chefe de Socorro —</option>'+
+        oficiais.map(o=>`<option value="${o.id}"${o.id===sel?' selected':''}>${escC((o.posto?o.posto+' ':'')+o.nome)}</option>`).join('');
+    }
+
+    // ── Composição da cautela ─────────────────────────────────────
+    function abrirCautela(preItemId){
+      ctSel = {};
+      if (preItemId && itens.some(i=>i.id===preItemId && i.qtd>0)) ctSel[preItemId] = 1;
+      document.getElementById('ctId').value='';
+      document.getElementById('ctResp').value='';
+      document.getElementById('ctAtiv').value='';
+      document.getElementById('ctDev').value='';
+      document.getElementById('ctSenha').value='';
+      document.getElementById('ctBusca').value='';
+      document.getElementById('ctErro').style.display='none';
+      document.getElementById('ctRespList').innerHTML = militaresList.map(m=>`<option value="${escC(m.nome)}"></option>`).join('');
+      popularChefeCt('');
+      renderCtItens('');
+      BBM.openModal('modalCautela');
+    }
+
+    function renderCtItens(filtro){
+      const q=(filtro||'').toLowerCase();
+      const lista = itens
+        .filter(i => !q || i.nome.toLowerCase().includes(q) || (i.ambiente||'').toLowerCase().includes(q))
+        .sort((a,b)=> (a.ambiente||'').localeCompare(b.ambiente||'') || a.nome.localeCompare(b.nome));
+      const cont=document.getElementById('ctItensLista');
+      if(!lista.length){ cont.innerHTML='<div style="padding:12px;color:var(--text-light);font-size:.85rem">Nenhum item encontrado.</div>'; return; }
+      cont.innerHTML = lista.map(i=>{
+        const sel = ctSel[i.id]!=null;
+        const val = sel ? ctSel[i.id] : '';
+        const semEstoque = i.qtd<=0;
+        return `<label class="ct-row">
+          <input type="checkbox" ${sel?'checked':''} ${semEstoque?'disabled':''} onchange="_ctToggle('${i.id}',this.checked)"/>
+          <span class="ct-row-nome">${escC(i.nome)}<span class="ct-row-sub">${escC(i.ambiente||'—')} • em estoque: ${i.qtd} ${escC(i.unidade||'')}</span></span>
+          <input type="number" min="1" max="${i.qtd}" class="ct-qtd" placeholder="qtd" value="${val}" ${sel?'':'disabled'} oninput="_ctQtd('${i.id}',this.value)"/>
+        </label>`;
+      }).join('');
+    }
+    function _ctToggle(id,on){
+      if(on){ ctSel[id]=1; } else { delete ctSel[id]; }
+      renderCtItens(document.getElementById('ctBusca').value);
+    }
+    function _ctQtd(id,v){ const n=Number(v); if(n>0) ctSel[id]=n; else ctSel[id]=0; }
+
+    async function confirmarCautela(){
+      const resp=document.getElementById('ctResp').value.trim();
+      const ativ=document.getElementById('ctAtiv').value.trim();
+      const dev=document.getElementById('ctDev').value;
+      const chefeId=document.getElementById('ctChefe').value;
+      const senha=document.getElementById('ctSenha').value;
+      const escolhidos=Object.keys(ctSel).map(id=>({id,qtd:Number(ctSel[id])||0})).filter(x=>x.qtd>0);
+      if(!escolhidos.length){ showCtErro('Selecione ao menos um material e informe a quantidade.'); return; }
+      if(!resp){ showCtErro('Informe o nome do responsável.'); return; }
+      if(!chefeId){ showCtErro('Selecione o Chefe de Socorro.'); return; }
+      for(const e of escolhidos){ const i=itens.find(x=>x.id===e.id); if(i && e.qtd>i.qtd){ showCtErro('Quantidade acima do estoque em: '+i.nome+' (máx. '+i.qtd+').'); return; } }
+      if(!senha){ showCtErro('Informe sua senha para assinar.'); return; }
+      const btn=document.getElementById('btnConfirmarCautela'); btn.disabled=true; btn.textContent='Verificando…';
+      const ok=await conferirSenhaCt(senha);
+      if(!ok){ btn.disabled=false; btn.textContent='Assinar e enviar'; showCtErro('Senha incorreta.'); return; }
+      const u=euC(); const of=oficiais.find(o=>o.id===chefeId);
+      const agora=new Date().toISOString();
+      const linhas=escolhidos.map(e=>{ const i=itens.find(x=>x.id===e.id); return { itemId:e.id, nome:i?i.nome:'—', unidade:i?i.unidade:'', ambiente:i?i.ambiente:'', qtd:e.qtd }; });
+      const cautela={
+        id:BBM.generateId(), numero:proximoNumeroCt(),
+        responsavel:resp, atividade:ativ, dataDevolucao:dev,
+        itens:linhas,
+        chefeId, chefeNome:of?of.nome:'', chefeLogin:of?of.login:'',
+        status:'aguardando_chefe',
+        criadoPor:u?.nome||'', criadoPorId:u?.id||'', criadoEm:agora,
+        assUsuario:{ nome:u?.nome||'', em:agora }, assChefe:null, devolucaoMateriais:null,
+      };
+      // baixa no estoque + registra Saída para cada material
+      const novosMov=[];
+      linhas.forEach(l=>{ const i=itens.find(x=>x.id===l.itemId); if(i){
+        i.qtd -= l.qtd; carimbar(i);
+        novosMov.push({ id:BBM.generateId(), data:new Date().toLocaleString('pt-BR'), itemNome:i.nome, itemId:i.id, ambiente:i.ambiente, tipo:'Saída', qtd:l.qtd, resp, obs:'Cautela '+cautela.numero+(ativ?' — '+ativ:'') });
+      }});
+      movimentos=[...movimentos, ...novosMov];
+      cautelas=[cautela, ...cautelas];
+      BBM.closeModal('modalCautela');
+      renderAmbientes(); renderItens(); atualizarCards();
+      const okI=await salvar(KEY_I, itens);
+      const okM=await salvar(KEY_M, movimentos);
+      const okC=await salvar(KEY_CT, cautelas, { sucesso:(okI&&okM)?'Cautela assinada e enviada ao Chefe de Socorro.':null });
+      btn.disabled=false; btn.textContent='Assinar e enviar';
+      if(okC && cautela.chefeLogin) BBM.notificar({ login:cautela.chefeLogin }, {
+        title:'Cautela de materiais para assinar',
+        body:`Cautela ${cautela.numero} (${resp}) aguarda sua assinatura como Chefe de Socorro.`,
+        url:'modulos/almoxarifado/index.html', tag:'ct-'+cautela.id });
+      const tabBtn=[...document.querySelectorAll('.tab-btn')].find(b=>/Cautelas/.test(b.textContent));
+      if(tabBtn) showTab('tabCautelas', tabBtn);
+    }
+
+    // ── Assinatura do Chefe de Socorro ────────────────────────────
+    function abrirAssinarCautela(id){
+      const c=cautelas.find(x=>x.id===id); if(!c) return;
+      document.getElementById('caId').value=id;
+      document.getElementById('caResumo').innerHTML=`Cautela <strong>${escC(c.numero||'')}</strong> para <strong>${escC(c.responsavel)||'—'}</strong>. Ao assinar, ela fica finalizada e visível a todos como assinada.`;
+      document.getElementById('caSenha').value='';
+      document.getElementById('caErro').style.display='none';
+      BBM.openModal('modalAssinarCautela');
+      setTimeout(()=>document.getElementById('caSenha').focus(),200);
+    }
+    async function confirmarAssinarCautela(){
+      const id=document.getElementById('caId').value;
+      const senha=document.getElementById('caSenha').value;
+      const err=document.getElementById('caErro');
+      const c=cautelas.find(x=>x.id===id); if(!c) return;
+      const u=euC();
+      if(!ehMesmaC(u?.nome, c.chefeNome)){ err.textContent='Apenas o Chefe de Socorro indicado pode assinar esta cautela.'; err.style.display='block'; return; }
+      if(!senha){ err.textContent='Informe sua senha.'; err.style.display='block'; return; }
+      const btn=document.getElementById('btnAssinarCautela'); btn.disabled=true; btn.textContent='Verificando…';
+      const ok=await conferirSenhaCt(senha);
+      if(!ok){ btn.disabled=false; btn.textContent='Assinar'; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
+      c.assChefe={ nome:u.nome, em:new Date().toISOString() }; c.status='assinado';
+      BBM.closeModal('modalAssinarCautela');
+      const okC=await salvar(KEY_CT, cautelas, { sucesso:'Cautela assinada e finalizada.' });
+      btn.disabled=false; btn.textContent='Assinar';
+      if(okC && c.criadoPorId) BBM.notificar({ id:c.criadoPorId }, {
+        title:'Cautela assinada',
+        body:`O Chefe de Socorro assinou a cautela ${c.numero}.`,
+        url:'modulos/almoxarifado/index.html', tag:'ctok-'+c.id });
+      renderCautelas();
+    }
+
+    // ── Devolução dos materiais (restaura o estoque) ──────────────
+    async function devolverMateriais(id){
+      const c=cautelas.find(x=>x.id===id); if(!c) return;
+      if(!confirm('Registrar a devolução de TODOS os materiais desta cautela? O estoque será restaurado.')) return;
+      const novosMov=[];
+      (c.itens||[]).forEach(l=>{ const i=itens.find(x=>x.id===l.itemId); if(i){
+        i.qtd += l.qtd; carimbar(i);
+        novosMov.push({ id:BBM.generateId(), data:new Date().toLocaleString('pt-BR'), itemNome:i.nome, itemId:i.id, ambiente:i.ambiente, tipo:'Entrada', qtd:l.qtd, resp:c.responsavel, obs:'Devolução da cautela '+c.numero });
+      }});
+      movimentos=[...movimentos, ...novosMov];
+      c.devolucaoMateriais={ por:(euC()?.nome)||'', em:new Date().toISOString() };
+      renderAmbientes(); renderItens(); atualizarCards();
+      const okI=await salvar(KEY_I, itens);
+      await salvar(KEY_M, movimentos);
+      await salvar(KEY_CT, cautelas, { sucesso: okI?'Devolução registrada e estoque restaurado.':null });
+      renderCautelas();
+    }
+
+    // ── Histórico de cautelas ─────────────────────────────────────
+    function ctBadge(s){ const t={aguardando_chefe:'Aguardando Chefe', assinado:'Assinado'}; return `<span class="st ${s==='assinado'?'assinado':'aguardando_chefe'}">${t[s]||s}</span>`; }
+    function renderCautelas(){
+      const u=euC();
+      const el=document.getElementById('cautelasLista');
+      if(!cautelas.length){ el.innerHTML='<div class="empty-state"><p>Nenhuma cautela registrada. Toque em <b>+ Nova cautela</b> para começar.</p></div>'; return; }
+      el.innerHTML=[...cautelas].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||'')).map(c=>{
+        const souChefe = c.status==='aguardando_chefe' && ehMesmaC(u?.nome, c.chefeNome);
+        let acoes=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verCautela('${c.id}')">🖨️ Ver / Imprimir</button>`;
+        if(souChefe) acoes=`<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinarCautela('${c.id}')">✍ Assinar como Chefe</button>`+acoes;
+        if(c.status==='assinado' && !c.devolucaoMateriais && !c.importada)
+          acoes+=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px;color:#166534;border-color:#86efac" onclick="devolverMateriais('${c.id}')">↺ Registrar devolução</button>`;
+        const nItens=(c.itens||[]).reduce((s,i)=>s+(Number(i.qtd)||0),0);
+        const devTag = c.devolucaoMateriais?`<span class="st assinado" style="background:#dbeafe;color:#1e40af">Materiais devolvidos</span>`:'';
+        return `<div class="hist-item${souChefe?' urgente':''}">
+          <div>
+            <div class="hist-data">Cautela ${escC(c.numero||'—')} ${ctBadge(c.status)} ${devTag}</div>
+            <div class="hist-meta">Responsável: ${escC(c.responsavel)||'—'} · ${(c.itens||[]).length} tipo(s), ${nItens} un.${c.criadoPor?' · registro de '+escC(c.criadoPor):''}${c.dataDevolucao?' · devolver até '+brDataC(c.dataDevolucao):''}</div>
+          </div>
+          <div class="hist-acoes">${acoes}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Documento (preview em tela + impressão) ───────────────────
+    function cabecalhoCt(){
+      return `<div class="doc-head">
+        <img src="${LOGO_CT}" alt=""/>
+        <div class="l">Estado do Maranhão</div>
+        <div class="l">Secretaria de Estado da Segurança Pública</div>
+        <div class="l" style="color:#C8102E">Corpo de Bombeiros Militar</div>
+        <div class="l">Comando Operacional Norte</div>
+        <div class="l">15º Batalhão de Bombeiros Militar</div>
+      </div>`;
+    }
+    function verCautela(id){
+      const c=cautelas.find(x=>x.id===id); if(!c) return;
+      const linhas=(c.itens||[]).map((l,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${escC(l.nome)}</td><td style="text-align:center">${escC(l.unidade||'un')}</td><td style="text-align:center">${l.qtd}</td></tr>`).join('') || '<tr><td colspan="4">&nbsp;</td></tr>';
+      const statusTag = c.status==='assinado' ? '' : `<div class="status-tag">AGUARDANDO ASSINATURA DO CHEFE DE SOCORRO</div>`;
+      const assLinha=(nome,papel,ass)=>`<div class="assin-linha"><div class="ln">${escC(nome)||'&nbsp;'}<br/>${papel}${ass?`<div class="st2">✓ Assinado em ${new Date(ass.em).toLocaleString('pt-BR')}</div>`:''}</div></div>`;
+      const html=`
+        ${cabecalhoCt()}
+        <div class="doc-titulo">Cautela de Materiais</div>
+        <div style="text-align:center;font-size:10pt;margin:-2px 0 10px">Nº ${escC(c.numero||'—')}</div>
+        ${statusTag}
+        <p style="margin-top:10px">Ficam cautelados os seguintes materiais para o(a) <span class="b">${escC(c.responsavel)||'____________________'}</span>, com finalidade de uso para o evento ou atividade <span class="b">${escC(c.atividade)||'____________________'}</span>, até a data de <span class="b">${c.dataDevolucao?brDataC(c.dataDevolucao):'____/____/______'}</span>, onde o responsável se comprometerá a devolver todos os materiais aqui cautelados.</p>
+        <table class="ct-tab"><thead><tr><th style="width:8%">#</th><th>Material</th><th style="width:16%">Unid.</th><th style="width:16%">Qtd.</th></tr></thead><tbody>${linhas}</tbody></table>
+        ${c.devolucaoMateriais?`<p style="margin-top:12px;color:#166534"><span class="b">Materiais devolvidos</span> em ${new Date(c.devolucaoMateriais.em).toLocaleString('pt-BR')}${c.devolucaoMateriais.por?' — '+escC(c.devolucaoMateriais.por):''}.</p>`:''}
+        <p style="margin-top:22px">Quartel em Chapadinha/MA, ${extensoC(c.criadoEm)}.</p>
+        <div class="assinaturas">
+          ${assLinha(c.assUsuario?c.assUsuario.nome:c.criadoPor, 'RESPONSÁVEL PELA CAUTELA (15º BBM)', c.assUsuario)}
+          ${assLinha(c.chefeNome, 'CHEFE DE SOCORRO DA 15º BBM', c.assChefe)}
+        </div>`;
+      document.getElementById('cautelaView').innerHTML='<div class="doc">'+html+'</div>';
+      document.getElementById('cautelaOverlay').classList.add('open');
+    }
+    function fecharCautela(){ document.getElementById('cautelaOverlay').classList.remove('open'); }
+    function imprimirCautela(){ const f=document.getElementById('folhaContagem'); if(f) f.innerHTML=''; window.print(); }
+
+    // ── Importar movimentos anteriores como uma única cautela ─────
+    async function importarCautelaAntiga(){
+      if(cautelas.some(c=>c.importada)){ BBM.toast('A cautela dos movimentos anteriores já foi gerada.','error'); return; }
+      const saidas=(movimentos||[]).filter(m=>m.tipo==='Saída' && !String(m.obs||'').startsWith('Cautela '));
+      if(!saidas.length){ BBM.toast('Não há saídas anteriores para reunir em uma cautela.','error'); return; }
+      if(!confirm('Gerar uma única cautela reunindo '+saidas.length+' saída(s) já registradas? O que faltar (responsável, atividade, data) fica em branco e o estoque não é alterado.')) return;
+      const map={};
+      saidas.forEach(m=>{ const k=m.itemId||m.itemNome; if(!map[k]) map[k]={ itemId:m.itemId, nome:m.itemNome, unidade:'', ambiente:m.ambiente, qtd:0 }; map[k].qtd+=Number(m.qtd)||0; });
+      const linhas=Object.values(map).map(l=>{ const i=itens.find(x=>x.id===l.itemId); if(i) l.unidade=i.unidade; return l; });
+      const respGuess=(saidas.find(m=>m.resp)||{}).resp||'';
+      const u=euC();
+      const cautela={
+        id:BBM.generateId(), numero:proximoNumeroCt(),
+        responsavel:respGuess, atividade:'', dataDevolucao:'',
+        itens:linhas,
+        chefeId:'', chefeNome:'', chefeLogin:'',
+        status:'assinado', // histórico consolidado; não precisa reassinar
+        criadoPor:u?.nome||'', criadoPorId:u?.id||'', criadoEm:new Date().toISOString(),
+        assUsuario:null, assChefe:null, devolucaoMateriais:null, importada:true,
+      };
+      cautelas=[cautela, ...cautelas];
+      await salvar(KEY_CT, cautelas, { sucesso:'Cautela histórica gerada com os movimentos anteriores.' });
+      renderCautelas();
     }
 
     document.getElementById('searchItem').addEventListener('input', aplicarFiltros);
