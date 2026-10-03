@@ -207,7 +207,23 @@
           <div class="grid2">
             <div class="form-group"><label class="form-label">Edificação / estabelecimento</label><input class="form-control" id="fis_estab" placeholder="Nome do estabelecimento"/></div>
             <div class="form-group"><label class="form-label">Endereço</label><input class="form-control" id="fis_end" placeholder="Rua, nº, bairro"/></div>
-            <div class="form-group"><label class="form-label">Município / UF</label><input class="form-control" id="fis_mun" placeholder="Chapadinha/MA"/></div>
+            <div class="form-group"><label class="form-label">Município / UF</label>
+              <select class="form-control" id="fis_mun">
+                <option>Afonso Cunha - MA</option>
+                <option>Anapurus - MA</option>
+                <option>Belágua - MA</option>
+                <option>Brejo - MA</option>
+                <option>Buriti - MA</option>
+                <option selected>Chapadinha - MA</option>
+                <option>Magalhães de Almeida - MA</option>
+                <option>Mata Roma - MA</option>
+                <option>Milagres do Maranhão - MA</option>
+                <option>Santa Quitéria do Maranhão - MA</option>
+                <option>São Benedito do Rio Preto - MA</option>
+                <option>São Bernardo - MA</option>
+                <option>Urbano Santos - MA</option>
+              </select>
+            </div>
             <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="fis_resp" placeholder="Nome do responsável pela edificação"/></div>
             <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="fis_cpf" inputmode="numeric" placeholder="000.000.000-00" oninput="mascaraCPF(this)"/></div>
             <div class="form-group"><label class="form-label">Telefone de contato</label>
@@ -222,7 +238,9 @@
         <div class="form-card" style="margin-bottom:16px">
           <div class="fc-sec">Parâmetros do cálculo</div>
           <div class="grid2">
-            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/></div>
+            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/>
+              <div id="fis_vbbm_nota" style="display:none;font-size:.74rem;color:var(--text-light);margin-top:4px">Valor fixo — somente o administrador pode alterar.</div>
+            </div>
             <div class="form-group"><label class="form-label">Fator de risco R (Tabela 1 — carga de incêndio)</label>
               <select class="form-control" id="fis_r" onchange="calcMulta()">
                 <option value="1.0">Baixo — até 300 MJ/m² (R = 1,0)</option>
@@ -1405,12 +1423,27 @@ ${SEFAZ_DARE}`;
       if(document.getElementById('tabHistMulta').style.display!=='none') renderHistMulta();
     });
 
+    // VBBM é fixo; só o administrador pode alterá-lo (nas duas abas).
+    function aplicarPermissaoVbbm(){
+      const admin = !!(BBM.currentUser && BBM.currentUser() && BBM.currentUser().role==='admin');
+      ['fis_vbbm','ap_vbbm'].forEach(id=>{
+        const el=document.getElementById(id); if(!el) return;
+        el.readOnly = !admin;
+        el.style.background = admin ? '' : '#f3f4f6';
+        el.style.cursor = admin ? '' : 'not-allowed';
+        el.title = admin ? '' : 'Somente o administrador pode alterar o VBBM';
+      });
+      const nota=document.getElementById('fis_vbbm_nota'); if(nota) nota.style.display = admin ? 'none' : '';
+    }
+    if(BBM.onReady) BBM.onReady(()=>aplicarPermissaoVbbm()); else aplicarPermissaoVbbm();
+
     BBM.ready(['dat_config'], ()=>{
       const cfg = (BBM.load('dat_config')||[])[0];
       if(cfg && cfg.vbbm>0){ VBBM = cfg.vbbm; document.getElementById('ap_vbbm').value = VBBM; }
       const fis = document.getElementById('fis_vbbm'); if(fis) fis.value = VBBM;
       calcTaxa();
       if(typeof calcMulta==='function') calcMulta();
+      aplicarPermissaoVbbm();
     });
   </script>
 </body>
