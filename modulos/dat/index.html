@@ -1219,32 +1219,34 @@ A multa NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). Prazo
         return pdf.output('blob');
       } finally { document.body.removeChild(wrap); }
     }
-    async function enviarWhatsApp(){
+    // baixa o PDF do documento para o usuário anexar na conversa (best-effort)
+    async function baixarPdf(o){
+      try{
+        const blob = await gerarPdfBlob(docHtmlDe(o));
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Demonstrativo-Multa-'+((o.numero||'').replace(/\D/g,'')||'15BBM')+'.pdf';
+        document.body.appendChild(a); a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        return true;
+      }catch(e){ console.warn('baixarPdf falhou:', e); return false; }
+    }
+    function enviarWhatsApp(){
       const o = coletarFiscaliza();
       if(!o){ BBM.toast('Marque as infrações e informe a área antes de enviar.','error'); return; }
       const ddd = (document.getElementById('fis_ddd').value||'').replace(/\D/g,'');
       const fone = (document.getElementById('fis_fone').value||'').replace(/\D/g,'');
       if(ddd.length<2 || fone.length<8){ BBM.toast('Informe o DDD e o telefone de contato para enviar no WhatsApp.','error'); return; }
-      const tel = '55'+ddd+fone;
+      const tel = '55'+ddd+fone;                 // sempre usa o número registrado
       const resumo = resumoDe(o);
-      const btn = document.getElementById('fis_btnWpp'); const txtBtn = btn.innerHTML;
-      // 1) tenta anexar o PDF de verdade (Web Share API — celular)
-      let file=null;
-      if(navigator.canShare){
-        try{
-          btn.disabled=true; btn.textContent='Gerando PDF…';
-          const blob = await gerarPdfBlob(docHtmlDe(o));
-          file = new File([blob], 'Demonstrativo-Multa-'+(o.numero||'').replace(/\D/g,'')+'.pdf', { type:'application/pdf' });
-        }catch(e){ console.warn('PDF p/ compartilhar falhou:', e); file=null; }
-        finally { btn.disabled=false; btn.innerHTML=txtBtn; }
-      }
-      if(file && navigator.canShare({ files:[file] })){
-        try{ await navigator.share({ files:[file], title:'Demonstrativo de Cálculo de Multa', text:resumo }); return; }
-        catch(e){ if(e && e.name==='AbortError') return; console.warn('share abortado/falhou:', e); }
-      }
-      // 2) fallback universal: abre a conversa no WhatsApp com o resumo em texto
+      // abre a conversa JÁ no número informado (gesto direto do clique — evita bloqueio de pop-up)
       window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(resumo), '_blank');
-      BBM.toast('Abrindo o WhatsApp com o resumo. Use "Imprimir / Salvar PDF" para anexar o documento completo, se desejar.');
+      // e baixa o PDF para anexar na conversa (o WhatsApp Web/app não aceita anexo automático por link)
+      baixarPdf(o).then(ok=>{
+        BBM.toast(ok
+          ? 'Conversa aberta com '+telFmt(ddd,fone)+'. O PDF foi baixado — toque no clipe 📎 para anexá-lo.'
+          : 'Conversa aberta com '+telFmt(ddd,fone)+'. Use "Imprimir / Salvar PDF" para anexar o documento.');
+      });
     }
 
     // ── Registro e histórico de multas ────────────────────────────
