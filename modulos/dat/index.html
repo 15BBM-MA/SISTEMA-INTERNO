@@ -57,6 +57,7 @@
         <button class="tab-btn" onclick="showTab('tabBaixo',this)">Baixo Risco (Anexo B)</button>
         <button class="tab-btn" onclick="showTab('tabHist',this)">Documentos Emitidos</button>
         <button class="tab-btn" onclick="showTab('tabFiscaliza',this)">Fiscalização (Multas)</button>
+        <button class="tab-btn" onclick="showTab('tabHistMulta',this)">Histórico de Multas</button>
         <button class="tab-btn" onclick="showTab('tabApoio',this)">Apoio ao Analista</button>
       </div>
 
@@ -236,6 +237,15 @@
           </div>
         </div>
 
+        <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Registro e prazo</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Número do documento</label><input class="form-control" id="fis_num" readonly style="background:#f3f4f6;font-weight:700"/></div>
+            <div class="form-group"><label class="form-label">Data da infração</label><input class="form-control" id="fis_datainfra" type="date"/></div>
+            <div class="form-group"><label class="form-label">Prazo para adequação e pagamento (dias)</label><input class="form-control" id="fis_prazo" type="number" min="1" value="30" oninput="calcMulta()"/></div>
+          </div>
+        </div>
+
         <div id="fis_resultado"></div>
 
         <div class="form-card" style="margin-bottom:16px">
@@ -251,12 +261,22 @@
 
         <div class="fc-actions">
           <button class="btn btn-ghost" onclick="limparFiscaliza()">Limpar</button>
+          <button class="btn btn-ghost" onclick="imprimirMulta()">🖨️ Imprimir / Salvar PDF</button>
           <button class="btn btn-ghost" style="color:#128C7E;border-color:#128C7E" onclick="enviarWhatsApp()" id="fis_btnWpp">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.738-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
             Enviar no WhatsApp
           </button>
-          <button class="btn btn-primary" onclick="imprimirMulta()">🖨️ Imprimir / Salvar PDF</button>
+          <button class="btn btn-primary" onclick="registrarMulta()">✓ Registrar no histórico</button>
         </div>
+      </div>
+
+      <!-- HISTÓRICO DE MULTAS -->
+      <div id="tabHistMulta" style="display:none">
+        <p class="info-dat">Documentos de fiscalização registrados. A <strong>verificação de prazo</strong> considera 30 dias (ou o prazo informado) a contar da emissão, para adequação das medidas e pagamento da multa.</p>
+        <div class="hist-controls">
+          <input id="histMultaBusca" type="text" placeholder="Buscar por número, estabelecimento ou responsável…" oninput="renderHistMulta()"/>
+        </div>
+        <div id="histMultaLista"></div>
       </div>
 
       <div id="tabApoio" style="display:none">
@@ -365,6 +385,12 @@
     .fis-busca button { border:none;background:none;font-size:1.3rem;line-height:1;color:var(--text-light);cursor:pointer;padding:0 2px; }
     .fis-item mark { background:#fde68a;color:inherit;padding:0 1px;border-radius:2px;font-weight:600; }
     .fis-res { font-size:.72rem;font-weight:700;color:var(--blue);margin-left:8px; }
+    .hm-item { border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; }
+    .hm-num { font-weight:800;color:var(--text);font-size:.98rem; }
+    .hm-meta { font-size:.8rem;color:var(--text-light);margin-top:3px;line-height:1.5; }
+    .hm-val { font-weight:800;color:var(--blue);margin-top:2px; }
+    .hm-acoes { display:flex;gap:8px;flex-wrap:wrap; }
+    .hm-prazo { display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap;margin-top:4px; }
 
     /* Visualizador */
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
@@ -459,11 +485,12 @@
     }
 
     function showTab(id, btn){
-      ['tabEvento','tabBaixo','tabHist','tabFiscaliza','tabApoio'].forEach(t=>document.getElementById(t).style.display='none');
+      ['tabEvento','tabBaixo','tabHist','tabFiscaliza','tabHistMulta','tabApoio'].forEach(t=>document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(id).style.display='block'; btn.classList.add('active');
       if(id==='tabHist') renderHist();
       if(id==='tabFiscaliza') renderFiscaliza();
+      if(id==='tabHistMulta') renderHistMulta();
     }
     const val = id => (document.getElementById(id).value||'').trim();
     const chk = id => document.getElementById(id).checked;
@@ -957,6 +984,8 @@
       }).join('');
       fiscalizaRenderizado = true;
       const fis = document.getElementById('fis_vbbm'); if(fis && !fis.value) fis.value = VBBM;
+      const dnum = document.getElementById('fis_num'); if(dnum && !dnum.value) dnum.value = proximoNumeroMulta();
+      const dinf = document.getElementById('fis_datainfra'); if(dinf && !dinf.value) dinf.value = hoje();
       filtrarInfracoes();
       calcMulta();
     }
@@ -1043,93 +1072,121 @@
     function mascaraCPF(el){ let d=el.value.replace(/\D/g,'').slice(0,11); d=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); el.value=d; }
     function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); }
     function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
-    function telFormatado(){
-      const ddd=(document.getElementById('fis_ddd').value||'').replace(/\D/g,'');
-      const fone=(document.getElementById('fis_fone').value||'').trim();
-      if(!ddd && !fone) return '';
-      return (ddd?'('+ddd+') ':'')+fone;
+    function telFmt(ddd, fone){ ddd=(ddd||'').replace(/\D/g,''); fone=(fone||'').trim(); if(!ddd && !fone) return ''; return (ddd?'('+ddd+') ':'')+fone; }
+
+    const DIAS_EXT = {10:'dez',15:'quinze',20:'vinte',30:'trinta',45:'quarenta e cinco',60:'sessenta',90:'noventa'};
+    function addDias(iso, dias){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+(parseInt(dias,10)||0)); return d.toISOString().slice(0,10); }
+    // status do prazo em relação a hoje
+    function statusPrazo(vencIso){
+      if(!vencIso) return { txt:'—', cor:'#64748b', bg:'#e2e8f0' };
+      const h=new Date(hoje()+'T00:00:00'), v=new Date(vencIso+'T00:00:00');
+      const dias=Math.round((v-h)/86400000);
+      if(dias>0)  return { txt:`No prazo — faltam ${dias} dia(s) (vence ${brData(vencIso)})`, cor: dias<=5?'#92400e':'#166534', bg: dias<=5?'#fef3c7':'#dcfce7' };
+      if(dias===0) return { txt:`Vence hoje (${brData(vencIso)})`, cor:'#92400e', bg:'#fef3c7' };
+      return { txt:`Vencido há ${-dias} dia(s) (venceu ${brData(vencIso)})`, cor:'#991b1b', bg:'#fee2e2' };
     }
 
-    // ── Monta o demonstrativo (documento + texto p/ WhatsApp) ─────
-    function montarDemonstrativo(){
+    // Coleta os dados do formulário (null se faltar infração/área)
+    function coletarFiscaliza(){
       if(!fiscalizaRenderizado) renderFiscaliza();
-      const area = num('fis_area'), K = fatorK(area);
-      const R = parseFloat(document.getElementById('fis_r').value) || 1;
-      const rTxt = document.getElementById('fis_r').selectedOptions[0].text;
-      const V = num('fis_vbbm') || VBBM;
-      const raw = { I:contarGrupo('I'), II:contarGrupo('II'), III:contarGrupo('III'), IV:contarGrupo('IV') };
-      const cap = { I:Math.min(raw.I,4), II:Math.min(raw.II,4), III:Math.min(raw.III,4), IV:Math.min(raw.IV,2) };
-      const totalMarc = raw.I + raw.II + raw.III + raw.IV;
-      if(totalMarc===0 || area<=0){ return null; }
-      const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
-      const multa = soma * R * K * V;
-      const estab=val('fis_estab'), end=val('fis_end'), mun=val('fis_mun'), resp=val('fis_resp'), cpf=val('fis_cpf'), tel=telFormatado();
+      const area = num('fis_area');
+      const infr = { I:[], II:[], III:[], IV:[] };
+      ['I','II','III','IV'].forEach(g=>{ document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) infr[g].push(i); }); });
+      const total = infr.I.length+infr.II.length+infr.III.length+infr.IV.length;
+      if(total===0 || area<=0) return null;
+      return {
+        numero: val('fis_num'), dataInfracao: val('fis_datainfra'), dataEmissao: hoje(), prazoDias: num('fis_prazo')||30,
+        estab: val('fis_estab'), end: val('fis_end'), mun: val('fis_mun'),
+        resp: val('fis_resp'), cpf: val('fis_cpf'), ddd: document.getElementById('fis_ddd').value, fone: document.getElementById('fis_fone').value,
+        area, K: fatorK(area), R: parseFloat(document.getElementById('fis_r').value)||1,
+        rTxt: document.getElementById('fis_r').selectedOptions[0].text, vbbm: num('fis_vbbm')||VBBM,
+        infr,
+      };
+    }
 
-      const marcadas = g => { const r=[]; document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) r.push((i+1)+'. '+INFRACOES[g][i]); }); return r; };
-      const blocoGrupo = g => { const m=marcadas(g); if(!m.length) return ''; const meta=GRUPO_META[g];
-        return `<p class="b" style="margin:8px 0 2px">${meta.nome} (${m.length} marcada(s), ${Math.min(m.length,meta.max)} usada(s) no cálculo):</p><ol>${m.map(x=>`<li>${escFis(x)}</li>`).join('')}</ol>`; };
+    // Documento (HTML) a partir de um objeto — usado no cálculo atual e no histórico
+    function docHtmlDe(o){
+      const cap = { I:Math.min(o.infr.I.length,4), II:Math.min(o.infr.II.length,4), III:Math.min(o.infr.III.length,4), IV:Math.min(o.infr.IV.length,2) };
+      const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
+      const multa = soma * o.R * o.K * o.vbbm;
+      const tel = telFmt(o.ddd, o.fone);
+      const venc = addDias(o.dataEmissao, o.prazoDias);
+      const ext = DIAS_EXT[o.prazoDias] ? ` (${DIAS_EXT[o.prazoDias]})` : '';
+      const blocoGrupo = g => { const idxs=o.infr[g]||[]; if(!idxs.length) return ''; const meta=GRUPO_META[g];
+        return `<p class="b" style="margin:8px 0 2px">${meta.nome} (${idxs.length} marcada(s), ${Math.min(idxs.length,meta.max)} usada(s) no cálculo):</p><ol>${idxs.map(i=>`<li>${escFis((i+1)+'. '+INFRACOES[g][i])}</li>`).join('')}</ol>`; };
 
       const legal = `<div style="border:1.2px solid #000;background:#f2f2f2;padding:8px 11px;margin:12px 0;font-size:10pt;line-height:1.45">
         <span class="b">Base legal:</span> Lei Estadual nº <span class="b">11.390/2020</span> — Regulamento de Segurança Contra Incêndios das edificações e áreas de risco do Maranhão (arts. 33 e 34). Tipificação das infrações conforme o <span class="b">Anexo B</span>; classificação por grupos e método de cálculo da multa conforme o <span class="b">Anexo C</span> (Tabela 1 — fator de risco R; Tabela 2 — fator de área K).</div>`;
 
+      const idTab = `<table style="margin-top:4px">
+        <tr><td class="lbl">Número</td><td>${escFis(o.numero)||'—'}</td><td class="lbl">Data da infração</td><td>${o.dataInfracao?brData(o.dataInfracao):'—'}</td><td class="lbl">Emissão</td><td>${o.dataEmissao?brData(o.dataEmissao):'—'}</td></tr>
+      </table>`;
+
       const dados = `<table style="margin-top:4px">
-        <tr><td class="lbl">Edificação / estabelecimento</td><td colspan="3">${escFis(estab)||'&nbsp;'}</td></tr>
-        <tr><td class="lbl">Endereço</td><td colspan="3">${escFis(end)||'&nbsp;'}${mun?' — '+escFis(mun):''}</td></tr>
-        <tr><td class="lbl">Responsável</td><td>${escFis(resp)||'&nbsp;'}</td><td class="lbl">CPF</td><td>${escFis(cpf)||'&nbsp;'}</td></tr>
+        <tr><td class="lbl">Edificação / estabelecimento</td><td colspan="3">${escFis(o.estab)||'&nbsp;'}</td></tr>
+        <tr><td class="lbl">Endereço</td><td colspan="3">${escFis(o.end)||'&nbsp;'}${o.mun?' — '+escFis(o.mun):''}</td></tr>
+        <tr><td class="lbl">Responsável</td><td>${escFis(o.resp)||'&nbsp;'}</td><td class="lbl">CPF</td><td>${escFis(o.cpf)||'&nbsp;'}</td></tr>
         <tr><td class="lbl">Telefone de contato</td><td colspan="3">${escFis(tel)||'&nbsp;'}</td></tr>
       </table>`;
 
+      const clausula = `<div style="border:1.3px solid #C8102E;background:#fdecee;padding:9px 12px;margin:14px 0;font-size:10.3pt;line-height:1.5">
+        <span class="b" style="color:#C8102E">Importante — a multa não exime a adequação.</span> A aplicação da multa <span class="b">não isenta</span> o responsável pela edificação do cumprimento das exigências e da <span class="b">adequação das medidas de segurança contra incêndio</span> constantes na notificação (<span class="b">art. 35 da Lei nº 11.390/2020</span>). Fica concedido o prazo de <span class="b">${o.prazoDias}${ext} dias</span>, a contar desta notificação, para a <span class="b">adequação das medidas e o pagamento da multa</span>${venc?`, com vencimento em <span class="b">${brData(venc)}</span>`:''} (art. 37). Decorrido o prazo sem o cumprimento, prosseguir-se-á com as demais sanções cabíveis (interdição/embargo), sem prejuízo das esferas cível e penal.</div>`;
+
       const assinaturas = `
-        <p style="text-align:right;font-size:10.5pt;margin-top:22px">Chapadinha/MA, ______ de __________________ de ________.</p>
+        <p style="text-align:right;font-size:10.5pt;margin-top:22px">Chapadinha/MA, ${o.dataEmissao?escFis(extenso(o.dataEmissao)):'______ de __________________ de ________'}.</p>
         <div style="display:flex;gap:30px;justify-content:space-between;margin-top:46px">
           <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">Agente Fiscalizador — 15º BBM</div></div>
-          <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">Ciência do Responsável${resp?'<br>'+escFis(resp):''}</div></div>
+          <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">Ciência do Responsável${o.resp?'<br>'+escFis(o.resp):''}</div></div>
         </div>`;
 
-      const html = cabecalho()
+      return cabecalho()
         + `<div class="doc-title">Demonstrativo de Cálculo de Multa</div>`
         + `<p style="text-align:center;margin-top:-10px;font-size:11pt" class="b">Lei nº 11.390/2020 — Anexos B e C</p>`
+        + idTab
         + legal
         + `<p class="b" style="margin-top:6px">Dados da edificação e do responsável</p>` + dados
         + `<p class="b" style="margin-top:14px">Infrações constatadas (Anexos B e C)</p>`
         + (blocoGrupo('I')+blocoGrupo('II')+blocoGrupo('III')+blocoGrupo('IV') || '<p>Nenhuma infração marcada.</p>')
         + `<table style="margin-top:12px">
-             <tr><td class="lbl">Área total da edificação</td><td>${brn(area)} m²</td><td class="lbl">Fator de área (K) — Tab. 2</td><td>${K}</td></tr>
-             <tr><td class="lbl">Fator de risco (R) — Tab. 1</td><td>${escFis(rTxt)}</td><td class="lbl">VBBM</td><td>${brl(V)}</td></tr>
+             <tr><td class="lbl">Área total da edificação</td><td>${brn(o.area)} m²</td><td class="lbl">Fator de área (K) — Tab. 2</td><td>${o.K}</td></tr>
+             <tr><td class="lbl">Fator de risco (R) — Tab. 1</td><td>${escFis(o.rTxt)}</td><td class="lbl">VBBM</td><td>${brl(o.vbbm)}</td></tr>
            </table>`
         + `<p class="b" style="margin-top:14px">Fórmula aplicada (Anexo C)</p>`
         + `<p>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</p>`
-        + `<p>Multa = [(2,5 × ${cap.I}) + (3,5 × ${cap.II}) + (5 × ${cap.III}) + (7 × ${cap.IV})] × ${virg(R)} × ${K} × ${brl(V)}</p>`
-        + `<p>Multa = ${virg(soma)} × ${virg(R)} × ${K} × ${brl(V)}</p>`
+        + `<p>Multa = [(2,5 × ${cap.I}) + (3,5 × ${cap.II}) + (5 × ${cap.III}) + (7 × ${cap.IV})] × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}</p>`
+        + `<p>Multa = ${virg(soma)} × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}</p>`
         + `<p style="font-size:13pt;margin-top:6px"><span class="b">Valor da multa: ${brl(multa)}</span></p>`
-        + `<p style="font-size:9.5pt;color:#333;margin-top:10px">O recolhimento é feito por meio de Documento de Arrecadação de Receita Estadual (DARE). O valor do VBBM deve corresponder à data da infração (corrigido anualmente por portaria do CBMMA).</p>`
+        + clausula
+        + `<p style="font-size:9.5pt;color:#333;margin-top:6px">O recolhimento da multa é feito por meio de Documento de Arrecadação de Receita Estadual (DARE). O valor do VBBM deve corresponder à data da infração (corrigido anualmente por portaria do CBMMA).</p>`
         + assinaturas
         + rodape();
+    }
 
-      // texto resumido para o WhatsApp
-      const linhasInfr = ['I','II','III','IV'].filter(g=>raw[g]>0)
-        .map(g=>`• ${GRUPO_META[g].nome}: ${raw[g]}`).join('\n');
-      const resumo =
-`*15º BBM — Demonstrativo de Cálculo de Multa*
-Lei nº 11.390/2020 (Anexos B e C)
-${estab?('\nEdificação: '+estab):''}${end?('\nEndereço: '+end+(mun?' — '+mun:'')):''}${resp?('\nResponsável: '+resp):''}${cpf?('\nCPF: '+cpf):''}${tel?('\nContato: '+tel):''}
+    function resumoDe(o){
+      const cap = { I:Math.min(o.infr.I.length,4), II:Math.min(o.infr.II.length,4), III:Math.min(o.infr.III.length,4), IV:Math.min(o.infr.IV.length,2) };
+      const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
+      const multa = soma * o.R * o.K * o.vbbm;
+      const tel = telFmt(o.ddd, o.fone);
+      const venc = addDias(o.dataEmissao, o.prazoDias);
+      const linhasInfr = ['I','II','III','IV'].filter(g=>(o.infr[g]||[]).length>0).map(g=>`• ${GRUPO_META[g].nome}: ${o.infr[g].length}`).join('\n');
+      return `*15º BBM — Demonstrativo de Cálculo de Multa*
+Nº ${o.numero||'—'} · Lei nº 11.390/2020 (Anexos B e C)
+${o.estab?('\nEdificação: '+o.estab):''}${o.end?('\nEndereço: '+o.end+(o.mun?' — '+o.mun:'')):''}${o.resp?('\nResponsável: '+o.resp):''}${o.cpf?('\nCPF: '+o.cpf):''}${tel?('\nContato: '+tel):''}${o.dataInfracao?('\nData da infração: '+brData(o.dataInfracao)):''}
 
 Infrações constatadas:
 ${linhasInfr}
 
-Área: ${brn(area)} m² (K=${K}) · ${rTxt}
-Cálculo: ${virg(soma)} × ${virg(R)} × ${K} × ${brl(V)}
+Área: ${brn(o.area)} m² (K=${o.K}) · ${o.rTxt}
+Cálculo: ${virg(soma)} × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}
 *Valor da multa: ${brl(multa)}*
 
-Recolhimento via DARE. Documento de fiscalização do Corpo de Bombeiros Militar do Maranhão.`;
-
-      return { html, resumo, multa };
+A multa NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). Prazo de ${o.prazoDias} dias para adequação e pagamento${venc?(', até '+brData(venc)):''}. Recolhimento via DARE.`;
     }
 
     function imprimirMulta(){
-      const d = montarDemonstrativo();
-      if(!d){ BBM.toast('Marque as infrações e informe a área antes de gerar o documento.','error'); return; }
-      abrirDoc(d.html, false);
+      const o = coletarFiscaliza();
+      if(!o){ BBM.toast('Marque as infrações e informe a área antes de gerar o documento.','error'); return; }
+      abrirDoc(docHtmlDe(o), false);
     }
 
     // ── Envio ao WhatsApp (anexa o PDF quando o aparelho suporta) ──
@@ -1163,31 +1220,99 @@ Recolhimento via DARE. Documento de fiscalização do Corpo de Bombeiros Militar
       } finally { document.body.removeChild(wrap); }
     }
     async function enviarWhatsApp(){
-      const d = montarDemonstrativo();
-      if(!d){ BBM.toast('Marque as infrações e informe a área antes de enviar.','error'); return; }
+      const o = coletarFiscaliza();
+      if(!o){ BBM.toast('Marque as infrações e informe a área antes de enviar.','error'); return; }
       const ddd = (document.getElementById('fis_ddd').value||'').replace(/\D/g,'');
-      const num = (document.getElementById('fis_fone').value||'').replace(/\D/g,'');
-      if(ddd.length<2 || num.length<8){ BBM.toast('Informe o DDD e o telefone de contato para enviar no WhatsApp.','error'); return; }
-      const tel = '55'+ddd+num;
+      const fone = (document.getElementById('fis_fone').value||'').replace(/\D/g,'');
+      if(ddd.length<2 || fone.length<8){ BBM.toast('Informe o DDD e o telefone de contato para enviar no WhatsApp.','error'); return; }
+      const tel = '55'+ddd+fone;
+      const resumo = resumoDe(o);
       const btn = document.getElementById('fis_btnWpp'); const txtBtn = btn.innerHTML;
       // 1) tenta anexar o PDF de verdade (Web Share API — celular)
       let file=null;
       if(navigator.canShare){
         try{
           btn.disabled=true; btn.textContent='Gerando PDF…';
-          const blob = await gerarPdfBlob(d.html);
-          file = new File([blob], 'Demonstrativo-Multa-15BBM.pdf', { type:'application/pdf' });
+          const blob = await gerarPdfBlob(docHtmlDe(o));
+          file = new File([blob], 'Demonstrativo-Multa-'+(o.numero||'').replace(/\D/g,'')+'.pdf', { type:'application/pdf' });
         }catch(e){ console.warn('PDF p/ compartilhar falhou:', e); file=null; }
         finally { btn.disabled=false; btn.innerHTML=txtBtn; }
       }
       if(file && navigator.canShare({ files:[file] })){
-        try{ await navigator.share({ files:[file], title:'Demonstrativo de Cálculo de Multa', text:d.resumo }); return; }
+        try{ await navigator.share({ files:[file], title:'Demonstrativo de Cálculo de Multa', text:resumo }); return; }
         catch(e){ if(e && e.name==='AbortError') return; console.warn('share abortado/falhou:', e); }
       }
       // 2) fallback universal: abre a conversa no WhatsApp com o resumo em texto
-      window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(d.resumo), '_blank');
+      window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(resumo), '_blank');
       BBM.toast('Abrindo o WhatsApp com o resumo. Use "Imprimir / Salvar PDF" para anexar o documento completo, se desejar.');
     }
+
+    // ── Registro e histórico de multas ────────────────────────────
+    let multas = [];
+    function proximoNumeroMulta(){
+      const ano = new Date().getFullYear(); let max = 0;
+      multas.forEach(m=>{ const mm=/^(\d+)\/(\d{4})$/.exec(m.numero||''); if(mm && +mm[2]===ano) max=Math.max(max,+mm[1]); });
+      return String(max+1).padStart(3,'0')+'/'+ano;
+    }
+    async function registrarMulta(){
+      const o = coletarFiscaliza();
+      if(!o){ BBM.toast('Marque as infrações e informe a área antes de registrar.','error'); return; }
+      o.numero = proximoNumeroMulta();
+      o.dataEmissao = hoje();
+      o.id = (BBM.generateId ? BBM.generateId() : 'm'+Date.now());
+      o.criadoPor = (BBM.currentUser && BBM.currentUser()?.nome) || '';
+      o.criadoEm = new Date().toISOString();
+      multas = [o, ...multas];
+      let res; try{ res = await BBM.save('dat_multas', multas); }catch(e){ res={ok:false,error:e}; }
+      if(!res || res.ok){
+        BBM.toast('Documento registrado no histórico (nº '+o.numero+').');
+        document.getElementById('fis_num').value = proximoNumeroMulta();
+        abrirDoc(docHtmlDe(o), false); // abre para impressão/PDF
+      } else {
+        multas = multas.filter(x=>x.id!==o.id);
+        BBM.toast('Falha ao salvar no histórico — verifique a conexão/permissão.','error');
+      }
+    }
+    function verMulta(id){ const o=multas.find(x=>x.id===id); if(o) abrirDoc(docHtmlDe(o), false); }
+    async function excluirMulta(id){
+      if(!confirm('Excluir este documento de multa do histórico?')) return;
+      const bak=multas; multas=multas.filter(x=>x.id!==id);
+      let res; try{ res=await BBM.save('dat_multas', multas); }catch(e){ res={ok:false}; }
+      if(!res || res.ok){ renderHistMulta(); BBM.toast('Documento excluído.'); }
+      else { multas=bak; BBM.toast('Falha ao excluir.','error'); }
+    }
+    function renderHistMulta(){
+      const q = (document.getElementById('histMultaBusca').value||'').toLowerCase();
+      const lista = [...multas]
+        .filter(m=>!q || [m.numero,m.estab,m.resp,m.cpf].some(v=>(v||'').toLowerCase().includes(q)))
+        .sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
+      const el = document.getElementById('histMultaLista');
+      if(!lista.length){ el.innerHTML='<div class="empty-state" style="padding:24px;text-align:center;color:var(--text-light)">Nenhum documento de multa registrado ainda.</div>'; return; }
+      el.innerHTML = lista.map(m=>{
+        const cap = { I:Math.min((m.infr.I||[]).length,4), II:Math.min((m.infr.II||[]).length,4), III:Math.min((m.infr.III||[]).length,4), IV:Math.min((m.infr.IV||[]).length,2) };
+        const multa = (2.5*cap.I+3.5*cap.II+5*cap.III+7*cap.IV)*m.R*m.K*m.vbbm;
+        const venc = addDias(m.dataEmissao, m.prazoDias);
+        const sp = statusPrazo(venc);
+        return `<div class="hm-item">
+          <div style="min-width:0">
+            <div class="hm-num">Nº ${escFis(m.numero||'—')}</div>
+            <div class="hm-meta">${escFis(m.estab)||'Edificação não informada'}${m.resp?' · '+escFis(m.resp):''}${m.dataInfracao?' · infração em '+brData(m.dataInfracao):''}</div>
+            <div class="hm-val">${brl(multa)}</div>
+            <span class="hm-prazo" style="color:${sp.cor};background:${sp.bg}">⏱ ${sp.txt}</span>
+          </div>
+          <div class="hm-acoes">
+            <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 11px" onclick="verMulta('${m.id}')">🖨️ Ver / Imprimir</button>
+            <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 11px;color:#dc2626;border-color:#fca5a5" onclick="excluirMulta('${m.id}')">🗑</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    BBM.ready(['dat_multas'], ()=>{
+      multas = BBM.load('dat_multas') || [];
+      const dnum = document.getElementById('fis_num'); if(dnum) dnum.value = proximoNumeroMulta();
+      if(document.getElementById('tabHistMulta').style.display!=='none') renderHistMulta();
+    });
 
     BBM.ready(['dat_config'], ()=>{
       const cfg = (BBM.load('dat_config')||[])[0];
