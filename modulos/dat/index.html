@@ -223,6 +223,12 @@
 
         <div class="form-card" style="margin-bottom:16px">
           <div class="fc-sec">Infrações constatadas</div>
+          <div class="fis-busca">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="fis_busca" type="text" placeholder="Pesquisar infração (ex.: extintor, hidrante, saída, alarme…)" oninput="filtrarInfracoes()"/>
+            <button type="button" id="fis_buscaX" title="Limpar busca" onclick="document.getElementById('fis_busca').value='';filtrarInfracoes();" style="display:none">×</button>
+          </div>
+          <div id="fis_busca_vazio" style="display:none;padding:10px 2px;color:var(--text-light);font-size:.86rem">Nenhuma infração encontrada para esse termo.</div>
           <div id="fis_grupos"></div>
         </div>
 
@@ -332,6 +338,12 @@
     .fis-formula { font-size:.78rem;color:var(--text-mid);text-align:right;line-height:1.55; }
     .fis-formula span { color:var(--text-light); }
     @media(max-width:600px){ .fis-formula{text-align:left} }
+    .fis-busca { display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;padding:0 12px;margin-bottom:12px;background:#fff; }
+    .fis-busca svg { width:16px;height:16px;color:var(--text-light);flex-shrink:0; }
+    .fis-busca input { flex:1;border:none;outline:none;padding:11px 0;font-family:inherit;font-size:.9rem;background:transparent;color:var(--text); }
+    .fis-busca button { border:none;background:none;font-size:1.3rem;line-height:1;color:var(--text-light);cursor:pointer;padding:0 2px; }
+    .fis-item mark { background:#fde68a;color:inherit;padding:0 1px;border-radius:2px;font-weight:600; }
+    .fis-res { font-size:.72rem;font-weight:700;color:var(--blue);margin-left:8px; }
 
     /* Visualizador */
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
@@ -916,7 +928,7 @@
         ).join('');
         return `<div class="fis-grupo">
           <div class="fis-grupo-head" style="border-left:4px solid ${meta.cor}">
-            <span>${meta.nome}</span>
+            <span>${meta.nome}<span class="fis-res" id="fisRes${g}"></span></span>
             <span style="font-size:.74rem;color:var(--text-light);font-weight:600">peso ${virg(meta.peso)} · usa no máx. ${meta.max} · marcadas: <b id="fisCount${g}" style="color:${meta.cor}">0</b></span>
           </div>
           <div class="fis-grupo-itens">${itens}</div>
@@ -924,7 +936,42 @@
       }).join('');
       fiscalizaRenderizado = true;
       const fis = document.getElementById('fis_vbbm'); if(fis && !fis.value) fis.value = VBBM;
+      filtrarInfracoes();
       calcMulta();
+    }
+
+    // Busca de infrações (todos os grupos), com destaque do termo
+    const _normFis = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const escFis = s => String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    function realcarFis(texto, termo){
+      const e = escFis(texto);
+      if(!termo) return e;
+      try{ const rx = new RegExp('('+termo.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'); return e.replace(rx, '<mark>$1</mark>'); }
+      catch(_){ return e; }
+    }
+    function filtrarInfracoes(){
+      if(!fiscalizaRenderizado) return;
+      const bruto = document.getElementById('fis_busca').value.trim();
+      const termo = _normFis(bruto);
+      document.getElementById('fis_buscaX').style.display = bruto ? '' : 'none';
+      const grupos = document.querySelectorAll('#fis_grupos .fis-grupo');
+      let totalVis = 0;
+      Object.keys(INFRACOES).forEach((g, gi)=>{
+        const checks = document.querySelectorAll('.fis'+g);
+        let vis = 0;
+        checks.forEach((c, idx)=>{
+          const label = c.closest('.fis-item');
+          const span  = label.querySelector('span');
+          const full  = (idx+1)+'. '+INFRACOES[g][idx];
+          const match = !termo || _normFis(full).includes(termo);
+          label.style.display = match ? '' : 'none';
+          if(match){ vis++; totalVis++; span.innerHTML = bruto ? realcarFis(full, bruto) : escFis(full); }
+        });
+        const resEl = document.getElementById('fisRes'+g);
+        if(resEl) resEl.textContent = termo ? ' · '+vis+' resultado(s)' : '';
+        if(grupos[gi]) grupos[gi].style.display = (termo && vis===0) ? 'none' : '';
+      });
+      document.getElementById('fis_busca_vazio').style.display = (termo && totalVis===0) ? 'block' : 'none';
     }
 
     function contarGrupo(g){ return document.querySelectorAll('.fis'+g+':checked').length; }
@@ -966,6 +1013,8 @@
       document.querySelectorAll('#fis_grupos input[type=checkbox]').forEach(c=>c.checked=false);
       document.getElementById('fis_area').value='';
       document.getElementById('fis_r').value='1.0';
+      document.getElementById('fis_busca').value='';
+      filtrarInfracoes();
       calcMulta();
     }
 
