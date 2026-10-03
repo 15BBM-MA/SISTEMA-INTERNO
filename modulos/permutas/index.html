@@ -66,10 +66,16 @@
 
       <div id="pendentesVoce"></div>
       <div class="section-label" style="margin-top:8px">Permutas</div>
-      <div class="pm-filtro">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="pmFiltro" type="text" placeholder="Filtrar histórico por nome do militar…" oninput="render()"/>
-        <button type="button" id="pmFiltroX" title="Limpar filtro" onclick="document.getElementById('pmFiltro').value='';render()" style="display:none">×</button>
+      <div class="pm-filtros">
+        <div class="pm-filtro-campo">
+          <label>Substituído (quem passou o serviço)</label>
+          <select id="pmFiltroSolic" onchange="render()"></select>
+        </div>
+        <div class="pm-filtro-campo">
+          <label>Substituto (quem assumiu)</label>
+          <select id="pmFiltroSub" onchange="render()"></select>
+        </div>
+        <button type="button" class="btn btn-ghost" id="pmFiltroX" onclick="limparFiltroPermuta()" style="display:none">Limpar filtros</button>
       </div>
       <div id="pmContagem" class="pm-contagem"></div>
       <div id="listaPermutas"></div>
@@ -156,10 +162,11 @@
   <div id="docPermuta" aria-hidden="true"></div>
 
   <style>
-    .pm-filtro { display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:9px; padding:0 12px; background:#fff; margin-bottom:10px; }
-    .pm-filtro svg { width:16px; height:16px; color:var(--text-light); flex-shrink:0; }
-    .pm-filtro input { flex:1; border:none; outline:none; padding:11px 0; font-family:inherit; font-size:.9rem; background:transparent; color:var(--text); }
-    .pm-filtro button { border:none; background:none; font-size:1.3rem; line-height:1; color:var(--text-light); cursor:pointer; padding:0 2px; }
+    .pm-filtros { display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .pm-filtro-campo { display:flex; flex-direction:column; gap:4px; flex:1; min-width:200px; }
+    .pm-filtro-campo label { font-size:.74rem; font-weight:600; color:var(--text-light); }
+    .pm-filtro-campo select { padding:10px 12px; border:1px solid var(--border); border-radius:9px; font-family:inherit; font-size:.9rem; background:#fff; color:var(--text); }
+    .pm-filtros .btn { font-size:.8rem; padding:9px 14px; }
     .pm-contagem { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
     .pm-cont-chip { font-size:.8rem; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:7px 12px; }
     .pm-cont-chip b { color:var(--blue); font-weight:800; font-size:.95rem; }
@@ -288,36 +295,52 @@
              ${pend.length>1?`<button class="btn btn-primary" style="font-size:.74rem;padding:4px 12px" onclick="abrirAssinarLote()">✍ Assinar todas de uma vez</button>`:''}
            </div>${pend.map(cardPermuta).join('')}`
         : '';
-      // Lista geral (mais recentes primeiro), com filtro por nome de militar
-      const termo = (document.getElementById('pmFiltro')?.value || '').trim();
-      document.getElementById('pmFiltroX').style.display = termo ? '' : 'none';
+      // Lista geral (mais recentes primeiro), com filtros por substituído e substituto
+      popularFiltrosPraca();
+      const fSolic = document.getElementById('pmFiltroSolic').value;
+      const fSub   = document.getElementById('pmFiltroSub').value;
+      document.getElementById('pmFiltroX').style.display = (fSolic || fSub) ? '' : 'none';
       let lista = [...permutas].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
-      if (termo) lista = lista.filter(p => nomeContem(p.solicitanteNome, termo) || nomeContem(p.substitutoNome, termo));
-      renderContagem(lista, termo);
+      if (fSolic) lista = lista.filter(p => ehMesmaPessoa(p.solicitanteNome, fSolic));
+      if (fSub)   lista = lista.filter(p => ehMesmaPessoa(p.substitutoNome, fSub));
+      renderContagem(lista, fSolic, fSub);
       const el = document.getElementById('listaPermutas');
       el.innerHTML = lista.length ? lista.map(cardPermuta).join('')
-        : `<div class="empty-state"><p>${termo ? 'Nenhuma permuta para esse filtro.' : 'Nenhuma permuta registrada.'}</p></div>`;
+        : `<div class="empty-state"><p>${(fSolic||fSub) ? 'Nenhuma permuta para esse filtro.' : 'Nenhuma permuta registrada.'}</p></div>`;
     }
 
-    function nomeContem(nome, termo){ return _norm(nome).includes(_norm(termo)); }
+    // Preenche as duas listas de praças (uma vez; mantém a seleção atual)
+    let _filtrosPreenchidos = false;
+    function popularFiltrosPraca(){
+      if (_filtrosPreenchidos || !pracas.length) return;
+      const ordenadas = [...pracas].sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+      const opts = '<option value="">— todos —</option>' +
+        ordenadas.map(m=>{ const n=(m.nome||'').replace(/"/g,'&quot;'); return `<option value="${n}">${m.posto?m.posto+' ':''}${m.nome}</option>`; }).join('');
+      document.getElementById('pmFiltroSolic').innerHTML = opts;
+      document.getElementById('pmFiltroSub').innerHTML = opts;
+      _filtrosPreenchidos = true;
+    }
+    function limparFiltroPermuta(){
+      document.getElementById('pmFiltroSolic').value = '';
+      document.getElementById('pmFiltroSub').value = '';
+      render();
+    }
 
-    // Contagem de serviços que varia com o filtro
-    function renderContagem(lista, termo){
+    // Contagem de serviços que varia com os filtros
+    function renderContagem(lista, fSolic, fSub){
       const box = document.getElementById('pmContagem');
       const assinadas = lista.filter(p => p.status === 'assinado');
-      if (termo){
-        const assumiu = assinadas.filter(p => nomeContem(p.substitutoNome, termo)).length; // pegou o serviço de outro
-        const cedeu   = assinadas.filter(p => nomeContem(p.solicitanteNome, termo)).length; // passou o próprio serviço
-        box.innerHTML =
-          `<span class="pm-cont-chip assumiu">Assumiu <b>${assumiu}</b> serviço(s)</span>`
-        + `<span class="pm-cont-chip cedeu">Cedeu <b>${cedeu}</b> serviço(s)</span>`
-        + `<span class="pm-cont-chip">Saldo <b>${assumiu-cedeu>0?'+':''}${assumiu-cedeu}</b></span>`
-        + `<span class="pm-cont-chip"><b>${lista.length}</b> permuta(s) no filtro</span>`;
-      } else {
-        box.innerHTML =
-          `<span class="pm-cont-chip"><b>${lista.length}</b> permuta(s)</span>`
-        + `<span class="pm-cont-chip assumiu"><b>${assinadas.length}</b> assinada(s)</span>`;
+      const chips = [`<span class="pm-cont-chip"><b>${lista.length}</b> permuta(s) no filtro</span>`,
+                     `<span class="pm-cont-chip"><b>${assinadas.length}</b> assinada(s)</span>`];
+      if (fSub){
+        const assumiu = assinadas.filter(p => ehMesmaPessoa(p.substitutoNome, fSub)).length;
+        chips.push(`<span class="pm-cont-chip assumiu">${fSub.split(' ').slice(-1)[0]} assumiu <b>${assumiu}</b> serviço(s)</span>`);
       }
+      if (fSolic){
+        const cedeu = assinadas.filter(p => ehMesmaPessoa(p.solicitanteNome, fSolic)).length;
+        chips.push(`<span class="pm-cont-chip cedeu">${fSolic.split(' ').slice(-1)[0]} cedeu <b>${cedeu}</b> serviço(s)</span>`);
+      }
+      box.innerHTML = chips.join('');
     }
 
     // ── Solicitar ─────────────────────────────────────────────────
