@@ -202,6 +202,23 @@
         <p class="info-dat">Cálculo de multas por infrações à legislação de segurança contra incêndio — <strong>Anexos B e C da Lei nº 11.390/2020</strong>. Fórmula: <strong>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</strong>. Marque as infrações constatadas e o valor é calculado automaticamente. Os Grupos I, II e III entram com no máximo 4 infrações cada; o Grupo IV, com no máximo 2.</p>
 
         <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Dados da edificação e do responsável</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Edificação / estabelecimento</label><input class="form-control" id="fis_estab" placeholder="Nome do estabelecimento"/></div>
+            <div class="form-group"><label class="form-label">Endereço</label><input class="form-control" id="fis_end" placeholder="Rua, nº, bairro"/></div>
+            <div class="form-group"><label class="form-label">Município / UF</label><input class="form-control" id="fis_mun" placeholder="Chapadinha/MA"/></div>
+            <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="fis_resp" placeholder="Nome do responsável pela edificação"/></div>
+            <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="fis_cpf" inputmode="numeric" placeholder="000.000.000-00" oninput="mascaraCPF(this)"/></div>
+            <div class="form-group"><label class="form-label">Telefone de contato</label>
+              <div style="display:flex;gap:8px">
+                <input class="form-control" id="fis_ddd" inputmode="numeric" placeholder="DDD" style="width:72px;text-align:center" oninput="mascaraDDD(this)"/>
+                <input class="form-control" id="fis_fone" inputmode="numeric" placeholder="00000-0000" oninput="mascaraFone(this)" style="flex:1"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card" style="margin-bottom:16px">
           <div class="fc-sec">Parâmetros do cálculo</div>
           <div class="grid2">
             <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/></div>
@@ -234,7 +251,11 @@
 
         <div class="fc-actions">
           <button class="btn btn-ghost" onclick="limparFiscaliza()">Limpar</button>
-          <button class="btn btn-primary" onclick="imprimirMulta()">🖨️ Imprimir demonstrativo</button>
+          <button class="btn btn-ghost" style="color:#128C7E;border-color:#128C7E" onclick="enviarWhatsApp()" id="fis_btnWpp">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.738-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            Enviar no WhatsApp
+          </button>
+          <button class="btn btn-primary" onclick="imprimirMulta()">🖨️ Imprimir / Salvar PDF</button>
         </div>
       </div>
 
@@ -1018,8 +1039,20 @@
       calcMulta();
     }
 
-    function imprimirMulta(){
-      if(!fiscalizaRenderizado){ renderFiscaliza(); }
+    // ── Máscaras dos campos do responsável ────────────────────────
+    function mascaraCPF(el){ let d=el.value.replace(/\D/g,'').slice(0,11); d=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); el.value=d; }
+    function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); }
+    function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
+    function telFormatado(){
+      const ddd=(document.getElementById('fis_ddd').value||'').replace(/\D/g,'');
+      const fone=(document.getElementById('fis_fone').value||'').trim();
+      if(!ddd && !fone) return '';
+      return (ddd?'('+ddd+') ':'')+fone;
+    }
+
+    // ── Monta o demonstrativo (documento + texto p/ WhatsApp) ─────
+    function montarDemonstrativo(){
+      if(!fiscalizaRenderizado) renderFiscaliza();
       const area = num('fis_area'), K = fatorK(area);
       const R = parseFloat(document.getElementById('fis_r').value) || 1;
       const rTxt = document.getElementById('fis_r').selectedOptions[0].text;
@@ -1027,29 +1060,133 @@
       const raw = { I:contarGrupo('I'), II:contarGrupo('II'), III:contarGrupo('III'), IV:contarGrupo('IV') };
       const cap = { I:Math.min(raw.I,4), II:Math.min(raw.II,4), III:Math.min(raw.III,4), IV:Math.min(raw.IV,2) };
       const totalMarc = raw.I + raw.II + raw.III + raw.IV;
-      if(totalMarc===0 || area<=0){ BBM.toast('Marque as infrações e informe a área antes de imprimir.','error'); return; }
+      if(totalMarc===0 || area<=0){ return null; }
       const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
       const multa = soma * R * K * V;
-      function marcadas(g){ const r=[]; document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) r.push((i+1)+'. '+INFRACOES[g][i]); }); return r; }
+      const estab=val('fis_estab'), end=val('fis_end'), mun=val('fis_mun'), resp=val('fis_resp'), cpf=val('fis_cpf'), tel=telFormatado();
+
+      const marcadas = g => { const r=[]; document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) r.push((i+1)+'. '+INFRACOES[g][i]); }); return r; };
       const blocoGrupo = g => { const m=marcadas(g); if(!m.length) return ''; const meta=GRUPO_META[g];
-        return `<p class="b" style="margin:8px 0 2px">${meta.nome} (${m.length} marcada(s), ${Math.min(m.length,meta.max)} usada(s) no cálculo):</p><ol>${m.map(x=>`<li>${x}</li>`).join('')}</ol>`; };
+        return `<p class="b" style="margin:8px 0 2px">${meta.nome} (${m.length} marcada(s), ${Math.min(m.length,meta.max)} usada(s) no cálculo):</p><ol>${m.map(x=>`<li>${escFis(x)}</li>`).join('')}</ol>`; };
+
+      const legal = `<div style="border:1.2px solid #000;background:#f2f2f2;padding:8px 11px;margin:12px 0;font-size:10pt;line-height:1.45">
+        <span class="b">Base legal:</span> Lei Estadual nº <span class="b">11.390/2020</span> — Regulamento de Segurança Contra Incêndios das edificações e áreas de risco do Maranhão (arts. 33 e 34). Tipificação das infrações conforme o <span class="b">Anexo B</span>; classificação por grupos e método de cálculo da multa conforme o <span class="b">Anexo C</span> (Tabela 1 — fator de risco R; Tabela 2 — fator de área K).</div>`;
+
+      const dados = `<table style="margin-top:4px">
+        <tr><td class="lbl">Edificação / estabelecimento</td><td colspan="3">${escFis(estab)||'&nbsp;'}</td></tr>
+        <tr><td class="lbl">Endereço</td><td colspan="3">${escFis(end)||'&nbsp;'}${mun?' — '+escFis(mun):''}</td></tr>
+        <tr><td class="lbl">Responsável</td><td>${escFis(resp)||'&nbsp;'}</td><td class="lbl">CPF</td><td>${escFis(cpf)||'&nbsp;'}</td></tr>
+        <tr><td class="lbl">Telefone de contato</td><td colspan="3">${escFis(tel)||'&nbsp;'}</td></tr>
+      </table>`;
+
+      const assinaturas = `
+        <p style="text-align:right;font-size:10.5pt;margin-top:22px">Chapadinha/MA, ______ de __________________ de ________.</p>
+        <div style="display:flex;gap:30px;justify-content:space-between;margin-top:46px">
+          <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">Agente Fiscalizador — 15º BBM</div></div>
+          <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">Ciência do Responsável${resp?'<br>'+escFis(resp):''}</div></div>
+        </div>`;
+
       const html = cabecalho()
         + `<div class="doc-title">Demonstrativo de Cálculo de Multa</div>`
-        + `<p style="text-align:center;margin-top:-8px;font-size:10.5pt">Lei nº 11.390/2020 — Regulamento de Segurança Contra Incêndios (Anexos B e C)</p>`
-        + `<table style="margin-top:12px">
-             <tr><td class="lbl">Área total da edificação</td><td>${brn(area)} m²</td><td class="lbl">Fator de área (K)</td><td>${K}</td></tr>
-             <tr><td class="lbl">Fator de risco (R)</td><td>${rTxt}</td><td class="lbl">VBBM</td><td>${brl(V)}</td></tr>
-           </table>`
-        + `<p class="b" style="margin-top:14px">Infrações constatadas</p>`
+        + `<p style="text-align:center;margin-top:-10px;font-size:11pt" class="b">Lei nº 11.390/2020 — Anexos B e C</p>`
+        + legal
+        + `<p class="b" style="margin-top:6px">Dados da edificação e do responsável</p>` + dados
+        + `<p class="b" style="margin-top:14px">Infrações constatadas (Anexos B e C)</p>`
         + (blocoGrupo('I')+blocoGrupo('II')+blocoGrupo('III')+blocoGrupo('IV') || '<p>Nenhuma infração marcada.</p>')
-        + `<p class="b" style="margin-top:14px">Fórmula aplicada</p>`
+        + `<table style="margin-top:12px">
+             <tr><td class="lbl">Área total da edificação</td><td>${brn(area)} m²</td><td class="lbl">Fator de área (K) — Tab. 2</td><td>${K}</td></tr>
+             <tr><td class="lbl">Fator de risco (R) — Tab. 1</td><td>${escFis(rTxt)}</td><td class="lbl">VBBM</td><td>${brl(V)}</td></tr>
+           </table>`
+        + `<p class="b" style="margin-top:14px">Fórmula aplicada (Anexo C)</p>`
         + `<p>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</p>`
         + `<p>Multa = [(2,5 × ${cap.I}) + (3,5 × ${cap.II}) + (5 × ${cap.III}) + (7 × ${cap.IV})] × ${virg(R)} × ${K} × ${brl(V)}</p>`
         + `<p>Multa = ${virg(soma)} × ${virg(R)} × ${K} × ${brl(V)}</p>`
         + `<p style="font-size:13pt;margin-top:6px"><span class="b">Valor da multa: ${brl(multa)}</span></p>`
-        + `<p style="font-size:9.5pt;color:#444;margin-top:10px">O recolhimento é feito por meio de Documento de Arrecadação de Receita Estadual (DARE). O valor do VBBM deve corresponder à data da infração (corrigido anualmente por portaria do CBMMA).</p>`
+        + `<p style="font-size:9.5pt;color:#333;margin-top:10px">O recolhimento é feito por meio de Documento de Arrecadação de Receita Estadual (DARE). O valor do VBBM deve corresponder à data da infração (corrigido anualmente por portaria do CBMMA).</p>`
+        + assinaturas
         + rodape();
-      abrirDoc(html, false);
+
+      // texto resumido para o WhatsApp
+      const linhasInfr = ['I','II','III','IV'].filter(g=>raw[g]>0)
+        .map(g=>`• ${GRUPO_META[g].nome}: ${raw[g]}`).join('\n');
+      const resumo =
+`*15º BBM — Demonstrativo de Cálculo de Multa*
+Lei nº 11.390/2020 (Anexos B e C)
+${estab?('\nEdificação: '+estab):''}${end?('\nEndereço: '+end+(mun?' — '+mun:'')):''}${resp?('\nResponsável: '+resp):''}${cpf?('\nCPF: '+cpf):''}${tel?('\nContato: '+tel):''}
+
+Infrações constatadas:
+${linhasInfr}
+
+Área: ${brn(area)} m² (K=${K}) · ${rTxt}
+Cálculo: ${virg(soma)} × ${virg(R)} × ${K} × ${brl(V)}
+*Valor da multa: ${brl(multa)}*
+
+Recolhimento via DARE. Documento de fiscalização do Corpo de Bombeiros Militar do Maranhão.`;
+
+      return { html, resumo, multa };
+    }
+
+    function imprimirMulta(){
+      const d = montarDemonstrativo();
+      if(!d){ BBM.toast('Marque as infrações e informe a área antes de gerar o documento.','error'); return; }
+      abrirDoc(d.html, false);
+    }
+
+    // ── Envio ao WhatsApp (anexa o PDF quando o aparelho suporta) ──
+    let _libsPdf = null;
+    function carregarLibsPdf(){
+      if(_libsPdf) return _libsPdf;
+      const load = src => new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      _libsPdf = Promise.all([
+        window.html2canvas ? Promise.resolve() : load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+        (window.jspdf && window.jspdf.jsPDF) ? Promise.resolve() : load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
+      ]);
+      return _libsPdf;
+    }
+    async function gerarPdfBlob(html){
+      await carregarLibsPdf();
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;left:-99999px;top:0;width:794px;background:#fff;padding:34px 38px;z-index:-1';
+      wrap.innerHTML = '<div class="doc">'+html+'</div>';
+      document.body.appendChild(wrap);
+      try{
+        const canvas = await html2canvas(wrap, { scale:2, useCORS:true, backgroundColor:'#ffffff' });
+        const img = canvas.toDataURL('image/jpeg', 0.92);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p','mm','a4');
+        const pw=210, ph=297, m=10, iw=pw-m*2;
+        const ih = canvas.height*iw/canvas.width;
+        if(ih <= ph-m*2){ pdf.addImage(img,'JPEG',m,m,iw,ih); }
+        else { let left=ih, pos=m; pdf.addImage(img,'JPEG',m,pos,iw,ih); left-=(ph-m*2);
+          while(left>0){ pdf.addPage(); pos=m-(ih-left); pdf.addImage(img,'JPEG',m,pos,iw,ih); left-=(ph-m*2); } }
+        return pdf.output('blob');
+      } finally { document.body.removeChild(wrap); }
+    }
+    async function enviarWhatsApp(){
+      const d = montarDemonstrativo();
+      if(!d){ BBM.toast('Marque as infrações e informe a área antes de enviar.','error'); return; }
+      const ddd = (document.getElementById('fis_ddd').value||'').replace(/\D/g,'');
+      const num = (document.getElementById('fis_fone').value||'').replace(/\D/g,'');
+      if(ddd.length<2 || num.length<8){ BBM.toast('Informe o DDD e o telefone de contato para enviar no WhatsApp.','error'); return; }
+      const tel = '55'+ddd+num;
+      const btn = document.getElementById('fis_btnWpp'); const txtBtn = btn.innerHTML;
+      // 1) tenta anexar o PDF de verdade (Web Share API — celular)
+      let file=null;
+      if(navigator.canShare){
+        try{
+          btn.disabled=true; btn.textContent='Gerando PDF…';
+          const blob = await gerarPdfBlob(d.html);
+          file = new File([blob], 'Demonstrativo-Multa-15BBM.pdf', { type:'application/pdf' });
+        }catch(e){ console.warn('PDF p/ compartilhar falhou:', e); file=null; }
+        finally { btn.disabled=false; btn.innerHTML=txtBtn; }
+      }
+      if(file && navigator.canShare({ files:[file] })){
+        try{ await navigator.share({ files:[file], title:'Demonstrativo de Cálculo de Multa', text:d.resumo }); return; }
+        catch(e){ if(e && e.name==='AbortError') return; console.warn('share abortado/falhou:', e); }
+      }
+      // 2) fallback universal: abre a conversa no WhatsApp com o resumo em texto
+      window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(d.resumo), '_blank');
+      BBM.toast('Abrindo o WhatsApp com o resumo. Use "Imprimir / Salvar PDF" para anexar o documento completo, se desejar.');
     }
 
     BBM.ready(['dat_config'], ()=>{
