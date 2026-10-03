@@ -56,6 +56,7 @@
         <button class="tab-btn active" onclick="showTab('tabEvento',this)">Evento de Pequeno Porte</button>
         <button class="tab-btn" onclick="showTab('tabBaixo',this)">Baixo Risco (Anexo B)</button>
         <button class="tab-btn" onclick="showTab('tabHist',this)">Documentos Emitidos</button>
+        <button class="tab-btn" onclick="showTab('tabFiscaliza',this)">Fiscalização (Multas)</button>
         <button class="tab-btn" onclick="showTab('tabApoio',this)">Apoio ao Analista</button>
       </div>
 
@@ -196,6 +197,41 @@
       </div>
 
       <!-- ===================== APOIO AO ANALISTA ===================== -->
+      <!-- FISCALIZAÇÃO / MULTAS -->
+      <div id="tabFiscaliza" style="display:none">
+        <p class="info-dat">Cálculo de multas por infrações à legislação de segurança contra incêndio — <strong>Anexos B e C da Lei nº 11.390/2020</strong>. Fórmula: <strong>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</strong>. Marque as infrações constatadas e o valor é calculado automaticamente. Os Grupos I, II e III entram com no máximo 4 infrações cada; o Grupo IV, com no máximo 2.</p>
+
+        <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Parâmetros do cálculo</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/></div>
+            <div class="form-group"><label class="form-label">Fator de risco R (Tabela 1 — carga de incêndio)</label>
+              <select class="form-control" id="fis_r" onchange="calcMulta()">
+                <option value="1.0">Baixo — até 300 MJ/m² (R = 1,0)</option>
+                <option value="1.1">Médio — 300 a 1.200 MJ/m² (R = 1,1)</option>
+                <option value="1.2">Alto — acima de 1.200 MJ/m² (R = 1,2)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Área total da edificação (m²) — Tabela 2</label>
+              <input class="form-control" id="fis_area" type="number" min="0" oninput="calcMulta()"/>
+              <div id="fis_kinfo" style="font-size:.74rem;color:var(--text-light);margin-top:4px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="fis_resultado"></div>
+
+        <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Infrações constatadas</div>
+          <div id="fis_grupos"></div>
+        </div>
+
+        <div class="fc-actions">
+          <button class="btn btn-ghost" onclick="limparFiscaliza()">Limpar</button>
+          <button class="btn btn-primary" onclick="imprimirMulta()">🖨️ Imprimir demonstrativo</button>
+        </div>
+      </div>
+
       <div id="tabApoio" style="display:none">
         <p class="info-dat">Ferramentas de apoio à análise, com base na <strong>NT-42</strong> (enquadramento de risco) e no <strong>Anexo A da Lei 11.390/2020</strong> (taxas). Os valores são referenciais — confira sempre a norma vigente.</p>
 
@@ -203,7 +239,7 @@
         <div class="form-card" style="margin-bottom:18px">
           <div class="fc-sec">Valor Básico Bombeiro Militar (VBBM)</div>
           <div class="grid2">
-            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="ap_vbbm" type="number" step="0.01" value="27.61" onchange="salvarVbbm()"/></div>
+            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="ap_vbbm" type="number" step="0.01" value="32.21" onchange="salvarVbbm()"/></div>
             <div class="form-group" style="display:flex;align-items:flex-end"><div style="font-size:.8rem;color:var(--text-mid)">Base legal: Anexo A da Lei 11.390/2020. MEI é isento de taxas.</div></div>
           </div>
         </div>
@@ -282,6 +318,20 @@
     .chips label { display:flex;align-items:center;gap:7px;font-size:.85rem;color:var(--text);cursor:pointer; }
     .fc-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap; }
     @media(max-width:768px){ .grid2{grid-template-columns:1fr} .fc-actions .btn{flex:1;justify-content:center} }
+
+    /* Fiscalização / multas */
+    .fis-grupo { border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden; }
+    .fis-grupo-head { display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:#f8fafc;font-weight:700;font-size:.9rem;color:var(--text); }
+    .fis-grupo-itens { padding:4px 14px 10px; }
+    .fis-item { display:flex;align-items:flex-start;gap:9px;padding:7px 0;font-size:.85rem;color:var(--text);cursor:pointer;border-top:1px solid var(--border);line-height:1.4; }
+    .fis-item:first-child { border-top:none; }
+    .fis-item input { margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer; }
+    .fis-result { position:sticky;top:10px;z-index:5;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;padding:16px 18px;box-shadow:0 6px 24px rgba(0,0,0,.12);margin-bottom:16px; }
+    .fis-result.vazio { border-color:var(--border);color:var(--text-light);font-size:.86rem;box-shadow:none;text-align:center; }
+    .fis-result-main { display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap; }
+    .fis-formula { font-size:.78rem;color:var(--text-mid);text-align:right;line-height:1.55; }
+    .fis-formula span { color:var(--text-light); }
+    @media(max-width:600px){ .fis-formula{text-align:left} }
 
     /* Visualizador */
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
@@ -376,10 +426,11 @@
     }
 
     function showTab(id, btn){
-      ['tabEvento','tabBaixo','tabHist','tabApoio'].forEach(t=>document.getElementById(t).style.display='none');
+      ['tabEvento','tabBaixo','tabHist','tabFiscaliza','tabApoio'].forEach(t=>document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(id).style.display='block'; btn.classList.add('active');
       if(id==='tabHist') renderHist();
+      if(id==='tabFiscaliza') renderFiscaliza();
     }
     const val = id => (document.getElementById(id).value||'').trim();
     const chk = id => document.getElementById(id).checked;
@@ -628,12 +679,22 @@
     // ===================== APOIO AO ANALISTA =====================
     const num = id => parseFloat(document.getElementById(id).value) || 0;
     const brl = v => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-    let VBBM = 27.61;
+    let VBBM = 32.21; // valor inicial R$ 27,61 (Lei 11.390/2020); atualizado p/ R$ 32,21 (Portaria 17/2023-CBMMA, IPCA)
 
     function salvarVbbm(){
       const v = num('ap_vbbm'); if(v>0) VBBM = v;
       BBM.save('dat_config', [{ id:'cfg', vbbm: VBBM }]);
+      const fis = document.getElementById('fis_vbbm'); if(fis) fis.value = VBBM;
       calcTaxa();
+      if(typeof calcMulta==='function') calcMulta();
+    }
+    // mesma VBBM, editada pela aba de Fiscalização
+    function salvarVbbmFis(){
+      const v = num('fis_vbbm'); if(v>0) VBBM = v;
+      BBM.save('dat_config', [{ id:'cfg', vbbm: VBBM }]);
+      const ap = document.getElementById('ap_vbbm'); if(ap) ap.value = VBBM;
+      calcTaxa();
+      calcMulta();
     }
 
     // Enquadramento de risco — NT-42 (itens 5.1 baixo / 5.2 médio; demais = PT/alto)
@@ -724,10 +785,230 @@
         <div style="font-size:.72rem;color:var(--text-light);margin-top:6px">Anexo A da Lei 11.390/2020. Recolhimento via DARE. Confira a Portaria vigente que corrige o VBBM.</div></div>`;
     }
 
+    // ===================== FISCALIZAÇÃO / MULTAS =====================
+    // Infrações dos Anexos B e C da Lei 11.390/2020, por grupo.
+    const INFRACOES = {
+      I: [
+        'Acesso de viatura deficiente quanto à localização ou às dimensões.',
+        'Isolamento de risco deficiente.',
+        'Resistência ao fogo dos elementos de construção deficiente.',
+        'Compartimentação deficiente.',
+        'Controle de material de acabamento e de revestimento deficiente.',
+        'Saída de emergência deficiente.',
+        'Elevador de emergência deficiente.',
+        'Sistema de pressurização da escada deficiente.',
+        'Sistema de controle de fumaça deficiente.',
+        'Plano de emergência deficiente.',
+        'Brigada de incêndio ou bombeiro civil deficiente.',
+        'Bombeiro civil não credenciado junto ao Corpo de Bombeiros Militar.',
+        'Sistema de iluminação de emergência deficiente.',
+        'Sistema de detecção de incêndio deficiente.',
+        'Sistema de alarme de incêndio deficiente.',
+        'Sinalização de emergência deficiente.',
+        'Sistema de extintores de incêndio deficiente.',
+        'Sistema de hidrantes ou mangotinhos deficiente.',
+        'Sistema de chuveiros automáticos deficiente.',
+        'Sistema de resfriamento deficiente.',
+        'Sistema de proteção por espuma deficiente.',
+        'Sistema fixo de gases para combate a incêndio deficiente.',
+        'Instalações elétricas prediais em desconformidade com a legislação.',
+        'Documentação em desconformidade com a legislação.',
+        'Certificação do Corpo de Bombeiros Militar não afixada em local visível ao público.',
+      ],
+      II: [
+        'Elemento automatizado de compartimentação inoperante.',
+        'Saída de emergência inoperante.',
+        'Elevador de emergência inoperante.',
+        'Sistema de pressurização da escada inoperante.',
+        'Sistema de controle de fumaça inoperante.',
+        'Brigada de incêndio ou bombeiro civil reprovado na avaliação de desempenho.',
+        'Sistema de iluminação de emergência inoperante.',
+        'Sistema de detecção de incêndio inoperante.',
+        'Sistema de alarme de incêndio inoperante.',
+        'Sistema de extintores de incêndio inoperante.',
+        'Sistema de hidrantes ou mangotinhos inoperante.',
+        'Sistema de chuveiros automáticos inoperante.',
+        'Sistema de resfriamento inoperante.',
+        'Sistema de proteção por espuma inoperante.',
+        'Sistema fixo de gases para combate a incêndio inoperante.',
+        'Armazenamento de líquidos inflamáveis em desconformidade com a legislação.',
+        'Armazenamento e utilização de gás liquefeito de petróleo (GLP) em desconformidade com a legislação.',
+        'Armazenamento e utilização de gás natural (GN) em desconformidade com a legislação.',
+        'Materiais ou equipamentos de sistemas de segurança contra incêndios e emergências sem certificação, quando exigida.',
+        'Deixar de atualizar o Projeto Técnico por mudança de altura, área ou categoria de ocupação, quando não implica redimensionamento das medidas de segurança.',
+      ],
+      III: [
+        'Acesso de viatura inexistente.',
+        'Isolamento de risco inexistente.',
+        'Resistência ao fogo dos elementos de construção inexistente.',
+        'Compartimentação inexistente.',
+        'Controle de material de acabamento e de revestimento inexistente.',
+        'Saída de emergência inexistente.',
+        'Elevador de emergência inexistente.',
+        'Sistema de pressurização da escada inexistente.',
+        'Sistema de controle de fumaça inexistente.',
+        'Plano de emergência inexistente.',
+        'Brigada de incêndio ou bombeiro civil inexistente.',
+        'Sistema de iluminação de emergência inexistente.',
+        'Sistema de detecção de incêndio inexistente.',
+        'Sistema de alarme de incêndio inexistente.',
+        'Sinalização de emergência inexistente.',
+        'Sistema de extintores de incêndio inexistente.',
+        'Sistema de hidrantes ou mangotinhos inexistente.',
+        'Sistema de chuveiros automáticos inexistente.',
+        'Sistema de resfriamento inexistente.',
+        'Sistema de proteção por espuma inexistente.',
+        'Sistema fixo de gases para combate a incêndio inexistente.',
+        'Sistema elétrico de alimentação dos equipamentos de segurança desprotegido contra a ação do fogo.',
+        'Sistema de proteção contra descargas atmosféricas inexistente.',
+        'Armazenamento e utilização de produtos perigosos em desconformidade com a legislação.',
+        'Descumprimento das medidas de segurança após o encerramento da vigência do TAACBM.',
+        'Deixar de atualizar o Projeto Técnico por mudança de leiaute, altura, área ou ocupação, quando implica novas exigências ou redimensionamento das medidas.',
+        'Uso indevido de logomarca, brasão, insígnias, uniformes e demais símbolos privativos dos Corpos de Bombeiros Militares.',
+      ],
+      IV: [
+        'Realização de evento temporário sem a devida Licença do Corpo de Bombeiros Militar.',
+        'Armazenamento, comércio ou manipulação de explosivos em desconformidade com a legislação.',
+        'Edificação ou área de risco sem Certificação do Corpo de Bombeiros Militar.',
+        'Local destinado à reunião de público com lotação acima do permitido.',
+        'Local destinado à reunião de público com saída de emergência insuficiente, obstruída ou trancada.',
+      ],
+    };
+    const GRUPO_META = {
+      I:  { nome:'Grupo I — Infrações Leves',      peso:2.5, max:4, cor:'#16a34a' },
+      II: { nome:'Grupo II — Infrações Médias',    peso:3.5, max:4, cor:'#d97706' },
+      III:{ nome:'Grupo III — Infrações Graves',   peso:5,   max:4, cor:'#dc2626' },
+      IV: { nome:'Grupo IV — Infrações Gravíssimas',peso:7,  max:2, cor:'#7c2d12' },
+    };
+    const brn = v => v.toLocaleString('pt-BR');          // número pt-BR
+    const virg = v => String(v).replace('.', ',');       // 1.1 -> 1,1
+
+    // Tabela 2 — fator de área (K)
+    function fatorK(area){
+      if(area<=0)       return 0;
+      if(area<=200)     return 4;
+      if(area<=500)     return 8;
+      if(area<=750)     return 12;
+      if(area<=1500)    return 16;
+      if(area<=2500)    return 24;
+      if(area<=3500)    return 30;
+      if(area<=5000)    return 37;
+      if(area<=7000)    return 43;
+      if(area<=10000)   return 50;
+      if(area<=20000)   return 56;
+      if(area<=30000)   return 63;
+      if(area<=40000)   return 69;
+      if(area<=50000)   return 76;
+      if(area<=60000)   return 83;
+      if(area<=80000)   return 89;
+      if(area<=100000)  return 94;
+      return 100;
+    }
+
+    let fiscalizaRenderizado = false;
+    function renderFiscaliza(){
+      if(fiscalizaRenderizado){ calcMulta(); return; }
+      const cont = document.getElementById('fis_grupos');
+      cont.innerHTML = Object.keys(INFRACOES).map(g=>{
+        const meta = GRUPO_META[g];
+        const itens = INFRACOES[g].map((txt,idx)=>
+          `<label class="fis-item"><input type="checkbox" class="fis${g}" onchange="calcMulta()"/> <span>${idx+1}. ${txt}</span></label>`
+        ).join('');
+        return `<div class="fis-grupo">
+          <div class="fis-grupo-head" style="border-left:4px solid ${meta.cor}">
+            <span>${meta.nome}</span>
+            <span style="font-size:.74rem;color:var(--text-light);font-weight:600">peso ${virg(meta.peso)} · usa no máx. ${meta.max} · marcadas: <b id="fisCount${g}" style="color:${meta.cor}">0</b></span>
+          </div>
+          <div class="fis-grupo-itens">${itens}</div>
+        </div>`;
+      }).join('');
+      fiscalizaRenderizado = true;
+      const fis = document.getElementById('fis_vbbm'); if(fis && !fis.value) fis.value = VBBM;
+      calcMulta();
+    }
+
+    function contarGrupo(g){ return document.querySelectorAll('.fis'+g+':checked').length; }
+
+    function calcMulta(){
+      if(!fiscalizaRenderizado) return;
+      const area = num('fis_area'), K = fatorK(area);
+      const R = parseFloat(document.getElementById('fis_r').value) || 1;
+      const V = num('fis_vbbm') || VBBM;
+      const raw = { I:contarGrupo('I'), II:contarGrupo('II'), III:contarGrupo('III'), IV:contarGrupo('IV') };
+      const cap = { I:Math.min(raw.I,4), II:Math.min(raw.II,4), III:Math.min(raw.III,4), IV:Math.min(raw.IV,2) };
+      ['I','II','III','IV'].forEach(g=>{ const el=document.getElementById('fisCount'+g); if(el) el.textContent=raw[g]; });
+      document.getElementById('fis_kinfo').textContent = area>0 ? `Faixa de área → fator K = ${K}` : 'Informe a área para obter o fator K (Tabela 2).';
+      const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
+      const multa = soma * R * K * V;
+      const totalMarc = raw.I + raw.II + raw.III + raw.IV;
+      const el = document.getElementById('fis_resultado');
+      if(totalMarc===0 || area<=0 || V<=0){
+        el.innerHTML = `<div class="fis-result vazio">Marque as infrações, informe a <b>área</b> e o <b>VBBM</b> para calcular a multa.</div>`;
+        return;
+      }
+      const estourou = raw.I>4 || raw.II>4 || raw.III>4 || raw.IV>2;
+      const nota = estourou ? `<div style="font-size:.74rem;color:#b45309;margin-top:8px">⚠ Grupos I/II/III entram com no máximo 4 e o Grupo IV com no máximo 2 — infrações acima do limite não aumentam a multa.</div>` : '';
+      el.innerHTML = `<div class="fis-result">
+        <div class="fis-result-main">
+          <div>
+            <div style="font-size:.74rem;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em">Valor da multa</div>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--blue);line-height:1.1">${brl(multa)}</div>
+          </div>
+          <div class="fis-formula">
+            [(2,5×${cap.I}) + (3,5×${cap.II}) + (5×${cap.III}) + (7×${cap.IV})] × ${virg(R)} × ${K} × ${brl(V)}
+            <br><span>= ${virg(soma)} × ${virg(R)} × ${K} × ${brl(V)}</span>
+          </div>
+        </div>${nota}
+      </div>`;
+    }
+
+    function limparFiscaliza(){
+      document.querySelectorAll('#fis_grupos input[type=checkbox]').forEach(c=>c.checked=false);
+      document.getElementById('fis_area').value='';
+      document.getElementById('fis_r').value='1.0';
+      calcMulta();
+    }
+
+    function imprimirMulta(){
+      if(!fiscalizaRenderizado){ renderFiscaliza(); }
+      const area = num('fis_area'), K = fatorK(area);
+      const R = parseFloat(document.getElementById('fis_r').value) || 1;
+      const rTxt = document.getElementById('fis_r').selectedOptions[0].text;
+      const V = num('fis_vbbm') || VBBM;
+      const raw = { I:contarGrupo('I'), II:contarGrupo('II'), III:contarGrupo('III'), IV:contarGrupo('IV') };
+      const cap = { I:Math.min(raw.I,4), II:Math.min(raw.II,4), III:Math.min(raw.III,4), IV:Math.min(raw.IV,2) };
+      const totalMarc = raw.I + raw.II + raw.III + raw.IV;
+      if(totalMarc===0 || area<=0){ BBM.toast('Marque as infrações e informe a área antes de imprimir.','error'); return; }
+      const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
+      const multa = soma * R * K * V;
+      function marcadas(g){ const r=[]; document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) r.push((i+1)+'. '+INFRACOES[g][i]); }); return r; }
+      const blocoGrupo = g => { const m=marcadas(g); if(!m.length) return ''; const meta=GRUPO_META[g];
+        return `<p class="b" style="margin:8px 0 2px">${meta.nome} (${m.length} marcada(s), ${Math.min(m.length,meta.max)} usada(s) no cálculo):</p><ol>${m.map(x=>`<li>${x}</li>`).join('')}</ol>`; };
+      const html = cabecalho()
+        + `<div class="doc-title">Demonstrativo de Cálculo de Multa</div>`
+        + `<p style="text-align:center;margin-top:-8px;font-size:10.5pt">Lei nº 11.390/2020 — Regulamento de Segurança Contra Incêndios (Anexos B e C)</p>`
+        + `<table style="margin-top:12px">
+             <tr><td class="lbl">Área total da edificação</td><td>${brn(area)} m²</td><td class="lbl">Fator de área (K)</td><td>${K}</td></tr>
+             <tr><td class="lbl">Fator de risco (R)</td><td>${rTxt}</td><td class="lbl">VBBM</td><td>${brl(V)}</td></tr>
+           </table>`
+        + `<p class="b" style="margin-top:14px">Infrações constatadas</p>`
+        + (blocoGrupo('I')+blocoGrupo('II')+blocoGrupo('III')+blocoGrupo('IV') || '<p>Nenhuma infração marcada.</p>')
+        + `<p class="b" style="margin-top:14px">Fórmula aplicada</p>`
+        + `<p>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</p>`
+        + `<p>Multa = [(2,5 × ${cap.I}) + (3,5 × ${cap.II}) + (5 × ${cap.III}) + (7 × ${cap.IV})] × ${virg(R)} × ${K} × ${brl(V)}</p>`
+        + `<p>Multa = ${virg(soma)} × ${virg(R)} × ${K} × ${brl(V)}</p>`
+        + `<p style="font-size:13pt;margin-top:6px"><span class="b">Valor da multa: ${brl(multa)}</span></p>`
+        + `<p style="font-size:9.5pt;color:#444;margin-top:10px">O recolhimento é feito por meio de Documento de Arrecadação de Receita Estadual (DARE). O valor do VBBM deve corresponder à data da infração (corrigido anualmente por portaria do CBMMA).</p>`
+        + rodape();
+      abrirDoc(html, false);
+    }
+
     BBM.ready(['dat_config'], ()=>{
       const cfg = (BBM.load('dat_config')||[])[0];
       if(cfg && cfg.vbbm>0){ VBBM = cfg.vbbm; document.getElementById('ap_vbbm').value = VBBM; }
+      const fis = document.getElementById('fis_vbbm'); if(fis) fis.value = VBBM;
       calcTaxa();
+      if(typeof calcMulta==='function') calcMulta();
     });
   </script>
 </body>
