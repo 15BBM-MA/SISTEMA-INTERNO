@@ -1095,7 +1095,7 @@
     function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
     function telFmt(ddd, fone){ ddd=(ddd||'').replace(/\D/g,''); fone=(fone||'').trim(); if(!ddd && !fone) return ''; return (ddd?'('+ddd+') ':'')+fone; }
 
-    const SEFAZ_DARE = 'https://dareweb.sefaz.ma.gov.br/';   // portal SEFAZ-MA p/ emissão do DARE (boleto da multa)
+    const SEFAZ_DARE = 'https://sistemas1.sefaz.ma.gov.br/dare/';   // portal SEFAZ-MA p/ emissão do DARE (boleto da multa)
     const DIAS_EXT = {10:'dez',15:'quinze',20:'vinte',30:'trinta',45:'quarenta e cinco',60:'sessenta',90:'noventa'};
     function addDias(iso, dias){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+(parseInt(dias,10)||0)); return d.toISOString().slice(0,10); }
     // status do prazo em relação a hoje
