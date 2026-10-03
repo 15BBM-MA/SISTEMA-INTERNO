@@ -1193,21 +1193,47 @@
       const multa = soma * o.R * o.K * o.vbbm;
       const tel = telFmt(o.ddd, o.fone);
       const venc = addDias(o.dataEmissao, o.prazoDias);
-      const linhasInfr = ['I','II','III','IV'].filter(g=>(o.infr[g]||[]).length>0).map(g=>`• ${GRUPO_META[g].nome}: ${o.infr[g].length}`).join('\n');
-      return `*15º BBM — Demonstrativo de Cálculo de Multa*
-Nº ${o.numero||'—'} · Lei nº 11.390/2020 (Anexos B e C)
-${o.estab?('\nEdificação: '+o.estab):''}${o.end?('\nEndereço: '+o.end+(o.mun?' — '+o.mun:'')):''}${o.resp?('\nResponsável: '+o.resp):''}${o.cpf?('\nCPF: '+o.cpf):''}${tel?('\nContato: '+tel):''}${o.dataInfracao?('\nData da infração: '+brData(o.dataInfracao)):''}
+      // lista cada infração (texto completo) por grau, para o autuado saber o que adequar
+      const infrTxt = ['I','II','III','IV'].filter(g=>(o.infr[g]||[]).length>0).map(g=>
+        `_${GRUPO_META[g].nome}_\n` + o.infr[g].map(i=>`  • ${INFRACOES[g][i]}`).join('\n')
+      ).join('\n');
 
-Infrações constatadas:
-${linhasInfr}
+      // DADOS DA EDIFICAÇÃO
+      const dados = [
+        o.estab ? 'Edificação: '+o.estab : '',
+        o.end ? 'Endereço: '+o.end+(o.mun?' — '+o.mun:'') : (o.mun?'Município: '+o.mun:''),
+        o.resp ? 'Responsável: '+o.resp : '',
+        o.cpf ? 'CPF: '+o.cpf : '',
+        tel ? 'Contato: '+tel : '',
+        o.dataInfracao ? 'Data da infração: '+brData(o.dataInfracao) : '',
+      ].filter(Boolean).join('\n');
 
-Área: ${brn(o.area)} m² (K=${o.K}) · ${o.rTxt}
-Cálculo: ${virg(soma)} × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}
-*Valor da multa: ${brl(multa)}*
+      return `*CORPO DE BOMBEIROS MILITAR DO MARANHÃO*
+*15º Batalhão — Chapadinha/MA*
+*NOTIFICAÇÃO DE MULTA Nº ${o.numero||'—'}*
+Lei nº 11.390/2020 — Regulamento de Segurança Contra Incêndios
 
-A multa NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). Prazo de ${o.prazoDias} dias para adequação e pagamento${venc?(', até '+brData(venc)):''}.
+Prezado(a)${o.resp?' '+o.resp:''}, foi lavrada multa pela constatação das irregularidades de segurança contra incêndio abaixo. Regularize cada item dentro do prazo.
 
-Emita o boleto (DARE) da multa pelo portal da SEFAZ-MA:
+*DADOS DA EDIFICAÇÃO*
+${dados}
+
+*IRREGULARIDADES A REGULARIZAR*
+${infrTxt}
+
+*CÁLCULO DA MULTA* (Anexo C)
+Área: ${brn(o.area)} m² (fator K=${o.K})
+Risco: ${o.rTxt}
+VBBM: ${brl(o.vbbm)}
+Fórmula: [(2,5×${cap.I})+(3,5×${cap.II})+(5×${cap.III})+(7×${cap.IV})] × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}
+*VALOR DA MULTA: ${brl(multa)}*
+
+*PRAZO E ADEQUAÇÃO*
+Prazo de ${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para a adequação das medidas e o pagamento da multa.
+A multa NÃO exime o cumprimento das exigências e a adequação das medidas de segurança (art. 35 da Lei nº 11.390/2020).
+
+*PAGAMENTO (DARE)*
+Emita o boleto da multa no portal da SEFAZ-MA:
 ${SEFAZ_DARE}`;
     }
 
