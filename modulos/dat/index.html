@@ -620,9 +620,10 @@
 
     /* Documento de Notificação (impressão) */
     .doc .notif { font-family:Arial, Helvetica, sans-serif !important; color:#000; font-size:9.5pt; line-height:1.25; }
-    .notif .cab { text-align:center; position:relative; margin-bottom:4px; min-height:60px; }
-    .notif .cab img { position:absolute; top:0; width:58px; height:58px; object-fit:contain; }
-    .notif .cab .bz-l { left:0; } .notif .cab .bz-r { right:0; }
+    .notif .cab { text-align:center; position:relative; margin-bottom:4px; min-height:70px; padding-top:2px; }
+    .notif .cab img { position:absolute; top:0; width:62px; height:62px; object-fit:contain; }
+    .notif .cab .bz-l { left:4px; } .notif .cab .bz-r { right:4px; }
+    .notif .cab .bz-c { position:static; display:block; margin:0 auto 2px; width:52px; height:52px; }
     .notif .cab .l1 { font-weight:bold; font-size:11pt; }
     .notif .cab .l2 { font-weight:bold; font-size:9.5pt; }
     .doc .notif table { width:100%; border-collapse:collapse; margin:0 0 5px; font-size:9.5pt; }
@@ -783,6 +784,9 @@
     const BASE = location.origin + location.pathname.replace(/modulos\/dat\/.*/, '');
     const LOGO = BASE + 'assets/img/logo.png';
     const ASSIN = BASE + 'assets/img/assinatura-major.png';
+    const IMG_CBM = BASE + 'assets/img/cbm.webp';        // Corpo de Bombeiros (esquerda)
+    const IMG_DAT = BASE + 'assets/img/dat.png';         // Diretoria de Atividades Técnicas (direita)
+    const IMG_MA  = BASE + 'assets/img/brasao-ma.svg';   // Brasão do Maranhão (centro, topo)
 
     function cabecalho(){
       return `<div class="doc-head">
@@ -1560,8 +1564,9 @@
 
       return `<div class="notif">
         <div class="cab">
-          <img class="bz-l" src="${LOGO}" alt=""/>
-          <img class="bz-r" src="${LOGO}" alt=""/>
+          <img class="bz-l" src="${IMG_CBM}" alt=""/>
+          <img class="bz-r" src="${IMG_DAT}" alt=""/>
+          <img class="bz-c" src="${IMG_MA}" alt=""/>
           <div class="l1">ESTADO DO MARANHÃO</div>
           <div class="l2">SECRETARIA DE ESTADO DE SEGURANÇA PÚBLICA</div>
           <div class="l2">CORPO DE BOMBEIROS MILITAR</div>
