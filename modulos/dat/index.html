@@ -226,17 +226,40 @@
         </div>
       </div>
 
-      <!-- ===================== APOIO AO ANALISTA ===================== -->
-      <!-- FISCALIZAÇÃO / MULTAS -->
+      <!-- ===================== FISCALIZAÇÃO (NOTIFICAÇÃO) ===================== -->
       <div id="tabFiscaliza" style="display:none">
-        <p class="info-dat">Cálculo de multas por infrações à legislação de segurança contra incêndio — <strong>Anexos B e C da Lei nº 11.390/2020</strong>. Fórmula: <strong>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</strong>. Marque as infrações constatadas e o valor é calculado automaticamente. Os Grupos I, II e III entram com no máximo 4 infrações cada; o Grupo IV, com no máximo 2.</p>
+        <p class="info-dat">Notificação de fiscalização (Lei nº 11.390/2020 — RSCI). Preencha os campos; ao final o documento sai no formato oficial. A <strong>multa</strong> é opcional — marque a ação aplicada (notificação, multa e/ou interdição).</p>
 
+        <!-- Cabeçalho -->
         <div class="form-card" style="margin-bottom:16px">
-          <div class="fc-sec">Dados da edificação e do responsável</div>
+          <div class="fc-sec">Identificação da notificação</div>
           <div class="grid2">
-            <div class="form-group"><label class="form-label">Edificação / estabelecimento</label><input class="form-control" id="fis_estab" placeholder="Nome do estabelecimento"/></div>
-            <div class="form-group"><label class="form-label">Endereço</label><input class="form-control" id="fis_end" placeholder="Rua, nº, bairro"/></div>
-            <div class="form-group"><label class="form-label">Município / UF</label>
+            <div class="form-group"><label class="form-label">Notificação nº</label><input class="form-control" id="fis_num" readonly style="background:#f3f4f6;font-weight:700"/></div>
+            <div class="form-group"><label class="form-label">Data</label><input class="form-control" id="fis_data" type="date"/></div>
+            <div class="form-group"><label class="form-label">Hora</label><input class="form-control" id="fis_hora" type="time"/></div>
+            <div class="form-group"><label class="form-label">Requerimento nº</label><input class="form-control" id="fis_req" placeholder="(opcional)"/></div>
+            <div class="form-group"><label class="form-label">C.A. nº</label><input class="form-control" id="fis_ca" placeholder="(opcional)"/></div>
+            <div class="form-group"><label class="form-label">C.A.P. nº</label><input class="form-control" id="fis_cap" placeholder="(opcional)"/></div>
+          </div>
+        </div>
+
+        <!-- Dados da edificação -->
+        <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Dados da edificação</div>
+          <div class="grid2">
+            <div class="form-group"><label class="form-label">Razão Social / Nome Fantasia</label><input class="form-control" id="fis_razao" placeholder="Nome do estabelecimento"/></div>
+            <div class="form-group"><label class="form-label">CPF / CNPJ</label><input class="form-control" id="fis_cpf" inputmode="numeric" placeholder="000.000.000-00" oninput="mascaraDoc(this)"/></div>
+            <div class="form-group"><label class="form-label">Telefone</label>
+              <div style="display:flex;gap:8px">
+                <input class="form-control" id="fis_ddd" inputmode="numeric" placeholder="DDD" style="width:72px;text-align:center" oninput="mascaraDDD(this)"/>
+                <input class="form-control" id="fis_fone" inputmode="numeric" placeholder="00000-0000" oninput="mascaraFone(this)" style="flex:1"/>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">ATEd</label><input class="form-control" id="fis_ated" placeholder="(opcional)"/></div>
+            <div class="form-group" style="grid-column:span 2"><label class="form-label">Logradouro</label><input class="form-control" id="fis_log" placeholder="Rua / Avenida"/></div>
+            <div class="form-group"><label class="form-label">Nº</label><input class="form-control" id="fis_numend" placeholder="nº"/></div>
+            <div class="form-group"><label class="form-label">Bairro</label><input class="form-control" id="fis_bairro" placeholder="Bairro"/></div>
+            <div class="form-group"><label class="form-label">Cidade</label>
               <select class="form-control" id="fis_mun">
                 <option>Afonso Cunha - MA</option>
                 <option>Anapurus - MA</option>
@@ -253,13 +276,13 @@
                 <option>Urbano Santos - MA</option>
               </select>
             </div>
-            <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="fis_resp" placeholder="Nome do responsável pela edificação"/></div>
-            <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="fis_cpf" inputmode="numeric" placeholder="000.000.000-00" oninput="mascaraCPF(this)"/></div>
-            <div class="form-group"><label class="form-label">Telefone de contato</label>
-              <div style="display:flex;gap:8px">
-                <input class="form-control" id="fis_ddd" inputmode="numeric" placeholder="DDD" style="width:72px;text-align:center" oninput="mascaraDDD(this)"/>
-                <input class="form-control" id="fis_fone" inputmode="numeric" placeholder="00000-0000" oninput="mascaraFone(this)" style="flex:1"/>
-              </div>
+            <div class="form-group"><label class="form-label">Classificação da Edificação</label><input class="form-control" id="fis_classif" placeholder="Ex.: Comercial (C-1)"/></div>
+            <div class="form-group"><label class="form-label">Fator de Risco (R)</label>
+              <select class="form-control" id="fis_r" onchange="calcMulta()">
+                <option value="1.0">Baixo — até 300 MJ/m² (R = 1,0)</option>
+                <option value="1.1">Médio — 300 a 1.200 MJ/m² (R = 1,1)</option>
+                <option value="1.2">Alto — acima de 1.200 MJ/m² (R = 1,2)</option>
+              </select>
             </div>
           </div>
           <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -271,46 +294,75 @@
           </div>
         </div>
 
+        <!-- Sistemas existentes -->
         <div class="form-card" style="margin-bottom:16px">
-          <div class="fc-sec">Parâmetros do cálculo</div>
-          <div class="grid2">
-            <div class="form-group"><label class="form-label">VBBM (R$) — corrigido anualmente por IPCA/Portaria</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/>
-              <div id="fis_vbbm_nota" style="display:none;font-size:.74rem;color:var(--text-light);margin-top:4px">Valor fixo — somente o administrador pode alterar.</div>
+          <div class="fc-sec">Sistemas existentes</div>
+          <div id="fis_sistemas" class="sist-grid"></div>
+          <div class="form-group" style="margin:10px 0 0" id="fis_sistOutrosWrap">
+            <label class="form-label">Outros (descriminar)</label>
+            <input class="form-control" id="fis_sistOutros" placeholder="Descreva outros sistemas existentes"/>
+          </div>
+        </div>
+
+        <!-- Ação aplicada -->
+        <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Ação aplicada pelo fiscalizador</div>
+          <div class="chips">
+            <label><input type="checkbox" id="fis_acaoNotif" checked onchange="toggleAcoes()"/> Notificação (exigências a cumprir)</label>
+            <label><input type="checkbox" id="fis_acaoMulta" onchange="toggleAcoes()"/> Multa</label>
+            <label><input type="checkbox" id="fis_acaoInterd" onchange="toggleAcoes()"/> Interdição / Embargo</label>
+          </div>
+        </div>
+
+        <!-- Bloco MULTA (aparece só se marcar Multa) -->
+        <div id="fis_blocoMulta" style="display:none">
+          <div class="form-card" style="margin-bottom:16px">
+            <div class="fc-sec">Multa — parâmetros (Anexo C da Lei 11.390/2020)</div>
+            <p style="font-size:.82rem;color:var(--text-mid);margin:-4px 0 12px">Multa = [(2,5×I)+(3,5×II)+(5×III)+(7×IV)] × R × K × VBBM. Grupos I/II/III no máx. 4; Grupo IV no máx. 2.</p>
+            <div class="grid2">
+              <div class="form-group"><label class="form-label">VBBM (R$)</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/>
+                <div id="fis_vbbm_nota" style="display:none;font-size:.74rem;color:var(--text-light);margin-top:4px">Valor fixo — somente o administrador pode alterar.</div>
+              </div>
+              <div class="form-group"><label class="form-label">Área total da edificação (m²)</label>
+                <input class="form-control" id="fis_area" type="number" min="0" oninput="calcMulta()"/>
+                <div id="fis_kinfo" style="font-size:.74rem;color:var(--text-light);margin-top:4px"></div>
+              </div>
             </div>
-            <div class="form-group"><label class="form-label">Fator de risco R (Tabela 1 — carga de incêndio)</label>
-              <select class="form-control" id="fis_r" onchange="calcMulta()">
-                <option value="1.0">Baixo — até 300 MJ/m² (R = 1,0)</option>
-                <option value="1.1">Médio — 300 a 1.200 MJ/m² (R = 1,1)</option>
-                <option value="1.2">Alto — acima de 1.200 MJ/m² (R = 1,2)</option>
-              </select>
+          </div>
+
+          <div id="fis_resultado"></div>
+
+          <div class="form-card" style="margin-bottom:16px">
+            <div class="fc-sec">Infrações constatadas (base da multa)</div>
+            <div class="fis-busca">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="fis_busca" type="text" placeholder="Pesquisar infração (ex.: extintor, hidrante, saída, alarme…)" oninput="filtrarInfracoes()"/>
+              <button type="button" id="fis_buscaX" title="Limpar busca" onclick="document.getElementById('fis_busca').value='';filtrarInfracoes();" style="display:none">×</button>
             </div>
-            <div class="form-group"><label class="form-label">Área total da edificação (m²) — Tabela 2</label>
-              <input class="form-control" id="fis_area" type="number" min="0" oninput="calcMulta()"/>
-              <div id="fis_kinfo" style="font-size:.74rem;color:var(--text-light);margin-top:4px"></div>
+            <div id="fis_busca_vazio" style="display:none;padding:10px 2px;color:var(--text-light);font-size:.86rem">Nenhuma infração encontrada para esse termo.</div>
+            <div id="fis_grupos"></div>
+          </div>
+        </div>
+
+        <!-- Bloco INTERDIÇÃO (aparece só se marcar Interdição) -->
+        <div id="fis_blocoInterd" style="display:none">
+          <div class="form-card" style="margin-bottom:16px">
+            <div class="fc-sec">Interdição / Embargo</div>
+            <div class="form-group" style="margin:0"><label class="form-label">Artigos (multa e/ou interdição)</label>
+              <input class="form-control" id="fis_artigos" placeholder="Ex.: art. 34, III e IV da Lei 11.390/2020"/>
             </div>
           </div>
         </div>
 
+        <!-- Exigências e prazo -->
         <div class="form-card" style="margin-bottom:16px">
-          <div class="fc-sec">Registro e prazo</div>
-          <div class="grid2">
-            <div class="form-group"><label class="form-label">Número do documento</label><input class="form-control" id="fis_num" readonly style="background:#f3f4f6;font-weight:700"/></div>
-            <div class="form-group"><label class="form-label">Data da infração</label><input class="form-control" id="fis_datainfra" type="date"/></div>
-            <div class="form-group"><label class="form-label">Prazo para adequação e pagamento (dias)</label><input class="form-control" id="fis_prazo" type="number" min="1" value="30" oninput="calcMulta()"/></div>
+          <div class="fc-sec">Exigências e prazo</div>
+          <div class="form-group"><label class="form-label">Exigências (o que deve ser cumprido)</label>
+            <textarea class="form-control" id="fis_exig" rows="6" placeholder="Descreva as exigências / irregularidades a serem sanadas…"></textarea>
           </div>
-        </div>
-
-        <div id="fis_resultado"></div>
-
-        <div class="form-card" style="margin-bottom:16px">
-          <div class="fc-sec">Infrações constatadas</div>
-          <div class="fis-busca">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input id="fis_busca" type="text" placeholder="Pesquisar infração (ex.: extintor, hidrante, saída, alarme…)" oninput="filtrarInfracoes()"/>
-            <button type="button" id="fis_buscaX" title="Limpar busca" onclick="document.getElementById('fis_busca').value='';filtrarInfracoes();" style="display:none">×</button>
+          <div class="form-group" style="margin:0;max-width:320px"><label class="form-label">Prazo para cumprimento (dias)</label>
+            <input class="form-control" id="fis_prazo" type="number" min="1" value="30" oninput="calcMulta()"/>
           </div>
-          <div id="fis_busca_vazio" style="display:none;padding:10px 2px;color:var(--text-light);font-size:.86rem">Nenhuma infração encontrada para esse termo.</div>
-          <div id="fis_grupos"></div>
         </div>
 
         <div class="fc-actions">
@@ -562,6 +614,27 @@
     .leaflet-popup-content a { color:var(--blue); font-weight:600; text-decoration:none; }
     @media(max-width:600px){ #fisMapa { height:420px; } .map-filtros > div { flex:1; min-width:140px; } }
     @media print { #tabMapa { display:none !important; } }
+    .sist-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:6px 16px; }
+    .sist-grid label { display:flex; align-items:center; gap:8px; font-size:.84rem; color:var(--text); cursor:pointer; padding:3px 0; }
+    .sist-grid input { width:15px; height:15px; flex-shrink:0; }
+
+    /* Documento de Notificação (impressão) */
+    .doc .notif { font-family:Arial, Helvetica, sans-serif !important; color:#000; font-size:9.5pt; line-height:1.25; }
+    .notif .cab { text-align:center; position:relative; margin-bottom:4px; min-height:60px; }
+    .notif .cab img { position:absolute; top:0; width:58px; height:58px; object-fit:contain; }
+    .notif .cab .bz-l { left:0; } .notif .cab .bz-r { right:0; }
+    .notif .cab .l1 { font-weight:bold; font-size:11pt; }
+    .notif .cab .l2 { font-weight:bold; font-size:9.5pt; }
+    .doc .notif table { width:100%; border-collapse:collapse; margin:0 0 5px; font-size:9.5pt; }
+    .doc .notif table td, .doc .notif table th { border:1px solid #000 !important; padding:2px 5px !important; vertical-align:top; }
+    .notif td.faixa { background:#dcdcdc !important; text-align:center; font-weight:bold; font-size:9pt; letter-spacing:.02em; }
+    .doc .notif td.nb { border:none !important; } .notif .lbl2 { font-weight:bold; white-space:nowrap; }
+    .notif .intro { margin:6px 0; text-align:justify; font-size:9pt; }
+    .notif table.sist td { font-size:8.6pt; }
+    .notif .chk { font-weight:bold; display:inline-block; width:14px; }
+    .doc .notif td.exig-linha { border:none !important; border-bottom:1px solid #000 !important; height:15px; }
+    .notif .assn { text-align:center; font-size:8.6pt; }
+    .notif .foot { text-align:center; font-size:8pt; margin-top:6px; border-top:1px solid #000; padding-top:3px; }
 
     /* Visualizador */
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
@@ -1185,9 +1258,12 @@
         </div>`;
       }).join('');
       fiscalizaRenderizado = true;
+      renderSistemas();
       const fis = document.getElementById('fis_vbbm'); if(fis && !fis.value) fis.value = VBBM;
       const dnum = document.getElementById('fis_num'); if(dnum && !dnum.value) dnum.value = proximoNumeroMulta();
-      const dinf = document.getElementById('fis_datainfra'); if(dinf && !dinf.value) dinf.value = hoje();
+      const ddata = document.getElementById('fis_data'); if(ddata && !ddata.value) ddata.value = hoje();
+      const dhora = document.getElementById('fis_hora'); if(dhora && !dhora.value) dhora.value = new Date().toTimeString().slice(0,5);
+      toggleAcoes(); toggleSistOutros();
       filtrarInfracoes();
       calcMulta();
     }
@@ -1262,17 +1338,50 @@
     }
 
     function limparFiscaliza(){
-      document.querySelectorAll('#fis_grupos input[type=checkbox]').forEach(c=>c.checked=false);
-      document.getElementById('fis_area').value='';
+      // texto/selects/checkboxes do formulário
+      ['fis_req','fis_ca','fis_cap','fis_razao','fis_cpf','fis_ddd','fis_fone','fis_ated','fis_log','fis_numend','fis_bairro','fis_classif','fis_sistOutros','fis_artigos','fis_exig','fis_area','fis_busca']
+        .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
       document.getElementById('fis_r').value='1.0';
-      document.getElementById('fis_busca').value='';
+      document.getElementById('fis_mun').value='Chapadinha - MA';
+      document.getElementById('fis_prazo').value='30';
+      document.querySelectorAll('#fis_grupos input[type=checkbox], .fis-sist').forEach(c=>c.checked=false);
+      document.getElementById('fis_acaoNotif').checked = true;
+      document.getElementById('fis_acaoMulta').checked = false;
+      document.getElementById('fis_acaoInterd').checked = false;
       _gps = null; atualizarGpsInfo();
-      filtrarInfracoes();
-      calcMulta();
+      toggleAcoes(); toggleSistOutros(); filtrarInfracoes(); calcMulta();
+    }
+
+    // Sistemas existentes (ordem do formulário oficial)
+    const SISTEMAS = [
+      'SPDA','Canalização / Rede','Central de GLP','Chuveiros Automáticos','Detecção e Alarme',
+      'Iluminação','Saída de Emergência','Sinalização de Segurança','Plano de Ação de Emergência','Outros (descriminar)',
+      'Acesso viatura grande porte','Brigada de Incêndio','Revest. / Forro / Decoração','Extintores','Elevador de emergência',
+      'Rota de Fuga','Situação Estrutural','Situação Inst. Elétrica'
+    ];
+    function renderSistemas(){
+      const cont = document.getElementById('fis_sistemas'); if(!cont || cont.dataset.pronto) return;
+      cont.innerHTML = SISTEMAS.map((s,i)=>`<label><input type="checkbox" class="fis-sist" data-n="${i+1}" ${i===9?'onchange="toggleSistOutros()"':''}/> ${i+1}. ${s}</label>`).join('');
+      cont.dataset.pronto = '1';
+    }
+    function toggleSistOutros(){
+      const c = document.querySelector('.fis-sist[data-n="10"]');
+      document.getElementById('fis_sistOutrosWrap').style.display = (c && c.checked) ? '' : 'none';
+    }
+    function toggleAcoes(){
+      document.getElementById('fis_blocoMulta').style.display  = document.getElementById('fis_acaoMulta').checked ? '' : 'none';
+      document.getElementById('fis_blocoInterd').style.display = document.getElementById('fis_acaoInterd').checked ? '' : 'none';
     }
 
     // ── Máscaras dos campos do responsável ────────────────────────
     function mascaraCPF(el){ let d=el.value.replace(/\D/g,'').slice(0,11); d=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); el.value=d; }
+    // CPF (11) ou CNPJ (14)
+    function mascaraDoc(el){
+      let d = el.value.replace(/\D/g,'').slice(0,14);
+      if(d.length<=11) d = d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      else d = d.replace(/(\d{2})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1/$2').replace(/(\d{4})(\d{1,2})$/,'$1-$2');
+      el.value = d;
+    }
     function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); }
     function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
     function telFmt(ddd, fone){ ddd=(ddd||'').replace(/\D/g,''); fone=(fone||'').trim(); if(!ddd && !fone) return ''; return (ddd?'('+ddd+') ':'')+fone; }
@@ -1320,14 +1429,13 @@
         clearTimeout(t);
         if(!r.ok) throw new Error('HTTP '+r.status);
         const d = await r.json(); const a = d.address || {};
-        // Endereço: rua (+ número) - bairro
         const rua = a.road || a.pedestrian || a.residential || a.footway || a.path || '';
         const bairro = a.suburb || a.neighbourhood || a.city_district || a.quarter || '';
-        const linha1 = rua + (a.house_number ? ', '+a.house_number : '');
-        const endereco = [linha1, bairro].filter(Boolean).join(' - ')
-                      || (d.display_name || '').split(',').slice(0,2).join(',').trim();
-        const campoEnd = document.getElementById('fis_end');
-        if(endereco && !campoEnd.value.trim()) campoEnd.value = endereco;
+        const fLog = document.getElementById('fis_log'), fBairro = document.getElementById('fis_bairro'), fNum = document.getElementById('fis_numend');
+        if(rua && !fLog.value.trim()) fLog.value = rua;
+        if(bairro && !fBairro.value.trim()) fBairro.value = bairro;
+        if(a.house_number && !fNum.value.trim()) fNum.value = a.house_number;
+        const preencheu = !!(rua || bairro);
         // Município: casa com a lista fixa (todas são -MA)
         const cidade = a.city || a.town || a.village || a.municipality || a.county || '';
         if(cidade){
@@ -1336,7 +1444,7 @@
           if(opt) sel.value = opt.value;
         }
         atualizarGpsInfo();
-        BBM.toast(endereco ? 'Endereço preenchido pela localização.' : 'Localização obtida (endereço não encontrado).');
+        BBM.toast(preencheu ? 'Endereço preenchido pela localização.' : 'Localização obtida (endereço não encontrado).');
       }catch(e){
         console.warn('reverse geocode falhou:', e);
         atualizarGpsInfo(); // mantém só as coordenadas, sem travar o fluxo
@@ -1356,140 +1464,220 @@
       return { txt:`Vencido há ${-dias} dia(s) (venceu ${brData(vencIso)})`, cor:'#991b1b', bg:'#fee2e2' };
     }
 
-    // Coleta os dados do formulário (null se faltar infração/área)
+    // Coleta os dados do formulário (null se nada de útil foi preenchido)
     function coletarFiscaliza(){
       if(!fiscalizaRenderizado) renderFiscaliza();
+      const acoes = {
+        notif:  document.getElementById('fis_acaoNotif').checked,
+        multa:  document.getElementById('fis_acaoMulta').checked,
+        interd: document.getElementById('fis_acaoInterd').checked,
+      };
       const area = num('fis_area');
       const infr = { I:[], II:[], III:[], IV:[] };
       ['I','II','III','IV'].forEach(g=>{ document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) infr[g].push(i); }); });
-      const total = infr.I.length+infr.II.length+infr.III.length+infr.IV.length;
-      if(total===0 || area<=0) return null;
+      // sistemas existentes marcados (índices 1..18)
+      const sistemas = [];
+      document.querySelectorAll('.fis-sist').forEach(c=>{ if(c.checked) sistemas.push(parseInt(c.dataset.n,10)); });
+      const razao = val('fis_razao'), exig = val('fis_exig');
+      const totalInfr = infr.I.length+infr.II.length+infr.III.length+infr.IV.length;
+      // precisa de pelo menos: razão social OU exigências OU (multa com infrações)
+      if(!razao && !exig && !(acoes.multa && totalInfr>0) && !sistemas.length) return null;
+      if(acoes.multa && (totalInfr===0 || area<=0)) { BBM.toast('Para aplicar multa, informe a área e marque ao menos uma infração.','error'); return null; }
       return {
-        numero: val('fis_num'), dataInfracao: val('fis_datainfra'), dataEmissao: hoje(), prazoDias: num('fis_prazo')||30,
-        estab: val('fis_estab'), end: val('fis_end'), mun: val('fis_mun'),
-        resp: val('fis_resp'), cpf: val('fis_cpf'), ddd: document.getElementById('fis_ddd').value, fone: document.getElementById('fis_fone').value,
-        area, K: fatorK(area), R: parseFloat(document.getElementById('fis_r').value)||1,
-        rTxt: document.getElementById('fis_r').selectedOptions[0].text, vbbm: num('fis_vbbm')||VBBM,
-        infr, gps: _gps ? { ..._gps } : null,
+        numero: val('fis_num'), data: val('fis_data'), hora: val('fis_hora'), dataEmissao: hoje(), prazoDias: num('fis_prazo')||30,
+        req: val('fis_req'), ca: val('fis_ca'), cap: val('fis_cap'),
+        razao, cpfCnpj: val('fis_cpf'), ddd: document.getElementById('fis_ddd').value, fone: document.getElementById('fis_fone').value,
+        ated: val('fis_ated'), log: val('fis_log'), numEnd: val('fis_numend'), bairro: val('fis_bairro'), mun: val('fis_mun'),
+        classif: val('fis_classif'), R: parseFloat(document.getElementById('fis_r').value)||1, rTxt: document.getElementById('fis_r').selectedOptions[0].text,
+        sistemas, sistOutros: val('fis_sistOutros'),
+        acoes, area, K: fatorK(area), vbbm: num('fis_vbbm')||VBBM, infr,
+        artigos: val('fis_artigos'), exig,
+        gps: _gps ? { ..._gps } : null,
       };
     }
 
-    // Documento (HTML) a partir de um objeto — usado no cálculo atual e no histórico
+    // Compatibilidade com registros antigos (eram só "multa")
+    function normDoc(src){
+      const o = Object.assign({}, src);
+      o.acoes = o.acoes || { notif:true, multa:true, interd:false };
+      o.sistemas = o.sistemas || [];
+      o.infr = o.infr || { I:[], II:[], III:[], IV:[] };
+      if(!o.razao && o.estab) o.razao = o.estab;
+      if(!o.cpfCnpj && o.cpf) o.cpfCnpj = o.cpf;
+      if(!o.log && o.end) o.log = o.end;
+      if(!o.data && o.dataInfracao) o.data = o.dataInfracao;
+      return o;
+    }
+    function acoesLabel(m){ const a=m.acoes||{notif:true,multa:true,interd:false}; return [a.notif?'Notificação':'',a.multa?'Multa':'',a.interd?'Interdição':''].filter(Boolean).join(' + ')||'Notificação'; }
+
+    // Documento (HTML) no formato oficial da Notificação da DAT
     function docHtmlDe(o){
-      const cap = { I:Math.min(o.infr.I.length,4), II:Math.min(o.infr.II.length,4), III:Math.min(o.infr.III.length,4), IV:Math.min(o.infr.IV.length,2) };
+      o = normDoc(o);
+      const cap = { I:Math.min((o.infr.I||[]).length,4), II:Math.min((o.infr.II||[]).length,4), III:Math.min((o.infr.III||[]).length,4), IV:Math.min((o.infr.IV||[]).length,2) };
       const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
       const multa = soma * o.R * o.K * o.vbbm;
       const tel = telFmt(o.ddd, o.fone);
       const venc = addDias(o.dataEmissao, o.prazoDias);
       const ext = DIAS_EXT[o.prazoDias] ? ` (${DIAS_EXT[o.prazoDias]})` : '';
-      const blocoGrupo = g => { const idxs=o.infr[g]||[]; if(!idxs.length) return ''; const meta=GRUPO_META[g];
-        return `<p class="b" style="margin:8px 0 2px">${meta.nome} (${idxs.length} marcada(s), ${Math.min(idxs.length,meta.max)} usada(s) no cálculo):</p><ol>${idxs.map(i=>`<li>${escFis((i+1)+'. '+INFRACOES[g][i])}</li>`).join('')}</ol>`; };
+      const sis = o.sistemas || [];
+      const mark = n => sis.includes(n) ? '☑' : '☐';
+      const vazio = '&nbsp;';
+      const cel = v => escFis(v) || vazio;
 
-      const legal = `<div style="border:1.2px solid #000;background:#f2f2f2;padding:8px 11px;margin:12px 0;font-size:10pt;line-height:1.45">
-        <span class="b">Base legal:</span> Lei Estadual nº <span class="b">11.390/2020</span> — Regulamento de Segurança Contra Incêndios das edificações e áreas de risco do Maranhão (arts. 33 e 34). Tipificação das infrações conforme o <span class="b">Anexo B</span>; classificação por grupos e método de cálculo da multa conforme o <span class="b">Anexo C</span> (Tabela 1 — fator de risco R; Tabela 2 — fator de área K).</div>`;
-
-      const idTab = `<table style="margin-top:4px">
-        <tr><td class="lbl">Número</td><td>${escFis(o.numero)||'—'}</td><td class="lbl">Data da infração</td><td>${o.dataInfracao?brData(o.dataInfracao):'—'}</td><td class="lbl">Emissão</td><td>${o.dataEmissao?brData(o.dataEmissao):'—'}</td></tr>
-      </table>`;
-
-      const dados = `<table style="margin-top:4px">
-        <tr><td class="lbl">Edificação / estabelecimento</td><td colspan="3">${escFis(o.estab)||'&nbsp;'}</td></tr>
-        <tr><td class="lbl">Endereço</td><td colspan="3">${escFis(o.end)||'&nbsp;'}${o.mun?' — '+escFis(o.mun):''}</td></tr>
-        <tr><td class="lbl">Responsável</td><td>${escFis(o.resp)||'&nbsp;'}</td><td class="lbl">CPF</td><td>${escFis(o.cpf)||'&nbsp;'}</td></tr>
-        <tr><td class="lbl">Telefone de contato</td><td colspan="3">${escFis(tel)||'&nbsp;'}</td></tr>
-        ${o.gps ? `<tr><td class="lbl">Localização (GPS)</td><td colspan="3">${o.gps.lat.toFixed(6)}, ${o.gps.lng.toFixed(6)} (±${o.gps.acc} m) — ${mapsUrl(o.gps)}</td></tr>` : ''}
-      </table>`;
-
-      const clausula = `<div style="border:1.3px solid #C8102E;background:#fdecee;padding:9px 12px;margin:14px 0;font-size:10.3pt;line-height:1.5">
-        <span class="b" style="color:#C8102E">Importante — a multa não exime a adequação.</span> A aplicação da multa <span class="b">não isenta</span> o responsável pela edificação do cumprimento das exigências e da <span class="b">adequação das medidas de segurança contra incêndio</span> constantes na notificação (<span class="b">art. 35 da Lei nº 11.390/2020</span>). Fica concedido o prazo de <span class="b">${o.prazoDias}${ext} dias</span>, a contar desta notificação, para a <span class="b">adequação das medidas e o pagamento da multa</span>${venc?`, com vencimento em <span class="b">${brData(venc)}</span>`:''} (art. 37). Decorrido o prazo sem o cumprimento, prosseguir-se-á com as demais sanções cabíveis (interdição/embargo), sem prejuízo das esferas cível e penal.</div>`;
+      const cols = [[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14],[15,16,17,18]];
+      const colHtml = arr => arr.map(n=>{
+        const extra = (n===10 && o.sistOutros) ? ': '+escFis(o.sistOutros) : '';
+        return `<div><span class="chk">${mark(n)}</span> ${n}. ${SISTEMAS[n-1]}${extra}</div>`;
+      }).join('');
 
       const a = o.assinatura;
       const nomeOficial = a ? ((a.posto?a.posto+' ':'')+a.nome) : '';
-      const selo = a ? `<div style="font-size:8.5pt;color:#166534;margin-top:2px">✓ Assinado eletronicamente em ${new Date(a.em).toLocaleString('pt-BR')}</div>` : '';
-      const assinaturas = `
-        <p style="text-align:right;font-size:10.5pt;margin-top:22px">Chapadinha/MA, ${o.dataEmissao?escFis(extenso(o.dataEmissao)):'______ de __________________ de ________'}.</p>
-        <div style="display:flex;gap:30px;justify-content:space-between;margin-top:46px">
-          <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">${escFis(nomeOficial)||'&nbsp;'}<br>Agente Fiscalizador — 15º BBM${selo}</div></div>
-          <div style="flex:1;text-align:center"><div style="border-top:1px solid #000;margin:0 6px;padding-top:4px;font-size:10pt">Ciência do Responsável${o.resp?'<br>'+escFis(o.resp):''}</div></div>
-        </div>`;
+      const selo = a ? ` <span style="font-size:7.6pt;color:#166534">(assinado eletronicamente em ${new Date(a.em).toLocaleString('pt-BR')})</span>` : '';
 
-      return cabecalho()
-        + `<div class="doc-title">Demonstrativo de Cálculo de Multa</div>`
-        + `<p style="text-align:center;margin-top:-10px;font-size:11pt" class="b">Lei nº 11.390/2020 — Anexos B e C</p>`
-        + idTab
-        + legal
-        + `<p class="b" style="margin-top:6px">Dados da edificação e do responsável</p>` + dados
-        + `<p class="b" style="margin-top:14px">Infrações constatadas (Anexos B e C)</p>`
-        + (blocoGrupo('I')+blocoGrupo('II')+blocoGrupo('III')+blocoGrupo('IV') || '<p>Nenhuma infração marcada.</p>')
-        + `<table style="margin-top:12px">
-             <tr><td class="lbl">Área total da edificação</td><td>${brn(o.area)} m²</td><td class="lbl">Fator de área (K) — Tab. 2</td><td>${o.K}</td></tr>
-             <tr><td class="lbl">Fator de risco (R) — Tab. 1</td><td>${escFis(o.rTxt)}</td><td class="lbl">VBBM</td><td>${brl(o.vbbm)}</td></tr>
-           </table>`
-        + `<p class="b" style="margin-top:14px">Fórmula aplicada (Anexo C)</p>`
-        + `<p>Multa = [(2,5 × I) + (3,5 × II) + (5 × III) + (7 × IV)] × R × K × VBBM</p>`
-        + `<p>Multa = [(2,5 × ${cap.I}) + (3,5 × ${cap.II}) + (5 × ${cap.III}) + (7 × ${cap.IV})] × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}</p>`
-        + `<p>Multa = ${virg(soma)} × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}</p>`
-        + `<p style="font-size:13pt;margin-top:6px"><span class="b">Valor da multa: ${brl(multa)}</span></p>`
-        + clausula
-        + `<p style="font-size:9.5pt;color:#333;margin-top:6px">O recolhimento da multa é feito por meio de Documento de Arrecadação de Receita Estadual (DARE). O valor do VBBM deve corresponder à data da infração (corrigido anualmente por portaria do CBMMA).</p>`
-        + assinaturas
-        + rodape();
+      const penal = `<table style="margin-top:4px">
+        <tr><td class="faixa" colspan="4">PENALIDADES</td></tr>
+        <tr>
+          <td class="lbl2">Estabelecimento MULTADO <span class="chk">${o.acoes.multa?'☑':'☐'}</span></td>
+          <td class="lbl2">nº VBBM: ${o.acoes.multa?brl(o.vbbm):vazio}</td>
+          <td class="lbl2">Fator K: ${o.acoes.multa?o.K:vazio}</td>
+          <td class="lbl2">R$ ${o.acoes.multa?brl(multa):vazio}</td>
+        </tr>
+        <tr style="text-align:center">
+          <td>Grupo I<br><b>${o.acoes.multa?cap.I:vazio}</b></td>
+          <td>Grupo II<br><b>${o.acoes.multa?cap.II:vazio}</b></td>
+          <td>Grupo III<br><b>${o.acoes.multa?cap.III:vazio}</b></td>
+          <td>Grupo IV<br><b>${o.acoes.multa?cap.IV:vazio}</b></td>
+        </tr>
+        <tr>
+          <td class="lbl2" colspan="2">Estabelecimento INTERDITADO <span class="chk">${o.acoes.interd?'☑':'☐'}</span></td>
+          <td class="lbl2" colspan="2">Artigos (multa e/ou interdição): ${cel(o.artigos)}</td>
+        </tr>
+      </table>`;
+
+      const obsMulta = o.acoes.multa
+        ? `<p style="font-size:8.4pt;margin:4px 0 0"><b>A multa não exime a adequação:</b> a aplicação da multa não isenta o responsável do cumprimento das exigências e da adequação das medidas de segurança (art. 35 da Lei nº 11.390/2020). Recolhimento via DARE — SEFAZ-MA: ${SEFAZ_DARE}</p>`
+        : '';
+
+      return `<div class="notif">
+        <div class="cab">
+          <img class="bz-l" src="${LOGO}" alt=""/>
+          <img class="bz-r" src="${LOGO}" alt=""/>
+          <div class="l1">ESTADO DO MARANHÃO</div>
+          <div class="l2">SECRETARIA DE ESTADO DE SEGURANÇA PÚBLICA</div>
+          <div class="l2">CORPO DE BOMBEIROS MILITAR</div>
+          <div class="l2">DIRETORIA DE ATIVIDADES TÉCNICAS</div>
+        </div>
+
+        <table>
+          <tr><td class="lbl2">Notificação nº</td><td>${cel(o.numero)}</td><td class="lbl2">Data</td><td>${o.data?brData(o.data):vazio}</td><td class="lbl2">Hora</td><td>${cel(o.hora)}</td></tr>
+          <tr><td class="lbl2">Requerimento nº</td><td>${cel(o.req)}</td><td class="lbl2">C.A. nº</td><td>${cel(o.ca)}</td><td class="lbl2">C.A.P. nº</td><td>${cel(o.cap)}</td></tr>
+        </table>
+
+        <p class="intro">Nos termos da <b>Lei nº 11.390 de 21/12/2020</b>, que dispõe sobre o Regulamento de Segurança Contra Incêndio das Edificações e Áreas de Risco, RSCI, notifico o estabelecimento abaixo discriminado:</p>
+
+        <table>
+          <tr><td class="faixa" colspan="4">DADOS DA EDIFICAÇÃO</td></tr>
+          <tr><td class="lbl2">Razão Social / Nome Fantasia</td><td colspan="3">${cel(o.razao)}</td></tr>
+          <tr><td class="lbl2">CPF / CNPJ</td><td>${cel(o.cpfCnpj)}</td><td class="lbl2">Telefone</td><td>${cel(tel)}${o.ated?' &nbsp;·&nbsp; ATEd: '+escFis(o.ated):''}</td></tr>
+          <tr><td class="lbl2">Logradouro</td><td colspan="2">${cel(o.log)}</td><td class="lbl2">nº ${cel(o.numEnd)}</td></tr>
+          <tr><td class="lbl2">Bairro</td><td>${cel(o.bairro)}</td><td class="lbl2">Cidade</td><td>${cel(o.mun)}</td></tr>
+          <tr><td class="lbl2">Classificação da Edificação</td><td colspan="2">${cel(o.classif)}</td><td class="lbl2">Fator de Risco: ${virg(o.R)}</td></tr>
+          ${o.gps ? `<tr><td class="lbl2">Localização (GPS)</td><td colspan="3">${o.gps.lat.toFixed(6)}, ${o.gps.lng.toFixed(6)} (±${o.gps.acc} m) — ${mapsUrl(o.gps)}</td></tr>` : ''}
+        </table>
+
+        <table class="sist">
+          <tr><td class="faixa" colspan="4">SISTEMAS EXISTENTES</td></tr>
+          <tr>
+            <td style="width:25%">${colHtml(cols[0])}</td>
+            <td style="width:25%">${colHtml(cols[1])}</td>
+            <td style="width:25%">${colHtml(cols[2])}</td>
+            <td style="width:25%">${colHtml(cols[3])}</td>
+          </tr>
+        </table>
+
+        ${penal}
+
+        <table style="margin-top:4px"><tr><td class="faixa">EXIGÊNCIAS</td></tr></table>
+        <div style="border:1px solid #000;border-top:none;padding:4px 6px;min-height:150px;white-space:pre-wrap;font-size:9pt">${escFis(o.exig).replace(/\n/g,'<br>')||vazio}</div>
+
+        <table style="margin-top:4px">
+          <tr><td class="faixa">PRAZO PARA CUMPRIMENTO DE EXIGÊNCIA(S)</td></tr>
+          <tr><td>${o.prazoDias}${ext} dias${venc?`, a contar desta notificação (até ${brData(venc)})`:''}.</td></tr>
+        </table>
+
+        <p style="font-size:8.2pt;margin:5px 0 0"><b>Obs.:</b> O não cumprimento desta notificação implicará em penalidades administrativas (multa, apreensão, embargo e interdição) previstas no Regulamento acima citado. Verificar as instruções contidas no verso desta Notificação.</p>
+        ${obsMulta}
+
+        <div style="display:flex;gap:18px;margin-top:26px;text-align:center">
+          <div style="flex:1"><div style="height:30px"></div><div style="border-top:1px solid #000;padding-top:2px;font-size:8.4pt">${vazio}<br>Notificado (nome legível e função)</div></div>
+          <div style="flex:1"><div style="height:30px"></div><div style="border-top:1px solid #000;padding-top:2px;font-size:8.4pt">${escFis(nomeOficial)||vazio}${selo}<br>1º Vistoriador</div></div>
+          <div style="flex:1"><div style="height:30px"></div><div style="border-top:1px solid #000;padding-top:2px;font-size:8.4pt">${vazio}<br>2º Vistoriador</div></div>
+        </div>
+
+        <div class="foot">RODOVIA BR 222, KM 0, S/Nº, BOA VISTA, CHAPADINHA-MA, FONE: (98) 98115-1126; E-mail: 5cicbma@gmail.com</div>
+      </div>`;
     }
 
     function resumoDe(o){
-      const cap = { I:Math.min(o.infr.I.length,4), II:Math.min(o.infr.II.length,4), III:Math.min(o.infr.III.length,4), IV:Math.min(o.infr.IV.length,2) };
+      o = normDoc(o);
+      const cap = { I:Math.min((o.infr.I||[]).length,4), II:Math.min((o.infr.II||[]).length,4), III:Math.min((o.infr.III||[]).length,4), IV:Math.min((o.infr.IV||[]).length,2) };
       const soma = 2.5*cap.I + 3.5*cap.II + 5*cap.III + 7*cap.IV;
       const multa = soma * o.R * o.K * o.vbbm;
       const tel = telFmt(o.ddd, o.fone);
       const venc = addDias(o.dataEmissao, o.prazoDias);
-      // lista cada infração (texto completo) por grau, para o autuado saber o que adequar
-      const infrTxt = ['I','II','III','IV'].filter(g=>(o.infr[g]||[]).length>0).map(g=>
-        `_${GRUPO_META[g].nome}_\n` + o.infr[g].map(i=>`  • ${INFRACOES[g][i]}`).join('\n')
-      ).join('\n');
+      const endereco = [o.log, o.numEnd?'nº '+o.numEnd:'', o.bairro, o.mun].filter(Boolean).join(', ');
+      // ações aplicadas
+      const acoesTxt = [o.acoes.notif?'Notificação':'', o.acoes.multa?'Multa':'', o.acoes.interd?'Interdição/Embargo':''].filter(Boolean).join(' + ') || 'Notificação';
 
-      // DADOS DA EDIFICAÇÃO
       const dados = [
-        o.estab ? 'Edificação: '+o.estab : '',
-        o.end ? 'Endereço: '+o.end+(o.mun?' — '+o.mun:'') : (o.mun?'Município: '+o.mun:''),
-        o.resp ? 'Responsável: '+o.resp : '',
-        o.cpf ? 'CPF: '+o.cpf : '',
+        o.razao ? 'Edificação: '+o.razao : '',
+        endereco ? 'Endereço: '+endereco : '',
+        o.cpfCnpj ? 'CPF/CNPJ: '+o.cpfCnpj : '',
         tel ? 'Contato: '+tel : '',
-        o.dataInfracao ? 'Data da infração: '+brData(o.dataInfracao) : '',
+        o.data ? 'Data: '+brData(o.data) : '',
         o.gps ? 'Localização: '+mapsUrl(o.gps)+' (±'+o.gps.acc+' m)' : '',
       ].filter(Boolean).join('\n');
 
-      return `*CORPO DE BOMBEIROS MILITAR DO MARANHÃO*
-*15º Batalhão — Chapadinha/MA*
-*NOTIFICAÇÃO DE MULTA Nº ${o.numero||'—'}*
-Lei nº 11.390/2020 — Regulamento de Segurança Contra Incêndios
+      // irregularidades: exigências do fiscal + (se multa) infrações marcadas
+      const infrTxt = ['I','II','III','IV'].filter(g=>(o.infr[g]||[]).length>0).map(g=>
+        `_${GRUPO_META[g].nome}_\n` + o.infr[g].map(i=>`  • ${INFRACOES[g][i]}`).join('\n')
+      ).join('\n');
+      const exigBloco = (o.exig ? o.exig.trim() : '') + (o.acoes.multa && infrTxt ? (o.exig?'\n\n':'')+'Infrações que geraram a multa:\n'+infrTxt : '');
 
-Prezado(a)${o.resp?' '+o.resp:''}, foi lavrada multa pela constatação das irregularidades de segurança contra incêndio abaixo. Regularize cada item dentro do prazo.
+      const blocoMulta = o.acoes.multa ? `
+
+*MULTA* (Anexo C da Lei 11.390/2020)
+Área ${brn(o.area)} m² · K=${o.K} · R=${virg(o.R)} · VBBM ${brl(o.vbbm)}
+Cálculo: ${virg(soma)} × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}
+*VALOR DA MULTA: ${brl(multa)}*
+Emita o boleto (DARE) na SEFAZ-MA: ${SEFAZ_DARE}` : '';
+
+      const blocoInterd = o.acoes.interd ? `
+
+*INTERDIÇÃO / EMBARGO*${o.artigos?'\nArtigos: '+o.artigos:''}` : '';
+
+      return `*CORPO DE BOMBEIROS MILITAR DO MARANHÃO*
+*15º Batalhão — Chapadinha/MA · Diretoria de Atividades Técnicas*
+*NOTIFICAÇÃO Nº ${o.numero||'—'}*
+Lei nº 11.390/2020 — RSCI
+Ação: ${acoesTxt}
+
+Prezado(a)${o.razao?' responsável por '+o.razao:''}, em fiscalização foram constatadas irregularidades de segurança contra incêndio. Regularize os itens abaixo dentro do prazo.
 
 *DADOS DA EDIFICAÇÃO*
 ${dados}
 
-*IRREGULARIDADES A REGULARIZAR*
-${infrTxt}
+*EXIGÊNCIAS A CUMPRIR*
+${exigBloco || '(ver documento)'}${blocoMulta}${blocoInterd}
 
-*CÁLCULO DA MULTA* (Anexo C)
-Área: ${brn(o.area)} m² (fator K=${o.K})
-Risco: ${o.rTxt}
-VBBM: ${brl(o.vbbm)}
-Fórmula: [(2,5×${cap.I})+(3,5×${cap.II})+(5×${cap.III})+(7×${cap.IV})] × ${virg(o.R)} × ${o.K} × ${brl(o.vbbm)}
-*VALOR DA MULTA: ${brl(multa)}*
-
-*PRAZO E ADEQUAÇÃO*
-Prazo de ${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para a adequação das medidas e o pagamento da multa.
-A multa NÃO exime o cumprimento das exigências e a adequação das medidas de segurança (art. 35 da Lei nº 11.390/2020).
-
-*PAGAMENTO (DARE)*
-Emita o boleto da multa no portal da SEFAZ-MA:
-${SEFAZ_DARE}`;
+*PRAZO*
+${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para o cumprimento das exigências${o.acoes.multa?' e pagamento da multa':''}.
+A multa/notificação NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). O não cumprimento implica em multa, apreensão, embargo e interdição.`;
     }
 
     function imprimirMulta(){
       const o = coletarFiscaliza();
-      if(!o){ BBM.toast('Marque as infrações e informe a área antes de gerar o documento.','error'); return; }
+      if(!o){ BBM.toast('Preencha ao menos a razão social ou as exigências antes de gerar o documento.','error'); return; }
       abrirDoc(docHtmlDe(o), false);
     }
 
@@ -1625,11 +1813,12 @@ ${SEFAZ_DARE}`;
     function renderHistMulta(){
       const q = (document.getElementById('histMultaBusca').value||'').toLowerCase();
       const lista = [...multas]
-        .filter(m=>!q || [m.numero,m.estab,m.resp,m.cpf].some(v=>(v||'').toLowerCase().includes(q)))
+        .filter(m=>!q || [m.numero,m.razao,m.cpfCnpj,m.exig].some(v=>(v||'').toLowerCase().includes(q)))
         .sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
       const el = document.getElementById('histMultaLista');
       if(!lista.length){ el.innerHTML='<div class="empty-state" style="padding:24px;text-align:center;color:var(--text-light)">Nenhum documento de multa registrado ainda.</div>'; return; }
-      el.innerHTML = lista.map(m=>{
+      el.innerHTML = lista.map(src=>{
+        const m = normDoc(src);
         const cap = { I:Math.min((m.infr.I||[]).length,4), II:Math.min((m.infr.II||[]).length,4), III:Math.min((m.infr.III||[]).length,4), IV:Math.min((m.infr.IV||[]).length,2) };
         const multa = (2.5*cap.I+3.5*cap.II+5*cap.III+7*cap.IV)*m.R*m.K*m.vbbm;
         const venc = addDias(m.dataEmissao, m.prazoDias);
@@ -1637,8 +1826,8 @@ ${SEFAZ_DARE}`;
         return `<div class="hm-item">
           <div style="min-width:0">
             <div class="hm-num">Nº ${escFis(m.numero||'—')}</div>
-            <div class="hm-meta">${escFis(m.estab)||'Edificação não informada'}${m.resp?' · '+escFis(m.resp):''}${m.dataInfracao?' · infração em '+brData(m.dataInfracao):''}${m.gps?` · <a href="${mapsUrl(m.gps)}" target="_blank" rel="noopener" style="color:var(--blue)">📍 mapa</a>`:''}</div>
-            <div class="hm-val">${brl(multa)}</div>
+            <div class="hm-meta">${escFis(m.razao)||'Edificação não informada'}${m.mun?' · '+escFis(m.mun):''}${m.data?' · '+brData(m.data):''} · ${acoesLabel(m)}${m.gps?` · <a href="${mapsUrl(m.gps)}" target="_blank" rel="noopener" style="color:var(--blue)">📍 mapa</a>`:''}</div>
+            ${m.acoes.multa?`<div class="hm-val">${brl(multa)}</div>`:''}
             <span class="hm-prazo" style="color:${sp.cor};background:${sp.bg}">⏱ ${sp.txt}</span>
           </div>
           <div class="hm-acoes">
@@ -1701,7 +1890,8 @@ ${SEFAZ_DARE}`;
       _clusterLayer.clearLayers();
       const comGps = multas.filter(m => m.gps && typeof m.gps.lat==='number' && typeof m.gps.lng==='number');
       const pts = [];
-      comGps.forEach(m=>{
+      comGps.forEach(src=>{
+        const m = normDoc(src);
         if(fMun && m.mun!==fMun) return;
         const pz = prazoCat(m);
         if(fSt && fSt!==pz.cat) return;
@@ -1710,11 +1900,10 @@ ${SEFAZ_DARE}`;
         const sp = statusPrazo(pz.venc);
         const mk = L.marker([m.gps.lat, m.gps.lng], { icon:pinIcon(pz.cor) });
         mk.bindPopup(`<div style="font-size:13px;min-width:190px">
-          <div style="font-weight:800">Nº ${escFis(m.numero||'—')}</div>
-          <div>${escFis(m.estab)||'Edificação não informada'}</div>
-          ${m.resp?`<div style="color:#555">${escFis(m.resp)}</div>`:''}
+          <div style="font-weight:800">Nº ${escFis(m.numero||'—')} <span style="font-weight:600;color:#555">· ${acoesLabel(m)}</span></div>
+          <div>${escFis(m.razao)||'Edificação não informada'}</div>
           ${m.mun?`<div style="color:#555;font-size:11px">${escFis(m.mun)}</div>`:''}
-          <div style="margin:4px 0;font-weight:800;color:#1565C0">${brl(valor)}</div>
+          ${m.acoes.multa?`<div style="margin:4px 0;font-weight:800;color:#1565C0">${brl(valor)}</div>`:''}
           <div style="font-size:11px;color:${pz.cor}">⏱ ${sp.txt}</div>
           <div style="margin-top:6px;display:flex;gap:10px">
             <a href="${mapsUrl(m.gps)}" target="_blank" rel="noopener">Google Maps</a>
