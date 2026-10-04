@@ -57,7 +57,7 @@
         <button class="dat-card" style="--c:var(--blue)" onclick="abrirSecao('tabEvento')">
           <span class="dat-card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
           <span class="dat-card-tit">Evento de Pequeno Porte</span>
-          <span class="dat-card-desc">Requerimento e licença provisória do evento</span>
+          <span class="dat-card-desc">Requerimento, licença e histórico de documentos emitidos</span>
           <span class="dat-card-seta">→</span>
         </button>
         <button class="dat-card" style="--c:var(--green)" onclick="abrirSecao('tabBaixo')">
@@ -66,22 +66,10 @@
           <span class="dat-card-desc">Declaração de baixo risco da edificação</span>
           <span class="dat-card-seta">→</span>
         </button>
-        <button class="dat-card" style="--c:var(--text-mid)" onclick="abrirSecao('tabHist')">
-          <span class="dat-card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h6l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></span>
-          <span class="dat-card-tit">Documentos Emitidos</span>
-          <span class="dat-card-desc">Histórico de licenças e declarações</span>
-          <span class="dat-card-seta">→</span>
-        </button>
         <button class="dat-card" style="--c:var(--red)" onclick="abrirSecao('tabFiscaliza')">
           <span class="dat-card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
           <span class="dat-card-tit">Fiscalização (Multas)</span>
-          <span class="dat-card-desc">Calcular, assinar e emitir a multa</span>
-          <span class="dat-card-seta">→</span>
-        </button>
-        <button class="dat-card" style="--c:var(--orange)" onclick="abrirSecao('tabHistMulta')">
-          <span class="dat-card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/><line x1="12" y1="12.5" x2="12" y2="14"/><line x1="12" y1="14" x2="13" y2="14.6"/></svg></span>
-          <span class="dat-card-tit">Histórico de Multas</span>
-          <span class="dat-card-desc">Multas registradas e verificação de prazo</span>
+          <span class="dat-card-desc">Calcular, assinar, emitir e consultar multas</span>
           <span class="dat-card-seta">→</span>
         </button>
         <button class="dat-card" style="--c:var(--blue)" onclick="abrirSecao('tabApoio')">
@@ -99,6 +87,7 @@
           Voltar
         </button>
         <span class="dat-voltar-tit" id="datVoltarTit"></span>
+        <div class="dat-subnav" id="datSubnav"></div>
       </div>
 
       <!-- ===================== EVENTO ===================== -->
@@ -479,6 +468,10 @@
     .dat-voltar-btn:hover { border-color:var(--blue); color:var(--blue); }
     .dat-voltar-btn svg { width:16px; height:16px; }
     .dat-voltar-tit { font-size:1.05rem; font-weight:700; color:var(--text); }
+    .dat-subnav { display:flex; gap:4px; margin-left:auto; background:var(--blue-light); border-radius:10px; padding:3px; }
+    .dat-subnav button { border:none; background:none; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:600; color:var(--blue); padding:7px 14px; border-radius:8px; transition:background .18s, color .18s; white-space:nowrap; }
+    .dat-subnav button.ativo { background:var(--blue); color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+    @media(max-width:600px){ .dat-subnav { margin-left:0; width:100%; } .dat-subnav button { flex:1; } }
     @media print { .dat-voltar { display:none !important; } }
     .info-dat { color:var(--text-mid);font-size:.86rem;line-height:1.6;margin-bottom:16px;max-width:760px; }
     .form-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:22px; }
@@ -609,26 +602,42 @@
     }
 
     const SECOES = ['tabEvento','tabBaixo','tabHist','tabFiscaliza','tabHistMulta','tabApoio'];
-    const SECAO_TIT = {
-      tabEvento:'Evento de Pequeno Porte', tabBaixo:'Baixo Risco (Anexo B)',
-      tabHist:'Documentos Emitidos', tabFiscaliza:'Fiscalização de Multas',
-      tabHistMulta:'Histórico de Multas', tabApoio:'Apoio ao Analista',
+    // Cada "grupo" é um card; pode ter sub-abas (ex.: Preencher / Histórico)
+    const GRUPOS = {
+      tabEvento:   { titulo:'Evento de Pequeno Porte', abas:[ {id:'tabEvento', nome:'Preencher'}, {id:'tabHist', nome:'Histórico'} ] },
+      tabBaixo:    { titulo:'Baixo Risco (Anexo B)',   abas:[ {id:'tabBaixo', nome:'Preencher'} ] },
+      tabFiscaliza:{ titulo:'Fiscalização de Multas',  abas:[ {id:'tabFiscaliza', nome:'Nova multa'}, {id:'tabHistMulta', nome:'Histórico'} ] },
+      tabApoio:    { titulo:'Apoio ao Analista',       abas:[ {id:'tabApoio', nome:'Ferramentas'} ] },
     };
-    function abrirSecao(id){
-      SECOES.forEach(t=>document.getElementById(t).style.display='none');
+    const rendersAba = { tabHist:renderHist, tabFiscaliza:renderFiscaliza, tabHistMulta:renderHistMulta };
+    let _grupoAtual = null;
+
+    function abrirSecao(grupoId){
+      _grupoAtual = grupoId;
+      const g = GRUPOS[grupoId]; if(!g) return;
       document.getElementById('datHub').style.display='none';
-      document.getElementById(id).style.display='block';
-      const vt=document.getElementById('datVoltar'); vt.style.display='flex';
-      document.getElementById('datVoltarTit').textContent = SECAO_TIT[id]||'';
-      if(id==='tabHist') renderHist();
-      if(id==='tabFiscaliza') renderFiscaliza();
-      if(id==='tabHistMulta') renderHistMulta();
+      document.getElementById('datVoltar').style.display='flex';
+      document.getElementById('datVoltarTit').textContent = g.titulo;
+      // monta a sub-navegação (só aparece se houver mais de uma aba)
+      const sub = document.getElementById('datSubnav');
+      sub.innerHTML = (g.abas.length>1)
+        ? g.abas.map(a=>`<button data-id="${a.id}" onclick="selecionarAba('${a.id}')">${a.nome}</button>`).join('')
+        : '';
+      selecionarAba(g.abas[0].id);
       window.scrollTo({ top:0, behavior:'smooth' });
+    }
+    function selecionarAba(abaId){
+      const g = GRUPOS[_grupoAtual]; if(!g) return;
+      g.abas.forEach(a=>document.getElementById(a.id).style.display = a.id===abaId ? 'block' : 'none');
+      document.querySelectorAll('#datSubnav button').forEach(b=>b.classList.toggle('ativo', b.dataset.id===abaId));
+      if(rendersAba[abaId]) rendersAba[abaId]();
     }
     function voltarHub(){
       SECOES.forEach(t=>document.getElementById(t).style.display='none');
       document.getElementById('datVoltar').style.display='none';
+      document.getElementById('datSubnav').innerHTML='';
       document.getElementById('datHub').style.display='grid';
+      _grupoAtual = null;
       window.scrollTo({ top:0, behavior:'smooth' });
     }
     const val = id => (document.getElementById(id).value||'').trim();
