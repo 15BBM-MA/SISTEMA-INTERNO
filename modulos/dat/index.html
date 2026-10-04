@@ -262,6 +262,13 @@
               </div>
             </div>
           </div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-ghost" type="button" id="fis_gpsBtn" onclick="capturarGps()" style="font-size:.84rem">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Capturar localização (GPS)
+            </button>
+            <span id="fis_gpsInfo" style="font-size:.84rem;color:var(--text-light)">Localização não capturada.</span>
+          </div>
         </div>
 
         <div class="form-card" style="margin-bottom:16px">
@@ -1212,6 +1219,7 @@
       document.getElementById('fis_area').value='';
       document.getElementById('fis_r').value='1.0';
       document.getElementById('fis_busca').value='';
+      _gps = null; atualizarGpsInfo();
       filtrarInfracoes();
       calcMulta();
     }
@@ -1221,6 +1229,37 @@
     function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); }
     function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
     function telFmt(ddd, fone){ ddd=(ddd||'').replace(/\D/g,''); fone=(fone||'').trim(); if(!ddd && !fone) return ''; return (ddd?'('+ddd+') ':'')+fone; }
+
+    // ── Localização por GPS (sob demanda) ─────────────────────────
+    let _gps = null;
+    function mapsUrl(g){ return 'https://www.google.com/maps?q='+g.lat+','+g.lng; }
+    function atualizarGpsInfo(){
+      const info = document.getElementById('fis_gpsInfo'); if(!info) return;
+      if(!_gps){ info.textContent = 'Localização não capturada.'; return; }
+      info.innerHTML = `📍 ${_gps.lat.toFixed(5)}, ${_gps.lng.toFixed(5)} (±${_gps.acc} m) · `
+        + `<a href="${mapsUrl(_gps)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">abrir no mapa</a> · `
+        + `<button type="button" onclick="_gps=null;atualizarGpsInfo()" style="border:none;background:none;color:#dc2626;cursor:pointer;font-size:.8rem;padding:0">remover</button>`;
+    }
+    function capturarGps(){
+      if(!navigator.geolocation){ BBM.toast('Este aparelho/navegador não suporta GPS.','error'); return; }
+      const btn = document.getElementById('fis_gpsBtn'), info = document.getElementById('fis_gpsInfo');
+      const txt = btn.innerHTML; btn.disabled = true; btn.textContent = 'Localizando…'; info.textContent = 'Obtendo posição…';
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          _gps = { lat:pos.coords.latitude, lng:pos.coords.longitude, acc:Math.round(pos.coords.accuracy||0), em:new Date().toISOString() };
+          btn.disabled = false; btn.innerHTML = txt; atualizarGpsInfo();
+          BBM.toast('Localização capturada (±'+_gps.acc+' m).');
+        },
+        err => {
+          btn.disabled = false; btn.innerHTML = txt;
+          const msg = err.code===1 ? 'Permissão de localização negada.'
+                    : err.code===3 ? 'Tempo esgotado ao obter a localização.'
+                    : 'Não foi possível obter a localização.';
+          info.textContent = msg; BBM.toast(msg,'error');
+        },
+        { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+      );
+    }
 
     const SEFAZ_DARE = 'https://sistemas1.sefaz.ma.gov.br/dare/';   // portal SEFAZ-MA p/ emissão do DARE (boleto da multa)
     const DIAS_EXT = {10:'dez',15:'quinze',20:'vinte',30:'trinta',45:'quarenta e cinco',60:'sessenta',90:'noventa'};
@@ -1249,7 +1288,7 @@
         resp: val('fis_resp'), cpf: val('fis_cpf'), ddd: document.getElementById('fis_ddd').value, fone: document.getElementById('fis_fone').value,
         area, K: fatorK(area), R: parseFloat(document.getElementById('fis_r').value)||1,
         rTxt: document.getElementById('fis_r').selectedOptions[0].text, vbbm: num('fis_vbbm')||VBBM,
-        infr,
+        infr, gps: _gps ? { ..._gps } : null,
       };
     }
 
@@ -1276,6 +1315,7 @@
         <tr><td class="lbl">Endereço</td><td colspan="3">${escFis(o.end)||'&nbsp;'}${o.mun?' — '+escFis(o.mun):''}</td></tr>
         <tr><td class="lbl">Responsável</td><td>${escFis(o.resp)||'&nbsp;'}</td><td class="lbl">CPF</td><td>${escFis(o.cpf)||'&nbsp;'}</td></tr>
         <tr><td class="lbl">Telefone de contato</td><td colspan="3">${escFis(tel)||'&nbsp;'}</td></tr>
+        ${o.gps ? `<tr><td class="lbl">Localização (GPS)</td><td colspan="3">${o.gps.lat.toFixed(6)}, ${o.gps.lng.toFixed(6)} (±${o.gps.acc} m) — ${mapsUrl(o.gps)}</td></tr>` : ''}
       </table>`;
 
       const clausula = `<div style="border:1.3px solid #C8102E;background:#fdecee;padding:9px 12px;margin:14px 0;font-size:10.3pt;line-height:1.5">
@@ -1333,6 +1373,7 @@
         o.cpf ? 'CPF: '+o.cpf : '',
         tel ? 'Contato: '+tel : '',
         o.dataInfracao ? 'Data da infração: '+brData(o.dataInfracao) : '',
+        o.gps ? 'Localização: '+mapsUrl(o.gps)+' (±'+o.gps.acc+' m)' : '',
       ].filter(Boolean).join('\n');
 
       return `*CORPO DE BOMBEIROS MILITAR DO MARANHÃO*
@@ -1514,7 +1555,7 @@ ${SEFAZ_DARE}`;
         return `<div class="hm-item">
           <div style="min-width:0">
             <div class="hm-num">Nº ${escFis(m.numero||'—')}</div>
-            <div class="hm-meta">${escFis(m.estab)||'Edificação não informada'}${m.resp?' · '+escFis(m.resp):''}${m.dataInfracao?' · infração em '+brData(m.dataInfracao):''}</div>
+            <div class="hm-meta">${escFis(m.estab)||'Edificação não informada'}${m.resp?' · '+escFis(m.resp):''}${m.dataInfracao?' · infração em '+brData(m.dataInfracao):''}${m.gps?` · <a href="${mapsUrl(m.gps)}" target="_blank" rel="noopener" style="color:var(--blue)">📍 mapa</a>`:''}</div>
             <div class="hm-val">${brl(multa)}</div>
             <span class="hm-prazo" style="color:${sp.cor};background:${sp.bg}">⏱ ${sp.txt}</span>
           </div>
