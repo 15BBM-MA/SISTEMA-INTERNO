@@ -1654,15 +1654,35 @@ Emita o boleto (DARE) na SEFAZ-MA: ${SEFAZ_DARE}` : '';
 
       const blocoInterd = o.acoes.interd ? `
 
-*INTERDIÇÃO / EMBARGO*${o.artigos?'\nArtigos: '+o.artigos:''}` : '';
+*INTERDIÇÃO / EMBARGO*
+O estabelecimento foi interditado/embargado.${o.artigos?'\nArtigos: '+o.artigos:''}` : '';
+
+      // título e saudação adaptados ao tipo de ação
+      let titulo, intro, prazoLinha;
+      if(o.acoes.multa && o.acoes.interd){
+        titulo = 'NOTIFICAÇÃO DE MULTA E INTERDIÇÃO';
+        intro  = 'em fiscalização foram constatadas irregularidades de segurança contra incêndio, com aplicação de MULTA e INTERDIÇÃO/EMBARGO. Regularize os itens abaixo, efetue o pagamento e aguarde a liberação.';
+        prazoLinha = `${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para a adequação e o pagamento da multa.`;
+      } else if(o.acoes.multa){
+        titulo = 'NOTIFICAÇÃO DE MULTA';
+        intro  = 'em fiscalização foram constatadas irregularidades de segurança contra incêndio e foi aplicada MULTA. Regularize os itens abaixo e efetue o pagamento dentro do prazo.';
+        prazoLinha = `${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para a adequação das medidas e o pagamento da multa.`;
+      } else if(o.acoes.interd){
+        titulo = 'NOTIFICAÇÃO DE INTERDIÇÃO / EMBARGO';
+        intro  = 'em fiscalização o estabelecimento foi INTERDITADO/EMBARGADO. Cumpra as exigências abaixo para a liberação.';
+        prazoLinha = `${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para o cumprimento das exigências.`;
+      } else {
+        titulo = 'NOTIFICAÇÃO';
+        intro  = 'em fiscalização foram constatadas exigências de segurança contra incêndio a serem cumpridas. Regularize os itens abaixo dentro do prazo.';
+        prazoLinha = `${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para o cumprimento das exigências.`;
+      }
 
       return `*CORPO DE BOMBEIROS MILITAR DO MARANHÃO*
 *15º Batalhão — Chapadinha/MA · Diretoria de Atividades Técnicas*
-*NOTIFICAÇÃO Nº ${o.numero||'—'}*
+*${titulo} Nº ${o.numero||'—'}*
 Lei nº 11.390/2020 — RSCI
-Ação: ${acoesTxt}
 
-Prezado(a)${o.razao?' responsável por '+o.razao:''}, em fiscalização foram constatadas irregularidades de segurança contra incêndio. Regularize os itens abaixo dentro do prazo.
+Prezado(a)${o.razao?' responsável por '+o.razao:''}, ${intro}
 
 *DADOS DA EDIFICAÇÃO*
 ${dados}
@@ -1671,8 +1691,8 @@ ${dados}
 ${exigBloco || '(ver documento)'}${blocoMulta}${blocoInterd}
 
 *PRAZO*
-${o.prazoDias} dias${venc?(' (até '+brData(venc)+')'):''} para o cumprimento das exigências${o.acoes.multa?' e pagamento da multa':''}.
-A multa/notificação NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). O não cumprimento implica em multa, apreensão, embargo e interdição.`;
+${prazoLinha}
+A notificação NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). O não cumprimento implica em multa, apreensão, embargo e interdição.`;
     }
 
     function imprimirMulta(){
