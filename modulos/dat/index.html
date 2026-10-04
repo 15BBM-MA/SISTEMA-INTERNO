@@ -620,10 +620,11 @@
 
     /* Documento de Notificação (impressão) */
     .doc .notif { font-family:Arial, Helvetica, sans-serif !important; color:#000; font-size:9.5pt; line-height:1.25; }
-    .notif .cab { text-align:center; position:relative; margin-bottom:4px; min-height:70px; padding-top:2px; }
-    .notif .cab img { position:absolute; top:0; width:62px; height:62px; object-fit:contain; }
-    .notif .cab .bz-l { left:4px; } .notif .cab .bz-r { right:4px; }
-    .notif .cab .bz-c { position:static; display:block; margin:0 auto 2px; width:52px; height:52px; }
+    .notif .cab { text-align:center; position:relative; margin-bottom:4px; min-height:92px; padding-top:76px; overflow:visible; }
+    .notif .cab img { position:absolute; object-fit:contain; }
+    .notif .cab .bz-l { left:0; top:4px; width:88px; height:88px; }
+    .notif .cab .bz-r { right:0; top:4px; width:88px; height:88px; }
+    .notif .cab .bz-c { left:50%; top:-14px; transform:translateX(-50%); width:92px; height:92px; }
     .notif .cab .l1 { font-weight:bold; font-size:11pt; }
     .notif .cab .l2 { font-weight:bold; font-size:9.5pt; }
     .doc .notif table { width:100%; border-collapse:collapse; margin:0 0 5px; font-size:9.5pt; }
@@ -1274,7 +1275,7 @@
 
     // Busca de infrações (todos os grupos), com destaque do termo
     const _normFis = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const escFis = s => String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const escFis = s => String(s ?? '').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
     function realcarFis(texto, termo){
       const e = escFis(texto);
       if(!termo) return e;
@@ -1538,22 +1539,25 @@
       const nomeOficial = a ? ((a.posto?a.posto+' ':'')+a.nome) : '';
       const selo = a ? ` <span style="font-size:7.6pt;color:#166534">(assinado eletronicamente em ${new Date(a.em).toLocaleString('pt-BR')})</span>` : '';
 
+      const valN = v => (v||0).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+      const simNao = cond => `SIM <span class="chk">${cond?'☑':'☐'}</span> &nbsp; NÃO <span class="chk">${cond?'☐':'☑'}</span>`;
       const penal = `<table style="margin-top:4px">
         <tr><td class="faixa" colspan="4">PENALIDADES</td></tr>
         <tr>
-          <td class="lbl2">Estabelecimento MULTADO <span class="chk">${o.acoes.multa?'☑':'☐'}</span></td>
+          <td class="lbl2">Estabelecimento MULTADO&nbsp; ${simNao(o.acoes.multa)}</td>
           <td class="lbl2">nº VBBM: ${o.acoes.multa?brl(o.vbbm):vazio}</td>
           <td class="lbl2">Fator K: ${o.acoes.multa?o.K:vazio}</td>
-          <td class="lbl2">R$ ${o.acoes.multa?brl(multa):vazio}</td>
+          <td class="lbl2">R$ ${o.acoes.multa?valN(multa):vazio}</td>
         </tr>
+        <tr style="text-align:center;font-weight:bold"><td>Grupo I</td><td>Grupo II</td><td>Grupo III</td><td>Grupo IV</td></tr>
         <tr style="text-align:center">
-          <td>Grupo I<br><b>${o.acoes.multa?cap.I:vazio}</b></td>
-          <td>Grupo II<br><b>${o.acoes.multa?cap.II:vazio}</b></td>
-          <td>Grupo III<br><b>${o.acoes.multa?cap.III:vazio}</b></td>
-          <td>Grupo IV<br><b>${o.acoes.multa?cap.IV:vazio}</b></td>
+          <td><b>${o.acoes.multa?cap.I:vazio}</b></td>
+          <td><b>${o.acoes.multa?cap.II:vazio}</b></td>
+          <td><b>${o.acoes.multa?cap.III:vazio}</b></td>
+          <td><b>${o.acoes.multa?cap.IV:vazio}</b></td>
         </tr>
         <tr>
-          <td class="lbl2" colspan="2">Estabelecimento INTERDITADO <span class="chk">${o.acoes.interd?'☑':'☐'}</span></td>
+          <td class="lbl2" colspan="2">Estabelecimento INTERDITADO&nbsp; ${simNao(o.acoes.interd)}</td>
           <td class="lbl2" colspan="2">Artigos (multa e/ou interdição): ${cel(o.artigos)}</td>
         </tr>
       </table>`;
