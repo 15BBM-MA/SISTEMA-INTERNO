@@ -631,6 +631,7 @@
     .doc .notif table td, .doc .notif table th { border:1px solid #000 !important; padding:2px 5px !important; vertical-align:top; }
     .notif td.faixa { background:#dcdcdc !important; text-align:center; font-weight:bold; font-size:9pt; letter-spacing:.02em; }
     .doc .notif td.nb { border:none !important; } .notif .lbl2 { font-weight:bold; white-space:nowrap; }
+    .doc .notif table.topo td.lbl2 { width:1%; white-space:nowrap; }
     .notif .intro { margin:6px 0; text-align:justify; font-size:9pt; }
     .notif table.sist td { font-size:8.6pt; }
     .notif .chk { font-weight:bold; display:inline-block; width:14px; }
@@ -1577,7 +1578,7 @@
           <div class="l2">DIRETORIA DE ATIVIDADES TÉCNICAS</div>
         </div>
 
-        <table>
+        <table class="topo">
           <tr><td class="lbl2">Notificação nº</td><td>${cel(o.numero)}</td><td class="lbl2">Data</td><td>${o.data?brData(o.data):vazio}</td><td class="lbl2">Hora</td><td>${cel(o.hora)}</td></tr>
           <tr><td class="lbl2">Requerimento nº</td><td>${cel(o.req)}</td><td class="lbl2">C.A. nº</td><td>${cel(o.ca)}</td><td class="lbl2">C.A.P. nº</td><td>${cel(o.cap)}</td></tr>
         </table>
