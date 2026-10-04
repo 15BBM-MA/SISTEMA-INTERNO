@@ -329,6 +329,44 @@
         <div id="histMultaLista"></div>
       </div>
 
+      <!-- MAPA DE FISCALIZAÇÕES -->
+      <div id="tabMapa" style="display:none">
+        <p class="info-dat">Mapa das multas com localização capturada por GPS. <span style="color:#16a34a">● no prazo</span> · <span style="color:#d97706">● vence em breve</span> · <span style="color:#dc2626">● vencida</span>.</p>
+        <div class="map-filtros">
+          <div>
+            <label>Município</label>
+            <select id="mapMun" onchange="atualizarMapa()">
+              <option value="">Todos</option>
+              <option>Afonso Cunha - MA</option>
+              <option>Anapurus - MA</option>
+              <option>Belágua - MA</option>
+              <option>Brejo - MA</option>
+              <option>Buriti - MA</option>
+              <option>Chapadinha - MA</option>
+              <option>Magalhães de Almeida - MA</option>
+              <option>Mata Roma - MA</option>
+              <option>Milagres do Maranhão - MA</option>
+              <option>Santa Quitéria do Maranhão - MA</option>
+              <option>São Benedito do Rio Preto - MA</option>
+              <option>São Bernardo - MA</option>
+              <option>Urbano Santos - MA</option>
+            </select>
+          </div>
+          <div>
+            <label>Situação do prazo</label>
+            <select id="mapStatus" onchange="atualizarMapa()">
+              <option value="">Todas</option>
+              <option value="noprazo">No prazo</option>
+              <option value="breve">Vence em breve (≤5 dias)</option>
+              <option value="vencida">Vencidas</option>
+            </select>
+          </div>
+          <button class="btn btn-ghost" type="button" onclick="renderMapa()" style="align-self:flex-end;font-size:.82rem">↻ Atualizar</button>
+        </div>
+        <div id="mapResumo" style="font-size:.82rem;color:var(--text-light);margin-bottom:10px"></div>
+        <div id="fisMapa"></div>
+      </div>
+
       <div id="tabApoio" style="display:none">
         <p class="info-dat">Ferramentas de apoio à análise, com base na <strong>NT-42</strong> (enquadramento de risco) e no <strong>Anexo A da Lei 11.390/2020</strong> (taxas). Os valores são referenciais — confira sempre a norma vigente.</p>
 
@@ -515,6 +553,15 @@
     .hm-val { font-weight:800;color:var(--blue);margin-top:2px; }
     .hm-acoes { display:flex;gap:8px;flex-wrap:wrap; }
     .hm-prazo { display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap;margin-top:4px; }
+    .map-filtros { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:10px; }
+    .map-filtros > div { display:flex; flex-direction:column; gap:4px; }
+    .map-filtros label { font-size:.74rem; font-weight:600; color:var(--text-light); }
+    .map-filtros select { padding:9px 12px; border:1px solid var(--border); border-radius:9px; font-family:inherit; font-size:.88rem; background:#fff; color:var(--text); }
+    #fisMapa { height:520px; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#eef2f6; }
+    .fis-pin { background:none !important; border:none !important; }
+    .leaflet-popup-content a { color:var(--blue); font-weight:600; text-decoration:none; }
+    @media(max-width:600px){ #fisMapa { height:420px; } .map-filtros > div { flex:1; min-width:140px; } }
+    @media print { #tabMapa { display:none !important; } }
 
     /* Visualizador */
     #docOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
@@ -608,15 +655,15 @@
       BBM.toast('Novo evento — Nº ' + numeroAtual);
     }
 
-    const SECOES = ['tabEvento','tabBaixo','tabHist','tabFiscaliza','tabHistMulta','tabApoio'];
+    const SECOES = ['tabEvento','tabBaixo','tabHist','tabFiscaliza','tabHistMulta','tabMapa','tabApoio'];
     // Cada "grupo" é um card; pode ter sub-abas (ex.: Preencher / Histórico)
     const GRUPOS = {
       tabEvento:   { titulo:'Evento de Pequeno Porte', abas:[ {id:'tabEvento', nome:'Preencher'}, {id:'tabHist', nome:'Histórico'} ] },
       tabBaixo:    { titulo:'Baixo Risco (Anexo B)',   abas:[ {id:'tabBaixo', nome:'Preencher'} ] },
-      tabFiscaliza:{ titulo:'Fiscalização de Multas',  abas:[ {id:'tabFiscaliza', nome:'Nova multa'}, {id:'tabHistMulta', nome:'Histórico'} ] },
+      tabFiscaliza:{ titulo:'Fiscalização de Multas',  abas:[ {id:'tabFiscaliza', nome:'Nova multa'}, {id:'tabHistMulta', nome:'Histórico'}, {id:'tabMapa', nome:'Mapa'} ] },
       tabApoio:    { titulo:'Apoio ao Analista',       abas:[ {id:'tabApoio', nome:'Ferramentas'} ] },
     };
-    const rendersAba = { tabHist:renderHist, tabFiscaliza:renderFiscaliza, tabHistMulta:renderHistMulta };
+    const rendersAba = { tabHist:renderHist, tabFiscaliza:renderFiscaliza, tabHistMulta:renderHistMulta, tabMapa:renderMapa };
     let _grupoAtual = null;
 
     function abrirSecao(grupoId){
@@ -1572,6 +1619,81 @@ ${SEFAZ_DARE}`;
       const dnum = document.getElementById('fis_num'); if(dnum) dnum.value = proximoNumeroMulta();
       if(document.getElementById('tabHistMulta').style.display!=='none') renderHistMulta();
     });
+
+    // ── Mapa de fiscalizações (Leaflet + OpenStreetMap) ───────────
+    let _leafletPronto = false, _mapa = null, _clusterLayer = null;
+    function carregarLeaflet(){
+      if(_leafletPronto) return Promise.resolve();
+      const temLink = href => [...document.querySelectorAll('link')].some(l=>l.href===href);
+      const addCss = href => { if(!temLink(href)){ const l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); } };
+      const addJs = src => new Promise((res,rej)=>{ if([...document.querySelectorAll('script')].some(s=>s.src===src)) return res(); const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      addCss('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css');
+      addCss('https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css');
+      addCss('https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css');
+      return addJs('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js')
+        .then(()=>addJs('https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js'))
+        .then(()=>{ _leafletPronto = true; });
+    }
+    function pinIcon(cor){
+      return L.divIcon({ className:'fis-pin', iconSize:[16,16], iconAnchor:[8,8], popupAnchor:[0,-8],
+        html:`<span style="display:block;width:16px;height:16px;border-radius:50%;background:${cor};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)"></span>` });
+    }
+    // categoria/cor pelo prazo
+    function prazoCat(m){
+      const venc = addDias(m.dataEmissao, m.prazoDias);
+      if(!venc) return { cat:'noprazo', cor:'#64748b', venc:'' };
+      const dias = Math.round((new Date(venc+'T00:00:00') - new Date(hoje()+'T00:00:00'))/86400000);
+      if(dias<0)  return { cat:'vencida', cor:'#dc2626', venc, dias };
+      if(dias<=5) return { cat:'breve',   cor:'#d97706', venc, dias };
+      return { cat:'noprazo', cor:'#16a34a', venc, dias };
+    }
+    async function renderMapa(){
+      try{ await carregarLeaflet(); }
+      catch(e){ document.getElementById('mapResumo').textContent='Não foi possível carregar o mapa (sem conexão?).'; return; }
+      if(!_mapa){
+        _mapa = L.map('fisMapa').setView([-3.7436, -43.3608], 9); // Chapadinha/MA aprox.
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'© OpenStreetMap' }).addTo(_mapa);
+        _clusterLayer = L.markerClusterGroup();
+        _mapa.addLayer(_clusterLayer);
+      }
+      atualizarMapa();
+      setTimeout(()=>{ if(_mapa) _mapa.invalidateSize(); }, 200); // corrige render ao sair de display:none
+    }
+    function atualizarMapa(){
+      if(!_mapa || !_clusterLayer) return;
+      const fMun = document.getElementById('mapMun').value;
+      const fSt  = document.getElementById('mapStatus').value;
+      _clusterLayer.clearLayers();
+      const comGps = multas.filter(m => m.gps && typeof m.gps.lat==='number' && typeof m.gps.lng==='number');
+      const pts = [];
+      comGps.forEach(m=>{
+        if(fMun && m.mun!==fMun) return;
+        const pz = prazoCat(m);
+        if(fSt && fSt!==pz.cat) return;
+        const cap = { I:Math.min((m.infr.I||[]).length,4), II:Math.min((m.infr.II||[]).length,4), III:Math.min((m.infr.III||[]).length,4), IV:Math.min((m.infr.IV||[]).length,2) };
+        const valor = (2.5*cap.I+3.5*cap.II+5*cap.III+7*cap.IV)*m.R*m.K*m.vbbm;
+        const sp = statusPrazo(pz.venc);
+        const mk = L.marker([m.gps.lat, m.gps.lng], { icon:pinIcon(pz.cor) });
+        mk.bindPopup(`<div style="font-size:13px;min-width:190px">
+          <div style="font-weight:800">Nº ${escFis(m.numero||'—')}</div>
+          <div>${escFis(m.estab)||'Edificação não informada'}</div>
+          ${m.resp?`<div style="color:#555">${escFis(m.resp)}</div>`:''}
+          ${m.mun?`<div style="color:#555;font-size:11px">${escFis(m.mun)}</div>`:''}
+          <div style="margin:4px 0;font-weight:800;color:#1565C0">${brl(valor)}</div>
+          <div style="font-size:11px;color:${pz.cor}">⏱ ${sp.txt}</div>
+          <div style="margin-top:6px;display:flex;gap:10px">
+            <a href="${mapsUrl(m.gps)}" target="_blank" rel="noopener">Google Maps</a>
+            <a href="#" onclick="verMulta('${m.id}');return false;">Ver documento</a>
+          </div>
+        </div>`);
+        _clusterLayer.addLayer(mk);
+        pts.push([m.gps.lat, m.gps.lng]);
+      });
+      if(pts.length) _mapa.fitBounds(pts, { padding:[40,40], maxZoom:15 });
+      const semGps = multas.length - comGps.length;
+      document.getElementById('mapResumo').textContent =
+        `${pts.length} multa(s) no mapa` + (semGps>0 ? ` · ${semGps} sem localização (não aparecem no mapa)` : '');
+    }
 
     // VBBM é fixo; só o administrador pode alterá-lo (nas duas abas).
     function aplicarPermissaoVbbm(){
