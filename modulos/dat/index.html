@@ -1296,6 +1296,7 @@
           _gps = { lat:pos.coords.latitude, lng:pos.coords.longitude, acc:Math.round(pos.coords.accuracy||0), em:new Date().toISOString() };
           btn.disabled = false; btn.innerHTML = txt; atualizarGpsInfo();
           BBM.toast('Localização capturada (±'+_gps.acc+' m).');
+          reverseGeocode(_gps.lat, _gps.lng); // preenche endereço/município automaticamente
         },
         err => {
           btn.disabled = false; btn.innerHTML = txt;
@@ -1306,6 +1307,40 @@
         },
         { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
       );
+    }
+    // Geocodificação reversa (OpenStreetMap/Nominatim) — preenche endereço e município
+    async function reverseGeocode(lat, lng){
+      const info = document.getElementById('fis_gpsInfo');
+      const antes = info.innerHTML;
+      info.innerHTML = antes + ' <span style="color:var(--text-light)">· buscando endereço…</span>';
+      try{
+        const ctrl = new AbortController(); const t = setTimeout(()=>ctrl.abort(), 9000);
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&addressdetails=1&accept-language=pt-BR`;
+        const r = await fetch(url, { signal:ctrl.signal, headers:{ 'Accept':'application/json' } });
+        clearTimeout(t);
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const d = await r.json(); const a = d.address || {};
+        // Endereço: rua (+ número) - bairro
+        const rua = a.road || a.pedestrian || a.residential || a.footway || a.path || '';
+        const bairro = a.suburb || a.neighbourhood || a.city_district || a.quarter || '';
+        const linha1 = rua + (a.house_number ? ', '+a.house_number : '');
+        const endereco = [linha1, bairro].filter(Boolean).join(' - ')
+                      || (d.display_name || '').split(',').slice(0,2).join(',').trim();
+        const campoEnd = document.getElementById('fis_end');
+        if(endereco && !campoEnd.value.trim()) campoEnd.value = endereco;
+        // Município: casa com a lista fixa (todas são -MA)
+        const cidade = a.city || a.town || a.village || a.municipality || a.county || '';
+        if(cidade){
+          const sel = document.getElementById('fis_mun'); const alvo = _normFis(cidade);
+          const opt = [...sel.options].find(o => o.value && (_normFis(o.value).startsWith(alvo) || _normFis(o.value).includes(alvo)));
+          if(opt) sel.value = opt.value;
+        }
+        atualizarGpsInfo();
+        BBM.toast(endereco ? 'Endereço preenchido pela localização.' : 'Localização obtida (endereço não encontrado).');
+      }catch(e){
+        console.warn('reverse geocode falhou:', e);
+        atualizarGpsInfo(); // mantém só as coordenadas, sem travar o fluxo
+      }
     }
 
     const SEFAZ_DARE = 'https://sistemas1.sefaz.ma.gov.br/dare/';   // portal SEFAZ-MA p/ emissão do DARE (boleto da multa)
