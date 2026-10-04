@@ -1703,7 +1703,7 @@ ${exigBloco || '(ver documento)'}${blocoMulta}${blocoInterd}
 
 *PRAZO*
 ${prazoLinha}
-A notificação NÃO exime a adequação das medidas (art. 35 da Lei 11.390/2020). O não cumprimento implica em multa, apreensão, embargo e interdição.`;
+${o.acoes.multa ? 'A multa' : 'A notificação'} NÃO exime a adequação das medidas de segurança (art. 35 da Lei nº 11.390/2020). O não cumprimento implica em multa, apreensão, embargo e interdição.`;
     }
 
     function imprimirMulta(){
