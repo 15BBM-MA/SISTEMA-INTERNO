@@ -75,6 +75,8 @@
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap">
         <button class="tab-btn active" onclick="showTab('tabEstoque',this)">Estoque</button>
         <button class="tab-btn" onclick="showTab('tabConferencia',this)">Conferência de Estoque</button>
+        <button class="tab-btn" onclick="showTab('tabAutorizacoes',this)">Autorizações <span id="badgePend" class="pend-badge" style="display:none">0</span></button>
+        <button class="tab-btn" onclick="showTab('tabRelatorios',this)">Relatórios de Conferência</button>
         <button class="tab-btn" onclick="showTab('tabCautelas',this)">Cautelas</button>
         <button class="tab-btn" onclick="showTab('tabMovimentos',this)">Histórico de Movimentos</button>
       </div>
@@ -145,6 +147,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               Atualizar
             </button>
+            <button class="btn btn-ghost" id="btnFinalizarConfTab" onclick="abrirFinalizarConf()" style="display:none;color:var(--green);border-color:var(--green)">✍ Finalizar e assinar</button>
             <button class="btn btn-primary" onclick="iniciarConferencia()">Iniciar nova conferência</button>
           </div>
         </div>
@@ -154,8 +157,31 @@
         </div>
         <div id="confLista"></div>
       </div>
+
+      <!-- AUTORIZAÇÕES (aprovação de alterações de estoque) -->
+      <div id="tabAutorizacoes" style="display:none">
+        <div class="section-label">Autorizações de alteração de estoque</div>
+        <p style="font-size:.84rem;color:var(--text-light);margin-bottom:12px">Toda movimentação/ajuste de estoque fica pendente até o Chefe de Socorro indicado assinar a aprovação.</p>
+        <div id="autorizacoesLista"></div>
+      </div>
+
+      <!-- RELATÓRIOS DE CONFERÊNCIA -->
+      <div id="tabRelatorios" style="display:none">
+        <div class="section-label">Relatórios de conferência</div>
+        <p style="font-size:.84rem;color:var(--text-light);margin-bottom:12px">Relatórios assinados pelo militar que conferiu, enviados ao Chefe de Socorro, com apenas os itens que tiveram alteração de quantidade e o motivo.</p>
+        <div id="relatoriosLista"></div>
+      </div>
     </div>
   </main>
+
+  <!-- OVERLAY DO RELATÓRIO DE CONFERÊNCIA -->
+  <div id="relatorioOverlay">
+    <div class="doc-bar no-print">
+      <button class="btn btn-ghost" onclick="fecharRelatorio()">← Voltar</button>
+      <button class="btn btn-primary" onclick="imprimirRelatorio()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+    <div id="relatorioView"></div>
+  </div>
 
   <!-- MODAL CONTAGEM -->
   <div class="modal-overlay" id="modalContagem">
@@ -170,7 +196,11 @@
         <div style="font-size:.78rem;color:var(--text-light);margin-bottom:14px" id="cfRegistrado"></div>
         <div class="form-group">
           <label class="form-label">Quantidade contada fisicamente</label>
-          <input class="form-control" id="cfQtd" type="number" min="0" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
+          <input class="form-control" id="cfQtd" type="number" min="0" oninput="cfToggleMotivo()" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
+        </div>
+        <div class="form-group" id="cfMotivoWrap" style="display:none">
+          <label class="form-label">Motivo da divergência *</label>
+          <input class="form-control" id="cfMotivo" placeholder="Ex.: quebra, consumo não lançado, erro de cadastro…"/>
         </div>
         <div class="form-group" style="margin:0">
           <label class="form-label">Ambiente (onde o item está)</label>
@@ -250,14 +280,15 @@
     </div>
   </div>
 
-  <!-- MODAL MOVIMENTO -->
+  <!-- MODAL MOVIMENTO (solicitação de alteração de estoque) -->
   <div class="modal-overlay" id="modalMovimento">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title">Registrar Movimentação</span>
+        <span class="modal-title">Movimentar estoque</span>
         <button class="modal-close" onclick="BBM.closeModal('modalMovimento')">×</button>
       </div>
       <div class="modal-body">
+        <p style="font-size:.8rem;color:var(--text-light);margin:-2px 0 12px">Toda alteração de estoque passa pela aprovação do Chefe de Socorro. Ao enviar, a solicitação fica pendente até ele assinar.</p>
         <div class="form-group"><label class="form-label">Item *</label>
           <select class="form-control" id="mItem"></select>
         </div>
@@ -268,11 +299,63 @@
           <div class="form-group"><label class="form-label">Quantidade *</label><input class="form-control" id="mQtd" type="number" min="1" placeholder="0"/></div>
         </div>
         <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="mResp" placeholder="Nome do militar"/></div>
-        <div class="form-group"><label class="form-label">Observação</label><input class="form-control" id="mObs" placeholder="Finalidade ou destino…"/></div>
+        <div class="form-group"><label class="form-label">Motivo / Observação *</label><input class="form-control" id="mObs" placeholder="Finalidade, destino ou motivo da alteração…"/></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Chefe de Socorro (aprovação) *</label>
+          <select class="form-control" id="mChefe"></select>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalMovimento')">Cancelar</button>
-        <button class="btn btn-primary" id="btnSalvarMov" onclick="salvarMovimento()">Registrar</button>
+        <button class="btn btn-primary" id="btnSalvarMov" onclick="salvarMovimento()">Solicitar aprovação</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FINALIZAR CONFERÊNCIA (praça assina + indica Chefe) -->
+  <div class="modal-overlay" id="modalFinalizarConf">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-header">
+        <span class="modal-title">Finalizar e assinar conferência</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalFinalizarConf')">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="fcResumo" style="font-size:.86rem;color:var(--text-mid);margin-bottom:12px"></p>
+        <div class="form-group"><label class="form-label">Chefe de Socorro *</label>
+          <select class="form-control" id="fcChefe"></select>
+        </div>
+        <div class="form-group" style="margin-bottom:6px"><label class="form-label">Sua senha (assinatura) *</label>
+          <input class="form-control" id="fcSenha" type="password" placeholder="Senha do seu login" autocomplete="current-password"/>
+        </div>
+        <div id="fcErro" style="color:#dc2626;font-size:.8rem;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalFinalizarConf')">Cancelar</button>
+        <button class="btn btn-primary" id="btnFinalizarConf" onclick="confirmarFinalizarConf()">Assinar e enviar ao Chefe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL APROVAR / RECUSAR PENDÊNCIA (Chefe assina) -->
+  <div class="modal-overlay" id="modalAprovar">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <span class="modal-title" id="apTitulo">Aprovar alteração</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalAprovar')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="apId"/><input type="hidden" id="apAcao"/>
+        <p id="apResumo" style="font-size:.86rem;color:var(--text-mid);margin-bottom:12px"></p>
+        <div class="form-group" id="apMotivoWrap" style="display:none"><label class="form-label">Motivo da recusa *</label>
+          <input class="form-control" id="apMotivo" placeholder="Por que está recusando…"/>
+        </div>
+        <div class="form-group" style="margin-bottom:6px"><label class="form-label">Sua senha (Chefe de Socorro) *</label>
+          <input class="form-control" id="apSenha" type="password" placeholder="Senha do seu login" autocomplete="current-password"/>
+        </div>
+        <div id="apErro" style="color:#dc2626;font-size:.8rem;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalAprovar')">Cancelar</button>
+        <button class="btn btn-primary" id="apBtn" onclick="confirmarAprovacao()">Aprovar</button>
       </div>
     </div>
   </div>
@@ -455,6 +538,30 @@
       #cautelaOverlay .doc-bar { display:none !important; }
       #cautelaView { margin:0 !important;max-width:none;box-shadow:none;padding:0; }
     }
+
+    /* Relatório de conferência (mesmo visual da cautela) */
+    #relatorioOverlay { display:none;position:fixed;inset:0;background:#525659;z-index:300;overflow:auto; }
+    #relatorioOverlay.open { display:block; }
+    #relatorioView { max-width:800px;margin:78px auto 40px;background:#fff;padding:34px 38px;box-shadow:0 4px 24px rgba(0,0,0,.4); }
+    @media(max-width:600px){ #relatorioView { padding:20px 16px;margin:70px 8px 24px; } }
+    @media print {
+      #relatorioOverlay.open, #relatorioOverlay.open * { visibility:visible; }
+      #relatorioOverlay.open { position:absolute;left:0;top:0;width:100%;background:#fff;overflow:visible; }
+      #relatorioOverlay .doc-bar { display:none !important; }
+      #relatorioView { margin:0 !important;max-width:none;box-shadow:none;padding:0; }
+    }
+
+    /* Pendências / autorizações */
+    .pend-badge { display:inline-block;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:.7rem;font-weight:800;color:#fff;background:var(--red);border-radius:9px;padding:0 5px;margin-left:4px; }
+    .pz-item { border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; }
+    .pz-item.pendente { border-color:#f59e0b;background:#fffbeb; }
+    .pz-tit { font-weight:700;color:var(--text); }
+    .pz-meta { font-size:.8rem;color:var(--text-light);margin-top:3px;line-height:1.5; }
+    .pz-acoes { display:flex;gap:8px;flex-wrap:wrap; }
+    .pz-st { font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap; }
+    .pz-st.pendente { background:#fef3c7;color:#92400e; }
+    .pz-st.aprovado { background:#dcfce7;color:#15803d; }
+    .pz-st.recusado { background:#fee2e2;color:#b91c1c; }
   </style>
 
   <script src="../../assets/js/main.js"></script>
@@ -463,6 +570,8 @@
     const KEY_M = 'almoxarifado_movimentos';
     const KEY_C = 'almoxarifado_conferencia'; // estado da conferência (compartilhado)
     const KEY_CT = 'almoxarifado_cautelas';   // cautelas de materiais (documentos)
+    const KEY_PEND = 'almoxarifado_pendencias';     // alterações de estoque aguardando aprovação do Chefe
+    const KEY_REL  = 'almoxarifado_conf_relatorios'; // relatórios de conferência assinados
 
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
@@ -473,6 +582,7 @@
 
     let itens = [], movimentos = [];
     let cautelas = [], oficiais = [], militaresList = [];
+    let pendencias = [], confRelatorios = [];
     let ctSel = {}; // seleção atual do modal de cautela: { itemId: qtd }
     let conferencia = { id:'atual', inicio:null, por:'', em:null }; // sessão de contagem
     let ambienteAtivo = ''; // '' = todos
@@ -510,27 +620,43 @@
     })();
 
     // ── Carga inicial (nuvem, compartilhada entre todos) ──────────
-    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT], async () => {
+    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT, KEY_PEND, KEY_REL], async () => {
       itens = (BBM.load(KEY_I) || []).map(normAmbiente);
       movimentos = BBM.load(KEY_M) || [];
       cautelas = BBM.load(KEY_CT) || [];
+      pendencias = BBM.load(KEY_PEND) || [];
+      confRelatorios = BBM.load(KEY_REL) || [];
       const c = (BBM.load(KEY_C) || [])[0];
       if (c) conferencia = c;
       renderAmbientes();
       renderItens();
       atualizarCards();
+      atualizarBadgePend();
       // listas para a cautela (militares p/ autocompletar responsável, oficiais p/ Chefe de Socorro)
       try { militaresList = await BBM.militares(); } catch(e) { militaresList = []; }
       try { const sb = await BBM.sb(); const { data } = await sb.rpc('listar_oficiais'); oficiais = data || []; } catch(e) { oficiais = []; }
     });
 
+    // opções de Chefe de Socorro (todos os oficiais)
+    function optsOficiais(selId){
+      return '<option value="">— selecione o Chefe de Socorro —</option>' +
+        oficiais.map(o=>`<option value="${o.id}"${o.id===selId?' selected':''}>${escC((o.posto?o.posto+' ':'')+o.nome)}</option>`).join('');
+    }
+    function atualizarBadgePend(){
+      const n = pendencias.filter(p=>p.status==='pendente').length;
+      const b = document.getElementById('badgePend');
+      if(b){ b.textContent = n; b.style.display = n ? 'inline-block' : 'none'; }
+    }
+
     function showTab(id, btn) {
-      ['tabEstoque','tabConferencia','tabCautelas','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
+      ['tabEstoque','tabConferencia','tabAutorizacoes','tabRelatorios','tabCautelas','tabMovimentos'].forEach(t => document.getElementById(t).style.display='none');
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).style.display='block';
       btn.classList.add('active');
       if (id === 'tabMovimentos') renderMovimentos();
       if (id === 'tabCautelas') renderCautelas();
+      if (id === 'tabAutorizacoes') renderAutorizacoes();
+      if (id === 'tabRelatorios') renderRelatorios();
       if (id === 'tabConferencia') { renderConferencia(); iniciarPolling(); }
       else pararPolling();
     }
@@ -676,7 +802,7 @@
       document.getElementById('iAmbiente').value = ambienteAtivo || 'Almoxarifado';
       document.getElementById('iCategoria').value = CATEGORIAS[0];
       document.getElementById('iUnidade').value = 'unidade';
-      document.getElementById('iQtd').value='';
+      const q = document.getElementById('iQtd'); q.value=''; q.readOnly=false; q.style.background=''; q.title='';
       document.getElementById('iMin').value='';
       document.getElementById('iLocal').value='';
       document.getElementById('iObs').value='';
@@ -688,13 +814,15 @@
       const id   = document.getElementById('itemId').value;
       const nome = document.getElementById('iNome').value.trim();
       if (!nome) { BBM.toast('Informe o nome do item.','error'); return; }
+      const anterior = id ? itens.find(i=>i.id===id) : null;
       const obj = {
         id: id || BBM.generateId(),
         nome,
         ambiente:  document.getElementById('iAmbiente').value,
         categoria: document.getElementById('iCategoria').value,
         unidade:   document.getElementById('iUnidade').value,
-        qtd: Number(document.getElementById('iQtd').value) || 0,
+        // quantidade de item existente NÃO muda pela edição — só via Movimentar (com aprovação)
+        qtd: anterior ? anterior.qtd : (Number(document.getElementById('iQtd').value) || 0),
         min: Number(document.getElementById('iMin').value) || 0,
         local: document.getElementById('iLocal').value.trim(),
         obs:   document.getElementById('iObs').value.trim(),
@@ -714,7 +842,9 @@
       document.getElementById('iAmbiente').value  = i.ambiente || 'Almoxarifado';
       document.getElementById('iCategoria').value = i.categoria;
       document.getElementById('iUnidade').value   = i.unidade;
-      document.getElementById('iQtd').value       = i.qtd;
+      const q = document.getElementById('iQtd');
+      q.value = i.qtd; q.readOnly = true; q.style.background = '#f3f4f6';
+      q.title = 'A quantidade só muda por Movimentar (com aprovação do Chefe de Socorro).';
       document.getElementById('iMin').value       = i.min;
       document.getElementById('iLocal').value     = i.local || '';
       document.getElementById('iObs').value       = i.obs || '';
@@ -741,34 +871,42 @@
       document.getElementById('mQtd').value='';
       document.getElementById('mResp').value='';
       document.getElementById('mObs').value='';
+      document.getElementById('mChefe').innerHTML = optsOficiais('');
       BBM.openModal('modalMovimento');
     }
 
+    // Movimentação vira uma SOLICITAÇÃO pendente de aprovação do Chefe de Socorro.
     async function salvarMovimento() {
       const itemId = document.getElementById('mItem').value;
       const qtd    = Number(document.getElementById('mQtd').value);
       const tipo   = document.getElementById('mTipo').value;
+      const obs    = document.getElementById('mObs').value.trim();
+      const chefeId= document.getElementById('mChefe').value;
       if (!itemId || qtd <= 0) { BBM.toast('Selecione o item e informe a quantidade.','error'); return; }
       const item = itens.find(i=>i.id===itemId);
       if (!item) return;
       if (tipo==='Saída' && qtd > item.qtd) { BBM.toast('Quantidade insuficiente em estoque.','error'); return; }
-      item.qtd += tipo==='Entrada' ? qtd : -qtd;
-      carimbar(item);
-      const mov = {
-        id: BBM.generateId(),
-        data: new Date().toLocaleString('pt-BR'),
-        itemNome: item.nome, itemId, ambiente: item.ambiente,
-        tipo, qtd,
-        resp: document.getElementById('mResp').value.trim(),
-        obs:  document.getElementById('mObs').value.trim(),
+      if (!obs) { BBM.toast('Descreva o motivo/observação da alteração.','error'); return; }
+      if (!chefeId) { BBM.toast('Selecione o Chefe de Socorro para aprovar.','error'); return; }
+      const u = euC(); const of = oficiais.find(o=>o.id===chefeId);
+      const pend = {
+        id: BBM.generateId(), tipo:'movimento', movTipo:tipo,
+        itemId, itemNome:item.nome, ambiente:item.ambiente, unidade:item.unidade,
+        qtd, qtdDe:item.qtd, qtdPara: tipo==='Entrada' ? item.qtd+qtd : item.qtd-qtd,
+        resp: document.getElementById('mResp').value.trim(), obs,
+        chefeId, chefeNome: of?of.nome:'', chefeLogin: of?of.login:'',
+        solicitadoPor: u?.nome||'', solicitadoPorId: u?.id||'', solicitadoEm: new Date().toISOString(),
+        status:'pendente',
       };
-      movimentos = [...movimentos, mov];
+      pendencias = [pend, ...pendencias];
       BBM.closeModal('modalMovimento');
-      renderAmbientes(); renderItens(); atualizarCards();
-      // grava as duas coleções; só confirma se ambas subirem
-      const okItens = await salvar(KEY_I, itens);
-      const okMov   = await salvar(KEY_M, movimentos, { sucesso: okItens ? 'Movimentação registrada.' : null });
-      if (okItens && okMov && document.getElementById('tabMovimentos').style.display!=='none') renderMovimentos();
+      atualizarBadgePend();
+      const ok = await salvar(KEY_PEND, pendencias, { sucesso:'Solicitação enviada ao Chefe de Socorro para aprovação.' });
+      if (ok && pend.chefeLogin) BBM.notificar({ login:pend.chefeLogin }, {
+        title:'Alteração de estoque para aprovar',
+        body:`${pend.movTipo} de ${pend.qtd} ${pend.unidade} — ${pend.itemNome}. Aprove no Patrimônio.`,
+        url:'modulos/almoxarifado/index.html', tag:'pend-'+pend.id });
+      if (document.getElementById('tabAutorizacoes').style.display!=='none') renderAutorizacoes();
     }
 
     // ── Conferência de estoque (compartilhada) ────────────────────
@@ -820,18 +958,22 @@
       const info = document.getElementById('confInfo');
       const lista = document.getElementById('confLista');
       const pw = document.getElementById('confProgressWrap');
+      const btnFin = document.getElementById('btnFinalizarConfTab');
       if (!conferencia.inicio) {
         info.innerHTML = 'Nenhuma conferência em andamento. Toque em <b>Iniciar nova conferência</b> para começar a contagem compartilhada.';
         pw.style.display = 'none';
+        if (btnFin) btnFin.style.display = 'none';
         lista.innerHTML = '<div class="empty-state"><p>Sem conferência ativa.</p></div>';
         return;
       }
+      if (btnFin) btnFin.style.display = '';
       const escopo = itens.filter(noEscopo);
       const total = escopo.length;
       const feitos = escopo.filter(conferido).length;
+      const nAlt = (conferencia.alteracoes || []).length;
       const ambTxt = (conferencia.ambientes && conferencia.ambientes.length)
         ? `<b>${conferencia.ambientes.join(', ')}</b>` : '<b>todo o estoque</b>';
-      info.innerHTML = `Conferindo ${ambTxt} — iniciada por <b>${conferencia.por||'—'}</b> em <b>${fmtQuando(conferencia.inicio)}</b>. Atualiza sozinho a cada 20s.`;
+      info.innerHTML = `Conferindo ${ambTxt} — iniciada por <b>${conferencia.por||'—'}</b> em <b>${fmtQuando(conferencia.inicio)}</b>. ${nAlt?`<b style="color:#b45309">${nAlt} item(ns) com alteração</b>. `:''}Atualiza sozinho a cada 20s.`;
       pw.style.display = 'flex';
       document.getElementById('confProgressFill').style.width = (total?Math.round(feitos/total*100):0) + '%';
       document.getElementById('confProgressTxt').textContent = `${feitos}/${total} conferidos`;
@@ -855,16 +997,25 @@
       lista.innerHTML = html;
     }
 
+    let _cfRegistrado = 0; // quantidade que constava antes da contagem (para detectar divergência)
     function abrirContagem(id) {
       const i = itens.find(x=>x.id===id); if(!i) return;
+      _cfRegistrado = i.qtd;
       document.getElementById('cfId').value = i.id;
       document.getElementById('cfNome').textContent = i.nome;
       document.getElementById('cfRegistrado').textContent = `Registrado: ${i.qtd} ${i.unidade} — ${i.categoria}`;
       document.getElementById('cfQtd').value = i.qtd;
+      document.getElementById('cfMotivo').value = '';
       const selAmb = document.getElementById('cfAmbiente');
       selAmb.innerHTML = AMBIENTES.map(a=>`<option${a===i.ambiente?' selected':''}>${a}</option>`).join('');
+      cfToggleMotivo();
       BBM.openModal('modalContagem');
       setTimeout(()=>{ const el=document.getElementById('cfQtd'); el.focus(); el.select(); }, 200);
+    }
+    // mostra o campo de motivo quando a contagem diverge do registrado
+    function cfToggleMotivo() {
+      const v = Number(document.getElementById('cfQtd').value);
+      document.getElementById('cfMotivoWrap').style.display = (v !== _cfRegistrado) ? 'block' : 'none';
     }
 
     async function confirmarContagem() {
@@ -872,14 +1023,24 @@
       const i = itens.find(x=>x.id===id); if(!i) return;
       const v = Number(document.getElementById('cfQtd').value);
       if (!(v>=0)) { BBM.toast('Informe a quantidade contada.','error'); return; }
+      const de = _cfRegistrado;
+      const divergiu = v !== de;
+      const motivo = document.getElementById('cfMotivo').value.trim();
+      if (divergiu && !motivo) { BBM.toast('A quantidade diverge do registrado — informe o motivo.','error'); return; }
       const novoAmb = document.getElementById('cfAmbiente').value;
       const trocou = novoAmb && novoAmb !== i.ambiente;
       i.qtd = v;
       if (trocou) i.ambiente = novoAmb;
       carimbar(i);
+      // registra a alteração no relatório da conferência (só quando diverge)
+      if (divergiu) {
+        conferencia.alteracoes = (conferencia.alteracoes || []).filter(a => a.itemId !== i.id);
+        conferencia.alteracoes.push({ itemId:i.id, nome:i.nome, ambiente:i.ambiente, unidade:i.unidade, de, para:v, motivo, por:(euC()?.nome)||'—', em:new Date().toISOString() });
+      }
       BBM.closeModal('modalContagem');
       renderConferencia(); renderAmbientes(); atualizarCards();
-      await salvar(KEY_I, itens, { sucesso: trocou ? `Contagem registrada e item movido para ${novoAmb}.` : 'Contagem registrada.' });
+      const okI = await salvar(KEY_I, itens);
+      await salvar(KEY_C, [conferencia], { sucesso: okI ? (trocou ? `Contagem registrada e item movido para ${novoAmb}.` : 'Contagem registrada.') : null });
     }
 
     let _atualizando = false;
@@ -901,6 +1062,210 @@
       _pollId = setInterval(() => { if (document.visibilityState==='visible') atualizarConferencia(true); }, 20000);
     }
     function pararPolling() { if (_pollId) { clearInterval(_pollId); _pollId = null; } }
+
+    // ═══════════════ FINALIZAR CONFERÊNCIA (praça assina) ═══════════════
+    function abrirFinalizarConf() {
+      if (!conferencia.inicio) { BBM.toast('Nenhuma conferência em andamento.','error'); return; }
+      const n = (conferencia.alteracoes || []).length;
+      document.getElementById('fcResumo').innerHTML = n
+        ? `Serão enviados <b>${n} item(ns)</b> com alteração de quantidade e o motivo ao Chefe de Socorro indicado.`
+        : 'Nenhum item teve alteração de quantidade nesta conferência. O relatório indicará que o estoque conferiu.';
+      document.getElementById('fcChefe').innerHTML = optsOficiais('');
+      document.getElementById('fcSenha').value = '';
+      document.getElementById('fcErro').style.display = 'none';
+      BBM.openModal('modalFinalizarConf');
+      setTimeout(()=>document.getElementById('fcSenha').focus(), 200);
+    }
+    function proximoNumeroRel(){ const ano=new Date().getFullYear(); const n=confRelatorios.filter(r=>String(r.numero||'').endsWith('/'+ano)).length+1; return String(n).padStart(3,'0')+'/'+ano; }
+    async function confirmarFinalizarConf() {
+      const err = document.getElementById('fcErro');
+      const chefeId = document.getElementById('fcChefe').value;
+      const senha = document.getElementById('fcSenha').value;
+      if (!chefeId) { err.textContent='Selecione o Chefe de Socorro.'; err.style.display='block'; return; }
+      if (!senha) { err.textContent='Informe sua senha para assinar.'; err.style.display='block'; return; }
+      const btn = document.getElementById('btnFinalizarConf'); btn.disabled=true; btn.textContent='Verificando…';
+      const ok = await conferirSenhaCt(senha);
+      if (!ok) { btn.disabled=false; btn.textContent='Assinar e enviar ao Chefe'; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
+      const u = euC(); const of = oficiais.find(o=>o.id===chefeId);
+      const agora = new Date().toISOString();
+      const rel = {
+        id: BBM.generateId(), numero: proximoNumeroRel(),
+        por: u?.nome||'', porPosto: u?.posto||'', porId: u?.id||'', em: agora,
+        inicio: conferencia.inicio, ambientes: conferencia.ambientes || [],
+        alteracoes: (conferencia.alteracoes || []).slice(),
+        chefeId, chefeNome: of?of.nome:'', chefeLogin: of?of.login:'',
+        assPraca: { nome:u?.nome||'', em:agora }, assChefe: null,
+      };
+      confRelatorios = [rel, ...confRelatorios];
+      // encerra a conferência
+      conferencia = { id:'atual', inicio:null, por:'', em:null, ambientes:[], alteracoes:[] };
+      BBM.closeModal('modalFinalizarConf');
+      btn.disabled=false; btn.textContent='Assinar e enviar ao Chefe';
+      const okR = await salvar(KEY_REL, confRelatorios);
+      await salvar(KEY_C, [conferencia], { sucesso: okR ? 'Conferência assinada e enviada ao Chefe de Socorro.' : null });
+      if (okR && rel.chefeLogin) BBM.notificar({ login:rel.chefeLogin }, {
+        title:'Relatório de conferência para ciência',
+        body:`${rel.por} finalizou uma conferência com ${rel.alteracoes.length} alteração(ões). Veja no Patrimônio.`,
+        url:'modulos/almoxarifado/index.html', tag:'rel-'+rel.id });
+      renderConferencia();
+      const tabBtn = [...document.querySelectorAll('.tab-btn')].find(b=>/Relatórios/.test(b.textContent));
+      if (tabBtn) showTab('tabRelatorios', tabBtn);
+    }
+
+    // ═══════════════ AUTORIZAÇÕES (aprovação do Chefe) ═══════════════
+    function descrPend(p){
+      if (p.tipo==='movimento') return `${p.movTipo} de <b>${p.qtd} ${escC(p.unidade)}</b> — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
+      return `Ajuste — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
+    }
+    function pzBadge(s){ const t={pendente:'Pendente',aprovado:'Aprovado',recusado:'Recusado'}; return `<span class="pz-st ${s}">${t[s]||s}</span>`; }
+    function renderAutorizacoes(){
+      const u = euC();
+      const el = document.getElementById('autorizacoesLista');
+      if (!pendencias.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma solicitação de alteração de estoque.</p></div>'; return; }
+      const ordem = { pendente:0, recusado:1, aprovado:2 };
+      el.innerHTML = [...pendencias]
+        .sort((a,b)=> (ordem[a.status]-ordem[b.status]) || (b.solicitadoEm||'').localeCompare(a.solicitadoEm||''))
+        .map(p=>{
+          const souChefe = p.status==='pendente' && (u && (u.id===p.chefeId || ehMesmaC(u.nome, p.chefeNome)));
+          const souSolic = p.status==='pendente' && (u && (u.id===p.solicitadoPorId));
+          let acoes = '';
+          if (souChefe) acoes = `<button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirAprovarPend('${p.id}')">✍ Aprovar</button>`
+                              + `<button class="btn btn-ghost" style="font-size:.76rem;padding:5px 11px;color:#dc2626;border-color:#fca5a5" onclick="abrirRecusarPend('${p.id}')">Recusar</button>`;
+          else if (souSolic) acoes = `<button class="btn btn-ghost" style="font-size:.76rem;padding:5px 11px" onclick="cancelarPend('${p.id}')">Cancelar</button>`;
+          const nota = p.status==='recusado' && p.motivoRecusa ? `<div class="pz-meta" style="color:#b91c1c">↩ Recusada: ${escC(p.motivoRecusa)}</div>` : '';
+          return `<div class="pz-item${p.status==='pendente'?' pendente':''}">
+            <div style="min-width:0">
+              <div class="pz-tit">${descrPend(p)} ${pzBadge(p.status)}</div>
+              <div class="pz-meta">Motivo: ${escC(p.obs)||'—'} · solicitado por ${escC(p.solicitadoPor)||'—'} · Chefe: ${escC(p.chefeNome)||'—'} · ${fmtQuando(p.solicitadoEm)}</div>
+              ${nota}
+            </div>
+            <div class="pz-acoes">${acoes}</div>
+          </div>`;
+        }).join('');
+    }
+    function abrirAprovarPend(id){
+      const p = pendencias.find(x=>x.id===id); if(!p) return;
+      document.getElementById('apId').value=id; document.getElementById('apAcao').value='aprovar';
+      document.getElementById('apTitulo').textContent='Aprovar alteração';
+      document.getElementById('apResumo').innerHTML = `${descrPend(p)}<br>Ao aprovar, o estoque é atualizado e o movimento é registrado.`;
+      document.getElementById('apMotivoWrap').style.display='none';
+      document.getElementById('apSenha').value=''; document.getElementById('apErro').style.display='none';
+      document.getElementById('apBtn').textContent='Aprovar';
+      BBM.openModal('modalAprovar'); setTimeout(()=>document.getElementById('apSenha').focus(),200);
+    }
+    function abrirRecusarPend(id){
+      const p = pendencias.find(x=>x.id===id); if(!p) return;
+      document.getElementById('apId').value=id; document.getElementById('apAcao').value='recusar';
+      document.getElementById('apTitulo').textContent='Recusar alteração';
+      document.getElementById('apResumo').innerHTML = descrPend(p);
+      document.getElementById('apMotivoWrap').style.display=''; document.getElementById('apMotivo').value='';
+      document.getElementById('apSenha').value=''; document.getElementById('apErro').style.display='none';
+      document.getElementById('apBtn').textContent='Recusar';
+      BBM.openModal('modalAprovar'); setTimeout(()=>document.getElementById('apMotivo').focus(),200);
+    }
+    async function confirmarAprovacao(){
+      const id = document.getElementById('apId').value, acao = document.getElementById('apAcao').value;
+      const err = document.getElementById('apErro');
+      const p = pendencias.find(x=>x.id===id); if(!p) return;
+      const u = euC();
+      if (!(u && (u.id===p.chefeId || ehMesmaC(u.nome, p.chefeNome)))) { err.textContent='Apenas o Chefe de Socorro indicado pode autorizar.'; err.style.display='block'; return; }
+      let motivo = '';
+      if (acao==='recusar') { motivo = document.getElementById('apMotivo').value.trim(); if(!motivo){ err.textContent='Descreva o motivo da recusa.'; err.style.display='block'; return; } }
+      const senha = document.getElementById('apSenha').value;
+      if (!senha) { err.textContent='Informe sua senha.'; err.style.display='block'; return; }
+      const btn = document.getElementById('apBtn'); const rot=btn.textContent; btn.disabled=true; btn.textContent='Verificando…';
+      const ok = await conferirSenhaCt(senha);
+      if (!ok) { btn.disabled=false; btn.textContent=rot; err.textContent='Senha incorreta.'; err.style.display='block'; return; }
+      const agora = new Date().toISOString();
+      if (acao==='recusar') {
+        p.status='recusado'; p.motivoRecusa=motivo; p.decididoPor=u.nome; p.decididoEm=agora;
+      } else {
+        const item = itens.find(i=>i.id===p.itemId);
+        if (!item) { btn.disabled=false; btn.textContent=rot; err.textContent='Item não encontrado (pode ter sido excluído).'; err.style.display='block'; return; }
+        if (p.movTipo==='Saída' && p.qtd > item.qtd) { btn.disabled=false; btn.textContent=rot; err.textContent='Estoque insuficiente agora ('+item.qtd+'). Recuse ou ajuste.'; err.style.display='block'; return; }
+        item.qtd += p.movTipo==='Entrada' ? p.qtd : -p.qtd;
+        carimbar(item);
+        movimentos = [...movimentos, {
+          id: BBM.generateId(), data: new Date().toLocaleString('pt-BR'),
+          itemNome:item.nome, itemId:item.id, ambiente:item.ambiente,
+          tipo:p.movTipo, qtd:p.qtd, resp:p.resp||p.solicitadoPor,
+          obs:`${p.obs} — autorizado por ${u.nome}`,
+        }];
+        p.status='aprovado'; p.decididoPor=u.nome; p.decididoEm=agora;
+      }
+      BBM.closeModal('modalAprovar'); btn.disabled=false; btn.textContent=rot;
+      atualizarBadgePend();
+      const okI = acao==='aprovar' ? await salvar(KEY_I, itens) : true;
+      if (acao==='aprovar') await salvar(KEY_M, movimentos);
+      const okP = await salvar(KEY_PEND, pendencias, { sucesso: acao==='aprovar' ? 'Alteração aprovada e estoque atualizado.' : 'Solicitação recusada.' });
+      renderAmbientes(); renderItens(); atualizarCards(); renderAutorizacoes();
+      if (okP && p.solicitadoPorId) BBM.notificar({ id:p.solicitadoPorId }, {
+        title: acao==='aprovar' ? 'Alteração de estoque aprovada' : 'Alteração de estoque recusada',
+        body: `${p.movTipo} de ${p.qtd} ${p.unidade} — ${p.itemNome}${acao==='recusar'?': '+motivo:''}.`,
+        url:'modulos/almoxarifado/index.html', tag:'penddec-'+p.id });
+    }
+    async function cancelarPend(id){
+      const p = pendencias.find(x=>x.id===id); if(!p) return;
+      if (!confirm('Cancelar esta solicitação?')) return;
+      pendencias = pendencias.filter(x=>x.id!==id);
+      atualizarBadgePend();
+      await salvar(KEY_PEND, pendencias, { sucesso:'Solicitação cancelada.' });
+      renderAutorizacoes();
+    }
+
+    // ═══════════════ RELATÓRIOS DE CONFERÊNCIA ═══════════════
+    function renderRelatorios(){
+      const u = euC();
+      const el = document.getElementById('relatoriosLista');
+      if (!confRelatorios.length) { el.innerHTML='<div class="empty-state"><p>Nenhum relatório de conferência.</p></div>'; return; }
+      el.innerHTML = [...confRelatorios].sort((a,b)=>(b.em||'').localeCompare(a.em||'')).map(r=>{
+        const souChefe = !r.assChefe && u && (u.id===r.chefeId || ehMesmaC(u.nome, r.chefeNome));
+        const st = r.assChefe ? '<span class="st assinado">Ciente</span>' : '<span class="st aguardando_chefe">Aguardando ciência</span>';
+        let acoes = `<button class="btn btn-ghost" style="font-size:.76rem;padding:5px 11px" onclick="verRelatorio('${r.id}')">🖨️ Ver / Imprimir</button>`;
+        if (souChefe) acoes = `<button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="darCienciaRelatorio('${r.id}')">✍ Dar ciência</button>` + acoes;
+        return `<div class="hist-item${souChefe?' urgente':''}">
+          <div>
+            <div class="hist-data">Relatório ${escC(r.numero||'—')} ${st}</div>
+            <div class="hist-meta">${(r.alteracoes||[]).length} item(ns) alterado(s) · por ${escC(r.por)||'—'} · Chefe: ${escC(r.chefeNome)||'—'} · ${fmtQuando(r.em)}</div>
+          </div>
+          <div class="hist-acoes">${acoes}</div>
+        </div>`;
+      }).join('');
+    }
+    async function darCienciaRelatorio(id){
+      const r = confRelatorios.find(x=>x.id===id); if(!r) return;
+      const senha = prompt('Digite sua senha para dar ciência no relatório '+(r.numero||'')+':');
+      if (senha===null) return;
+      const u = euC();
+      if (!(u && (u.id===r.chefeId || ehMesmaC(u.nome, r.chefeNome)))) { BBM.toast('Apenas o Chefe de Socorro indicado pode dar ciência.','error'); return; }
+      if (!senha) { BBM.toast('Senha não informada.','error'); return; }
+      const ok = await conferirSenhaCt(senha);
+      if (!ok) { BBM.toast('Senha incorreta.','error'); return; }
+      r.assChefe = { nome:u.nome, em:new Date().toISOString() };
+      const okR = await salvar(KEY_REL, confRelatorios, { sucesso:'Ciência registrada.' });
+      if (okR && r.porId) BBM.notificar({ id:r.porId }, { title:'Chefe deu ciência', body:`O Chefe de Socorro deu ciência no relatório ${r.numero}.`, url:'modulos/almoxarifado/index.html', tag:'relok-'+r.id });
+      renderRelatorios();
+    }
+    function docRelatorio(r){
+      const ambTxt = (r.ambientes && r.ambientes.length) ? r.ambientes.join(', ') : 'todo o estoque';
+      const linhas = (r.alteracoes||[]).length
+        ? r.alteracoes.map((a,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${escC(a.nome)}</td><td style="text-align:center">${escC(a.ambiente||'')}</td><td style="text-align:center">${a.de}</td><td style="text-align:center">${a.para}</td><td>${escC(a.motivo||'')}</td></tr>`).join('')
+        : '<tr><td colspan="6" style="text-align:center">Nenhuma alteração — o estoque conferido estava de acordo com o registrado.</td></tr>';
+      const assLinha=(nome,papel,ass)=>`<div class="assin-linha"><div class="ln">${escC(nome)||'&nbsp;'}<br>${papel}${ass?`<div class="st2">✓ ${ass.nome===nome?'Assinado':'Ciente'} em ${new Date(ass.em).toLocaleString('pt-BR')}</div>`:''}</div></div>`;
+      return cabecalhoCt()
+        + `<div class="doc-titulo">Relatório de Conferência de Estoque</div>`
+        + `<div style="text-align:center;font-size:10pt;margin:-2px 0 10px">Nº ${escC(r.numero||'—')}</div>`
+        + `<p>Relatório da conferência de estoque (${escC(ambTxt)}), realizada e assinada por <span class="b">${escC(r.por)||'—'}</span> em <span class="b">${fmtQuando(r.em)}</span>, encaminhado ao Chefe de Socorro <span class="b">${escC(r.chefeNome)||'—'}</span>. Constam abaixo apenas os itens que tiveram alteração de quantidade, com o respectivo motivo.</p>`
+        + `<table class="ct-tab"><thead><tr><th style="width:6%">#</th><th>Item</th><th style="width:16%">Ambiente</th><th style="width:10%">Registrado</th><th style="width:10%">Contado</th><th style="width:28%">Motivo</th></tr></thead><tbody>${linhas}</tbody></table>`
+        + `<div class="assinaturas">`
+        + assLinha(r.assPraca?r.assPraca.nome:r.por, 'MILITAR QUE CONFERIU — 15º BBM', r.assPraca)
+        + assLinha(r.chefeNome, 'CHEFE DE SOCORRO DA 15º BBM', r.assChefe)
+        + `</div>`;
+    }
+    let _relAtual = null;
+    function verRelatorio(id){ const r=confRelatorios.find(x=>x.id===id); if(!r) return; _relAtual=r; document.getElementById('relatorioView').innerHTML='<div class="doc">'+docRelatorio(r)+'</div>'; document.getElementById('relatorioOverlay').classList.add('open'); }
+    function fecharRelatorio(){ document.getElementById('relatorioOverlay').classList.remove('open'); }
+    function imprimirRelatorio(){ const f=document.getElementById('folhaContagem'); if(f) f.innerHTML=''; window.print(); }
 
     // ── Folha de contagem para impressão ──────────────────────────
     function imprimirContagem() {
