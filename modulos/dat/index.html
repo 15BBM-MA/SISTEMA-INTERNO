@@ -578,7 +578,8 @@
     .chips { display:flex;flex-wrap:wrap;gap:10px 18px; }
     .chips label { display:flex;align-items:center;gap:7px;font-size:.85rem;color:var(--text);cursor:pointer; }
     .fc-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap; }
-    @media(max-width:768px){ .grid2{grid-template-columns:1fr} .fc-actions .btn{flex:1;justify-content:center} }
+    @media(max-width:768px){ .grid2{grid-template-columns:1fr} .grid2 > *{grid-column:auto !important} .fc-actions .btn{flex:1;justify-content:center} }
+    .form-control{max-width:100%;box-sizing:border-box}
 
     /* Fiscalização / multas */
     .fis-grupo { border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden; }
