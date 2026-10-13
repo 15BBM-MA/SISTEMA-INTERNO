@@ -1406,7 +1406,7 @@
       else d = d.replace(/(\d{2})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1/$2').replace(/(\d{4})(\d{1,2})$/,'$1-$2');
       el.value = d;
     }
-    function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); }
+    function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); if(el.value.length===2){ const f=document.getElementById('fis_fone'); if(f) f.focus(); } }
     function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
     function telFmt(ddd, fone){ ddd=(ddd||'').replace(/\D/g,''); fone=(fone||'').trim(); if(!ddd && !fone) return ''; return (ddd?'('+ddd+') ':'')+fone; }
 
