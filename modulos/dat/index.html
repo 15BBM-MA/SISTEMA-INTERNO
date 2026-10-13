@@ -255,7 +255,7 @@
                 <input class="form-control" id="fis_fone" inputmode="numeric" placeholder="00000-0000" oninput="mascaraFone(this)" style="flex:1"/>
               </div>
             </div>
-            <div class="form-group"><label class="form-label">ATEd</label><input class="form-control" id="fis_ated" placeholder="(opcional)"/></div>
+            <div class="form-group"><label class="form-label">ATEd — Área Total da Edificação (m²)</label><input class="form-control" id="fis_ated" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 200" oninput="atedParaArea()"/></div>
           </div>
 
           <!-- GPS em destaque (preenche o endereço) -->
@@ -351,8 +351,8 @@
               <div class="form-group"><label class="form-label">VBBM (R$)</label><input class="form-control" id="fis_vbbm" type="number" step="0.01" onchange="salvarVbbmFis()"/>
                 <div id="fis_vbbm_nota" style="display:none;font-size:.74rem;color:var(--text-light);margin-top:4px">Valor fixo — somente o administrador pode alterar.</div>
               </div>
-              <div class="form-group"><label class="form-label">Área total da edificação (m²)</label>
-                <input class="form-control" id="fis_area" type="number" min="0" oninput="calcMulta()"/>
+              <div class="form-group"><label class="form-label">Área total da edificação (m²) — do campo ATEd</label>
+                <input class="form-control" id="fis_area" type="number" min="0" readonly style="background:#f3f4f6" title="Vem automaticamente do campo ATEd (Área Total da Edificação)."/>
                 <div id="fis_kinfo" style="font-size:.74rem;color:var(--text-light);margin-top:4px"></div>
               </div>
             </div>
@@ -1491,6 +1491,8 @@
     function mascaraDDD(el){ el.value=el.value.replace(/\D/g,'').slice(0,2); if(el.value.length===2){ const f=document.getElementById('fis_fone'); if(f) f.focus(); } }
     function mascaraFone(el){ let d=el.value.replace(/\D/g,'').slice(0,9); if(d.length>4) d=d.slice(0,d.length-4)+'-'+d.slice(d.length-4); el.value=d; }
     function telFmt(ddd, fone){ ddd=(ddd||'').replace(/\D/g,''); fone=(fone||'').trim(); if(!ddd && !fone) return ''; return (ddd?'('+ddd+') ':'')+fone; }
+    // ATEd (Área Total da Edificação) alimenta automaticamente a área da multa
+    function atedParaArea(){ const a=num('fis_ated'); const el=document.getElementById('fis_area'); if(el) el.value = a>0 ? a : ''; if(typeof calcMulta==='function') calcMulta(); }
 
     // ── Localização por GPS (sob demanda) ─────────────────────────
     let _gps = null;
