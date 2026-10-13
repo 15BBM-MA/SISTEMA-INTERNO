@@ -292,7 +292,12 @@
                 <option>Urbano Santos - MA</option>
               </select>
             </div>
-            <div class="form-group"><label class="form-label">Classificação da Edificação</label><input class="form-control" id="fis_classif" placeholder="Ex.: Comercial (C-1)"/></div>
+            <div class="form-group" style="grid-column:span 2"><label class="form-label">Atividade desenvolvida (NT 14)</label>
+              <input class="form-control" id="fis_atividade" list="nt14List" placeholder="Digite e pesquise (ex.: padaria, igreja, oficina…)" oninput="aplicarAtividade()"/>
+              <datalist id="nt14List"></datalist>
+              <div id="fis_atividadeInfo" style="font-size:.74rem;color:var(--text-light);margin-top:4px">Selecione a atividade para puxar a classificação e o fator de risco.</div>
+            </div>
+            <div class="form-group"><label class="form-label">Classificação da Edificação</label><input class="form-control" id="fis_classif" placeholder="Ex.: C-1 — Comercial"/></div>
             <div class="form-group"><label class="form-label">Fator de Risco (R)</label>
               <select class="form-control" id="fis_r" onchange="calcMulta()">
                 <option value="1.0">Baixo — até 300 MJ/m² (R = 1,0)</option>
@@ -1283,6 +1288,7 @@
       }).join('');
       fiscalizaRenderizado = true;
       renderSistemas();
+      initAtividades();
       const fis = document.getElementById('fis_vbbm'); if(fis && !fis.value) fis.value = VBBM;
       const dnum = document.getElementById('fis_num'); if(dnum && !dnum.value) dnum.value = proximoNumeroMulta();
       const ddata = document.getElementById('fis_data'); if(ddata && !ddata.value) ddata.value = hoje();
@@ -1363,7 +1369,7 @@
 
     function limparFiscaliza(){
       // texto/selects/checkboxes do formulário
-      ['fis_req','fis_ca','fis_cap','fis_razao','fis_cpf','fis_ddd','fis_fone','fis_ated','fis_log','fis_numend','fis_bairro','fis_classif','fis_sistOutros','fis_artigos','fis_exig','fis_area','fis_busca']
+      ['fis_req','fis_ca','fis_cap','fis_razao','fis_cpf','fis_ddd','fis_fone','fis_ated','fis_log','fis_numend','fis_bairro','fis_atividade','fis_classif','fis_sistOutros','fis_artigos','fis_exig','fis_area','fis_busca']
         .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
       document.getElementById('fis_r').value='1.0';
       document.getElementById('fis_mun').value='Chapadinha - MA';
@@ -1373,6 +1379,8 @@
       document.getElementById('fis_acaoMulta').checked = false;
       document.getElementById('fis_acaoInterd').checked = false;
       _gps = null; atualizarGpsInfo();
+      _atividadeSel = null;
+      const ai = document.getElementById('fis_atividadeInfo'); if(ai) ai.textContent='Selecione a atividade para puxar a classificação e o fator de risco.';
       toggleAcoes(); toggleSistOutros(); filtrarInfracoes(); calcMulta();
     }
 
@@ -1476,6 +1484,58 @@
     }
 
     const SEFAZ_DARE = 'https://sistemas1.sefaz.ma.gov.br/dare/';   // portal SEFAZ-MA p/ emissão do DARE (boleto da multa)
+
+    // ── NT 14 — Carga de Incêndio: atividade → divisão + carga (MJ/m²) ──
+    // Subconjunto das ocupações mais comuns (valores de referência da NT 14/2021).
+    const NT14_DIV = { A:'Residencial', B:'Serviço de hospedagem', C:'Comercial', D:'Serviço profissional', E:'Educacional e cultura física', F:'Local de reunião de público', G:'Serviço automotivo / garagem', H:'Serviço de saúde e institucional', I:'Industrial', J:'Depósito', L:'Explosivos', M:'Especial' };
+    const NT14 = [
+      // Residencial (A)
+      ['Residência / casa (habitação unifamiliar)','A-1',300],['Apartamento / condomínio residencial','A-2',300],['Pensionato / república / casa de cômodos','A-3',300],
+      // Hospedagem (B)
+      ['Hotel','B-1',500],['Motel','B-1',500],['Pousada','B-1',500],['Apart-hotel / flat','B-2',500],['Albergue / alojamento','B-1',300],
+      // Comercial (C)
+      ['Loja / comércio varejista em geral','C-1',300],['Mercearia / minimercado','C-1',300],['Loja de conveniência','C-1',300],['Açougue','C-1',200],['Loja de autopeças','C-1',300],['Ótica / joalheria','C-1',300],
+      ['Supermercado','C-2',400],['Padaria / confeitaria','C-2',300],['Farmácia / drogaria','C-2',400],['Papelaria','C-2',700],['Armarinho / bazar','C-2',600],['Loja de roupas / confecções','C-2',500],['Loja de calçados','C-2',500],['Loja de móveis','C-2',500],['Loja de eletrodomésticos / eletrônicos','C-2',300],['Loja de informática','C-2',300],['Loja de brinquedos','C-2',400],['Pet shop (comércio)','C-2',400],['Loja de material de construção','C-2',300],
+      ['Madeireira (comércio)','C-3',800],['Loja de tintas e vernizes','C-3',1000],
+      // Serviço profissional (D)
+      ['Escritório (serviços profissionais)','D-1',700],['Consultório / clínica sem internação','D-1',300],['Agência bancária / lotérica','D-1',300],['Cartório','D-1',700],['Repartição pública (atendimento)','D-1',700],['Salão de beleza / barbearia','D-1',300],['Estúdio / laboratório fotográfico','D-1',400],
+      // Educacional e cultura física (E)
+      ['Escola / colégio','E-1',300],['Faculdade / ensino superior','E-1',300],['Creche / pré-escola','E-5',300],['Academia / espaço de ginástica','E-3',300],['Autoescola / centro de treinamento','E-4',300],
+      // Reunião de público (F)
+      ['Igreja / templo religioso','F-2',100],['Museu / galeria / biblioteca','F-1',300],['Ginásio / quadra / estádio','F-3',200],['Cinema / teatro / auditório','F-5',600],['Clube social / recreativo','F-6',300],['Boate / casa de shows','F-6',300],['Velório / funerária','F-7',100],['Restaurante / pizzaria','F-8',300],['Lanchonete / sorveteria / casa de sucos','F-8',300],['Bar','F-8',300],['Buffet / casa de festas','F-8',300],['Praça de alimentação','F-11',300],
+      // Serviço automotivo / garagem (G)
+      ['Garagem / estacionamento (sem abastecimento)','G-1',200],['Estacionamento com abastecimento','G-2',200],['Posto de combustível','G-3',300],['Oficina mecânica / funilaria','G-4',300],['Lava-jato','G-4',300],
+      // Saúde (H)
+      ['Hospital (com internação)','H-3',300],['Clínica / pronto-atendimento','H-6',300],['Asilo / casa de repouso','H-2',350],['Laboratório de análises','H-3',300],
+      // Industrial (I)
+      ['Marcenaria / fábrica de móveis de madeira','I-2',1000],['Serralheria / metalúrgica','I-1',300],['Gráfica','I-2',600],['Panificadora industrial / fábrica de alimentos','I-1',300],['Confecção / indústria têxtil','I-2',600],['Fábrica de plásticos','I-2',1000],['Fábrica de colchões / espuma','I-2',1000],
+      // Depósito (J)
+      ['Depósito de material de construção','J-2',300],['Depósito geral (mercadorias diversas)','J-2',400],['Depósito de papel / papelão','J-3',700],['Depósito de madeira','J-4',1000],['Depósito de bebidas','J-2',300],
+      // Especial (M)
+      ['Revenda / depósito de GLP (gás)','M-2',2000],['Depósito de líquidos inflamáveis','M-2',2000],
+    ];
+    function rDaCarga(c){ return c<=300 ? 1.0 : (c<=1200 ? 1.1 : 1.2); }
+    let _atividadesPopuladas = false;
+    function initAtividades(){
+      if(_atividadesPopuladas) return;
+      const dl = document.getElementById('nt14List'); if(!dl) return;
+      dl.innerHTML = NT14.map(e=>`<option value="${escFis(e[0])}"></option>`).join('');
+      _atividadesPopuladas = true;
+    }
+    let _atividadeSel = null;
+    function aplicarAtividade(){
+      const val = (document.getElementById('fis_atividade').value||'').trim();
+      const info = document.getElementById('fis_atividadeInfo');
+      const e = NT14.find(x=>x[0]===val) || NT14.find(x=>_normFis(x[0])===_normFis(val));
+      if(!e){ _atividadeSel=null; info.textContent='Selecione a atividade para puxar a classificação e o fator de risco.'; return; }
+      _atividadeSel = { atividade:e[0], divisao:e[1], carga:e[2] };
+      const R = rDaCarga(e[2]);
+      const divNome = NT14_DIV[e[1][0]] || '';
+      document.getElementById('fis_classif').value = `${e[1]} — ${divNome}`;
+      document.getElementById('fis_r').value = R.toFixed(1);
+      info.innerHTML = `NT 14: <b>${e[1]}</b> (${escFis(divNome)}) · carga de incêndio <b>${e[2]} MJ/m²</b> → Fator de Risco <b>R = ${virg(R)}</b>`;
+      calcMulta();
+    }
     const DIAS_EXT = {10:'dez',15:'quinze',20:'vinte',30:'trinta',45:'quarenta e cinco',60:'sessenta',90:'noventa'};
     function addDias(iso, dias){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+(parseInt(dias,10)||0)); return d.toISOString().slice(0,10); }
     // status do prazo em relação a hoje
@@ -1512,6 +1572,7 @@
         req: val('fis_req'), ca: val('fis_ca'), cap: val('fis_cap'),
         razao, cpfCnpj: val('fis_cpf'), ddd: document.getElementById('fis_ddd').value, fone: document.getElementById('fis_fone').value,
         ated: val('fis_ated'), log: val('fis_log'), numEnd: val('fis_numend'), bairro: val('fis_bairro'), mun: val('fis_mun'),
+        atividade: val('fis_atividade'), nt14: _atividadeSel ? { ..._atividadeSel } : null,
         classif: val('fis_classif'), R: parseFloat(document.getElementById('fis_r').value)||1, rTxt: document.getElementById('fis_r').selectedOptions[0].text,
         sistemas, sistOutros: val('fis_sistOutros'),
         acoes, area, K: fatorK(area), vbbm: num('fis_vbbm')||VBBM, infr,
@@ -1609,6 +1670,7 @@
           <tr><td class="lbl2">CPF / CNPJ</td><td>${cel(o.cpfCnpj)}</td><td class="lbl2">Telefone</td><td>${cel(tel)}${o.ated?' &nbsp;·&nbsp; ATEd: '+escFis(o.ated):''}</td></tr>
           <tr><td class="lbl2">Logradouro</td><td colspan="2">${cel(o.log)}</td><td class="lbl2">nº ${cel(o.numEnd)}</td></tr>
           <tr><td class="lbl2">Bairro</td><td>${cel(o.bairro)}</td><td class="lbl2">Cidade</td><td>${cel(o.mun)}</td></tr>
+          ${o.atividade ? `<tr><td class="lbl2">Atividade desenvolvida</td><td colspan="3">${cel(o.atividade)}${o.nt14?` <span style="font-size:8pt">(conforme NT 14 — carga de incêndio ${o.nt14.carga} MJ/m²)</span>`:''}</td></tr>` : ''}
           <tr><td class="lbl2">Classificação da Edificação</td><td colspan="2">${cel(o.classif)}</td><td class="lbl2">Fator de Risco: ${virg(o.R)}</td></tr>
           ${o.gps ? `<tr><td class="lbl2">Localização (GPS)</td><td colspan="3">${o.gps.lat.toFixed(6)}, ${o.gps.lng.toFixed(6)} (±${o.gps.acc} m) — ${mapsUrl(o.gps)}</td></tr>` : ''}
         </table>
