@@ -351,7 +351,7 @@ window.BBM = {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
         const { data: perfil } = await sb.from('perfis').select('*').eq('id', session.user.id).single();
-        this._perfil = perfil || null;
+        this._perfil = this._fmtMilitar(perfil) || null;
       } else {
         this._perfil = null;
       }
@@ -369,6 +369,56 @@ window.BBM = {
   session() { return this._perfil; },
   currentUser() { return this._perfil; },
 
+  // ---------- PADRONIZAÇÃO DE NOME/POSTO ----------
+  // Quadro a partir da categoria: Oficial -> QOCBM; Praça/BC -> QPBM.
+  quadro(categoria) {
+    const c = (categoria || '').toString().toLowerCase();
+    if (c.indexOf('oficial') >= 0) return 'QOCBM';
+    if (c.indexOf('praç') >= 0 || c.indexOf('prac') >= 0 || c.indexOf('bc') >= 0) return 'QPBM';
+    return '';
+  },
+  // Posto padronizado: "GRAU ABREV QUADRO" (ex.: "2º TEN QOCBM"). Idempotente.
+  postoFmt(posto, categoria) {
+    let s = (posto || '').toString().trim();
+    const quad = this.quadro(categoria);
+    if (!s) return quad;
+    // remove quadros e "BM" já existentes (idempotência)
+    s = s.replace(/\bQ[A-Z]{2,}BM\b/gi, '').replace(/\bBM\b/gi, '').replace(/\s+/g, ' ').trim();
+    const grauM = s.match(/\b([123])\s*[ºo°]/i);
+    const grau = grauM ? grauM[1] + 'º' : '';
+    const low = ' ' + s.toLowerCase() + ' ';
+    let base;
+    if (/ten[.\s]*cel|tenente\s+coronel|\btc\b/.test(low)) base = 'TEN CEL';
+    else if (/coronel|\bcel\b/.test(low)) base = 'CEL';
+    else if (/major|\bmaj\b/.test(low)) base = 'MAJ';
+    else if (/capit|\bcap\b/.test(low)) base = 'CAP';
+    else if (/tenente|\bten\b/.test(low)) base = 'TEN';
+    else if (/aspira|\basp\b/.test(low)) base = 'ASP';
+    else if (/cadete|\baluno\b/.test(low)) base = 'CADETE';
+    else if (/subtenente|subten|\bst\b/.test(low)) base = 'SUBTEN';
+    else if (/sargento|\bsgt\b/.test(low)) base = 'SGT';
+    else if (/\bcabo\b|\bcb\b/.test(low)) base = 'CB';
+    else if (/soldado|\bsd\b/.test(low)) base = 'SD';
+    else if (/bombeiro\s+civil|\bbc\b/.test(low)) base = 'BC';
+    else base = s.toUpperCase();
+    return [grau, base, quad].filter(Boolean).join(' ');
+  },
+  // Nome completo padronizado: "2º TEN QOCBM Fulano de Tal".
+  nomeMilitar(p) {
+    if (!p) return '';
+    const pf = this.postoFmt(p.posto, p.categoria);
+    return (pf ? pf + ' ' : '') + (p.nome || '');
+  },
+  // Enriquecer um registro (perfil/militar): padroniza o posto, guarda o original.
+  _fmtMilitar(p) {
+    if (!p || p.__fmt) return p;
+    p.postoRaw = p.posto;
+    p.posto = this.postoFmt(p.posto, p.categoria);
+    p.nomeMilitar = (p.posto ? p.posto + ' ' : '') + (p.nome || '');
+    p.__fmt = true;
+    return p;
+  },
+
   // login por usuário (mapeado para e-mail interno) via Supabase Auth
   async login(login, senha) {
     const sb = await this.sb();
@@ -376,7 +426,7 @@ window.BBM = {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
     if (error) return { error: error.message };
     const { data: perfil } = await sb.from('perfis').select('*').eq('id', data.user.id).single();
-    this._perfil = perfil || null;
+    this._perfil = this._fmtMilitar(perfil) || null;
     return { perfil: this._perfil };
   },
 
@@ -410,7 +460,7 @@ window.BBM = {
       const sb = await this.sb();
       const { data, error } = await sb.rpc('listar_militares');
       if (error) throw error;
-      return data || [];
+      return (data || []).map(m => this._fmtMilitar(m));
     } catch (e) { return []; }
   },
 

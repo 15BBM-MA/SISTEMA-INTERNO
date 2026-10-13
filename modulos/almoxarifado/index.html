@@ -640,7 +640,7 @@
     // opções de Chefe de Socorro (todos os oficiais)
     function optsOficiais(selId){
       return '<option value="">— selecione o Chefe de Socorro —</option>' +
-        oficiais.map(o=>`<option value="${o.id}"${o.id===selId?' selected':''}>${escC((o.posto?o.posto+' ':'')+o.nome)}</option>`).join('');
+        oficiais.map(o=>`<option value="${o.id}"${o.id===selId?' selected':''}>${escC(BBM.nomeMilitar({posto:o.posto,nome:o.nome,categoria:'Oficial'}))}</option>`).join('');
     }
     function atualizarBadgePend(){
       const n = pendencias.filter(p=>p.status==='pendente').length;
@@ -1320,7 +1320,7 @@
     function popularChefeCt(sel){
       const el=document.getElementById('ctChefe');
       el.innerHTML='<option value="">— selecione o Chefe de Socorro —</option>'+
-        oficiais.map(o=>`<option value="${o.id}"${o.id===sel?' selected':''}>${escC((o.posto?o.posto+' ':'')+o.nome)}</option>`).join('');
+        oficiais.map(o=>`<option value="${o.id}"${o.id===sel?' selected':''}>${escC(BBM.nomeMilitar({posto:o.posto,nome:o.nome,categoria:'Oficial'}))}</option>`).join('');
     }
 
     // ── Composição da cautela ─────────────────────────────────────

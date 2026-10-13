@@ -121,14 +121,14 @@
     function oficialPorChave(k){ return oficiais.find(o=>chaveDe(o)===k) || null; }
     // Núcleo do nome (ignora posto/graduação) para recuperar vínculos após promoção.
     function _norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
-    const POSTOS = new Set(['aspirante','asp','tenente','ten','capitao','cap','major','maj','coronel','cel','tc','subtenente','subten','sub','sargento','sgt','cabo','cb','soldado','sd','bombeiro','civil','bc','bm','1','2','3','o','a']);
+    const POSTOS = new Set(['aspirante','asp','tenente','ten','capitao','cap','major','maj','coronel','cel','tc','subtenente','subten','sub','sargento','sgt','cabo','cb','soldado','sd','bombeiro','civil','bc','bm','qocbm','qpbm','qosbm','qoebm','1','2','3','o','a']);
     function nucleoNome(nome){ return _norm(nome).split(' ').filter(t=>t && !POSTOS.has(t)).join(' '); }
     function mesmoNucleo(a,b){ const na=nucleoNome(a), nb=nucleoNome(b); return !!na && na===nb; }
     function oficialPorNome(nome){ return oficiais.find(o=>o.nome===nome) || oficiais.find(o=>mesmoNucleo(o.nome,nome)) || null; }
 
     const HIERARQUIA = ['Major Martins','Capitão Oliveira','Capitão Daniel','1º Ten Araújo','1º Ten Paulo José','Aspirante Felipe Souza'];
     const hierSort = (a,b)=>{ const ia=HIERARQUIA.indexOf(a.nome), ib=HIERARQUIA.indexOf(b.nome); return (ia<0?99:ia)-(ib<0?99:ib); };
-    function nivelClasse(o){ return /Maj/.test(o.posto)?'n1':(/Cap/.test(o.posto)?'n2':(/Ten/.test(o.posto)?'n3':'n4')); }
+    function nivelClasse(o){ return /maj/i.test(o.posto)?'n1':(/cap/i.test(o.posto)?'n2':(/ten/i.test(o.posto)?'n3':'n4')); }
     function cardOficial(o, rotulo){
       if(!o) return '';
       const funcs = FUNCOES.filter(f=>deleg[f]===chaveDe(o));

@@ -102,7 +102,16 @@
         <input type="hidden" id="uId"/>
         <div class="form-group"><label class="form-label">Nome / Identificação *</label><input class="form-control" id="uNome" placeholder="Ex: 3º Sgt Silva"/></div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Posto / Graduação</label><input class="form-control" id="uPosto" placeholder="Ex: 3º Sgt BM"/></div>
+          <div class="form-group"><label class="form-label">Posto / Graduação</label>
+            <select class="form-control" id="uPosto">
+              <option value="">— selecione —</option>
+              <option>Cel</option><option>Ten Cel</option><option>Maj</option><option>Cap</option>
+              <option>1º Ten</option><option>2º Ten</option><option>Asp</option>
+              <option>Subten</option><option>1º Sgt</option><option>2º Sgt</option><option>3º Sgt</option>
+              <option>Cb</option><option>Sd</option><option>BC</option>
+            </select>
+            <div style="font-size:.72rem;color:var(--text-light);margin-top:4px">O quadro (QOCBM/QPBM) é definido pela categoria. Ex.: 2º Ten + Oficial → <b>2º TEN QOCBM</b>.</div>
+          </div>
           <div class="form-group"><label class="form-label">Categoria</label>
             <select class="form-control" id="uCategoria"><option>Oficial</option><option>Praça/BC</option></select>
           </div>
@@ -239,7 +248,7 @@
     function linhaUsuario(u){
       return `<tr>
         <td><strong>${u.nome}</strong>${u.precisa_trocar?' <span class="tag-1acesso" title="Ainda não definiu a senha pessoal (1º acesso)">1º acesso</span>':''}</td>
-        <td>${u.posto||'—'}</td>
+        <td>${BBM.postoFmt(u.posto,u.categoria)||'—'}</td>
         <td><span class="cred">${u.login}</span> <button class="copy-btn" title="Copiar login" onclick="copiar('${u.login}')">⧉</button></td>
         <td><div class="senha-cell"><span class="senha-val" title="As senhas ficam criptografadas no servidor">•••••• 🔒</span>
           <button class="copy-btn" title="Redefinir senha" onclick="redefinir('${u.login}')">⟳</button></div></td>
@@ -317,7 +326,7 @@
       const u = usuarios.find(x=>x.id===id); if(!u) return;
       document.getElementById('uId').value=u.id;
       document.getElementById('uNome').value=u.nome;
-      document.getElementById('uPosto').value=u.posto||'';
+      document.getElementById('uPosto').value=(u.posto||'').replace(/\s*BM\s*$/i,'').trim();
       document.getElementById('uCategoria').value=u.categoria==='Oficial'?'Oficial':'Praça/BC';
       document.getElementById('uLogin').value=u.login;
       document.getElementById('uLogin').disabled=true;     // login não é editável aqui

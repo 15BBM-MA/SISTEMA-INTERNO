@@ -255,7 +255,7 @@
       const el = document.getElementById('op_chefe');
       const lista = oficiais.filter(o => !CHEFE_EXCLUIR.some(x => _norm(o.nome).includes(x)));
       el.innerHTML = '<option value="">— selecione o Chefe de Socorro —</option>' +
-        lista.map(o=>`<option value="${o.id}"${o.id===sel?' selected':''}>${esc((o.posto?o.posto+' ':'')+o.nome)}</option>`).join('');
+        lista.map(o=>`<option value="${o.id}"${o.id===sel?' selected':''}>${esc(BBM.nomeMilitar({posto:o.posto,nome:o.nome,categoria:'Oficial'}))}</option>`).join('');
     }
 
     // ── Guarnição estruturada ─────────────────────────────────────

@@ -822,7 +822,7 @@
       if (!sel) return;
       const cur = sel.value;
       sel.innerHTML = '<option value="">— Selecione o Chefe de Socorro —</option>' +
-        oficiais.map(o => `<option value="${o.id}">${esc(o.posto)} — ${esc(o.nome)}</option>`).join('');
+        oficiais.map(o => `<option value="${o.id}">${esc(BBM.postoFmt(o.posto,'Oficial'))} — ${esc(o.nome)}</option>`).join('');
       sel.disabled = !oficiais.length;
       if (cur && oficiais.some(o => o.id === cur)) sel.value = cur;
     }
