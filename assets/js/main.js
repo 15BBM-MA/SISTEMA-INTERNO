@@ -403,17 +403,36 @@ window.BBM = {
     else base = s.toUpperCase();
     return [grau, base, quad].filter(Boolean).join(' ');
   },
-  // Nome completo padronizado: "2º TEN QOCBM Fulano de Tal".
+  // Remove o posto/graduação do início do nome (evita "CAP QOCBM Capitão Oliveira").
+  _RANKS: new Set(['coronel','cel','tenente','tenentes','ten','capitao','cap','major','maj','aspirante','asp','subtenente','subten','sub','sargento','sgt','cabo','cb','soldado','sd','bombeiro','civil','bc','bm','tc','qocbm','qpbm','qosbm','qoebm']),
+  nomeCurto(nome) {
+    if (!nome) return nome || '';
+    const words = String(nome).trim().split(/\s+/);
+    const norm = w => w.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[.\-]/g, '');
+    let i = 0;
+    while (i < words.length) {
+      const w = norm(words[i]);
+      if (this._RANKS.has(w) || /^[123][ºo°]?$/.test(w) || w === '') i++;
+      else break;
+    }
+    const rest = words.slice(i).join(' ');
+    return rest || String(nome).trim(); // se sobrar vazio, mantém o original
+  },
+  // Nome completo padronizado: "2º TEN QOCBM Fulano" (sem duplicar o posto).
   nomeMilitar(p) {
     if (!p) return '';
     const pf = this.postoFmt(p.posto, p.categoria);
-    return (pf ? pf + ' ' : '') + (p.nome || '');
+    const nm = this.nomeCurto(p.nome);
+    return (pf ? pf + ' ' : '') + (nm || '');
   },
-  // Enriquecer um registro (perfil/militar): padroniza o posto, guarda o original.
+  // Enriquecer um registro (perfil/militar): padroniza posto e o nome exibido,
+  // guardando os originais (postoRaw/nomeRaw) para as comparações de segurança.
   _fmtMilitar(p) {
     if (!p || p.__fmt) return p;
     p.postoRaw = p.posto;
+    p.nomeRaw = p.nome;
     p.posto = this.postoFmt(p.posto, p.categoria);
+    p.nome = this.nomeCurto(p.nome);
     p.nomeMilitar = (p.posto ? p.posto + ' ' : '') + (p.nome || '');
     p.__fmt = true;
     return p;

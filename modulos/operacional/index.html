@@ -421,7 +421,7 @@
       const p=partes.find(x=>x.id===id); if(!p) return;
       const u=eu();
       const rotulo = papel==='devolver' ? 'Devolver' : 'Assinar';
-      if((papel==='chefe'||papel==='devolver') && !ehMesma(u?.nome, p.chefeNome)){ err.textContent='Apenas o Chefe de Socorro indicado pode '+(papel==='devolver'?'devolver':'assinar')+' esta parte.'; err.style.display='block'; return; }
+      if((papel==='chefe'||papel==='devolver') && !ehMesma(u?.nomeRaw||u?.nome, p.chefeNome)){ err.textContent='Apenas o Chefe de Socorro indicado pode '+(papel==='devolver'?'devolver':'assinar')+' esta parte.'; err.style.display='block'; return; }
       let motivo='';
       if(papel==='devolver'){ motivo=(val('assMotivo')||'').trim(); if(!motivo){ err.textContent='Descreva o motivo da devolução.'; err.style.display='block'; return; } }
       if(!senha){ err.textContent='Informe sua senha.'; err.style.display='block'; return; }
@@ -573,7 +573,7 @@
       const el=document.getElementById('histLista');
       if(!lista.length){ el.innerHTML='<div class="empty-state"><p>Nenhuma parte diária registrada.</p></div>'; return; }
       el.innerHTML=lista.map(p=>{
-        const souChefe = p.status==='aguardando_chefe' && ehMesma(u?.nome, p.chefeNome);
+        const souChefe = p.status==='aguardando_chefe' && ehMesma(u?.nomeRaw||u?.nome, p.chefeNome);
         const souCriador = p.status==='rascunho' && (!p.criadoPorId || p.criadoPorId===u?.id);
         let acoes=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verDoc('${p.id}')">🖨️ Ver / Imprimir</button>`;
         if(souChefe) acoes=`<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinarChefe('${p.id}')">✍ Assinar como Chefe</button>`

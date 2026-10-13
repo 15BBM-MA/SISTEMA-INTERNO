@@ -1,7 +1,7 @@
 // Service Worker — Sistema 15º BBM (PWA)
 // Estratégia: REDE PRIMEIRO (sempre a versão mais nova online); cache só como
 // reserva para funcionar offline. Assim atualizações aparecem na hora.
-const CACHE = 'bbm-v7';
+const CACHE = 'bbm-v8';
 
 self.addEventListener('install', () => self.skipWaiting());
 

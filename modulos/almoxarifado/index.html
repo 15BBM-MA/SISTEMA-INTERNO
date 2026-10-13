@@ -1126,7 +1126,7 @@
       el.innerHTML = [...pendencias]
         .sort((a,b)=> (ordem[a.status]-ordem[b.status]) || (b.solicitadoEm||'').localeCompare(a.solicitadoEm||''))
         .map(p=>{
-          const souChefe = p.status==='pendente' && (u && (u.id===p.chefeId || ehMesmaC(u.nome, p.chefeNome)));
+          const souChefe = p.status==='pendente' && (u && (u.id===p.chefeId || ehMesmaC(u.nomeRaw||u.nome, p.chefeNome)));
           const souSolic = p.status==='pendente' && (u && (u.id===p.solicitadoPorId));
           let acoes = '';
           if (souChefe) acoes = `<button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="abrirAprovarPend('${p.id}')">✍ Aprovar</button>`
@@ -1168,7 +1168,7 @@
       const err = document.getElementById('apErro');
       const p = pendencias.find(x=>x.id===id); if(!p) return;
       const u = euC();
-      if (!(u && (u.id===p.chefeId || ehMesmaC(u.nome, p.chefeNome)))) { err.textContent='Apenas o Chefe de Socorro indicado pode autorizar.'; err.style.display='block'; return; }
+      if (!(u && (u.id===p.chefeId || ehMesmaC(u.nomeRaw||u.nome, p.chefeNome)))) { err.textContent='Apenas o Chefe de Socorro indicado pode autorizar.'; err.style.display='block'; return; }
       let motivo = '';
       if (acao==='recusar') { motivo = document.getElementById('apMotivo').value.trim(); if(!motivo){ err.textContent='Descreva o motivo da recusa.'; err.style.display='block'; return; } }
       const senha = document.getElementById('apSenha').value;
@@ -1219,7 +1219,7 @@
       const el = document.getElementById('relatoriosLista');
       if (!confRelatorios.length) { el.innerHTML='<div class="empty-state"><p>Nenhum relatório de conferência.</p></div>'; return; }
       el.innerHTML = [...confRelatorios].sort((a,b)=>(b.em||'').localeCompare(a.em||'')).map(r=>{
-        const souChefe = !r.assChefe && u && (u.id===r.chefeId || ehMesmaC(u.nome, r.chefeNome));
+        const souChefe = !r.assChefe && u && (u.id===r.chefeId || ehMesmaC(u.nomeRaw||u.nome, r.chefeNome));
         const st = r.assChefe ? '<span class="st assinado">Ciente</span>' : '<span class="st aguardando_chefe">Aguardando ciência</span>';
         let acoes = `<button class="btn btn-ghost" style="font-size:.76rem;padding:5px 11px" onclick="verRelatorio('${r.id}')">🖨️ Ver / Imprimir</button>`;
         if (souChefe) acoes = `<button class="btn btn-primary" style="font-size:.76rem;padding:5px 12px" onclick="darCienciaRelatorio('${r.id}')">✍ Dar ciência</button>` + acoes;
@@ -1237,7 +1237,7 @@
       const senha = prompt('Digite sua senha para dar ciência no relatório '+(r.numero||'')+':');
       if (senha===null) return;
       const u = euC();
-      if (!(u && (u.id===r.chefeId || ehMesmaC(u.nome, r.chefeNome)))) { BBM.toast('Apenas o Chefe de Socorro indicado pode dar ciência.','error'); return; }
+      if (!(u && (u.id===r.chefeId || ehMesmaC(u.nomeRaw||u.nome, r.chefeNome)))) { BBM.toast('Apenas o Chefe de Socorro indicado pode dar ciência.','error'); return; }
       if (!senha) { BBM.toast('Senha não informada.','error'); return; }
       const ok = await conferirSenhaCt(senha);
       if (!ok) { BBM.toast('Senha incorreta.','error'); return; }
@@ -1429,7 +1429,7 @@
       const err=document.getElementById('caErro');
       const c=cautelas.find(x=>x.id===id); if(!c) return;
       const u=euC();
-      if(!ehMesmaC(u?.nome, c.chefeNome)){ err.textContent='Apenas o Chefe de Socorro indicado pode assinar esta cautela.'; err.style.display='block'; return; }
+      if(!ehMesmaC(u?.nomeRaw||u?.nome, c.chefeNome)){ err.textContent='Apenas o Chefe de Socorro indicado pode assinar esta cautela.'; err.style.display='block'; return; }
       if(!senha){ err.textContent='Informe sua senha.'; err.style.display='block'; return; }
       const btn=document.getElementById('btnAssinarCautela'); btn.disabled=true; btn.textContent='Verificando…';
       const ok=await conferirSenhaCt(senha);
@@ -1470,7 +1470,7 @@
       const el=document.getElementById('cautelasLista');
       if(!cautelas.length){ el.innerHTML='<div class="empty-state"><p>Nenhuma cautela registrada. Toque em <b>+ Nova cautela</b> para começar.</p></div>'; return; }
       el.innerHTML=[...cautelas].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||'')).map(c=>{
-        const souChefe = c.status==='aguardando_chefe' && ehMesmaC(u?.nome, c.chefeNome);
+        const souChefe = c.status==='aguardando_chefe' && ehMesmaC(u?.nomeRaw||u?.nome, c.chefeNome);
         let acoes=`<button class="btn btn-ghost" style="font-size:.76rem;padding:4px 10px" onclick="verCautela('${c.id}')">🖨️ Ver / Imprimir</button>`;
         if(souChefe) acoes=`<button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="abrirAssinarCautela('${c.id}')">✍ Assinar como Chefe</button>`+acoes;
         if(c.status==='assinado' && !c.devolucaoMateriais && !c.importada)
