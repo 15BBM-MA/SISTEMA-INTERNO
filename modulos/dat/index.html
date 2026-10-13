@@ -328,7 +328,21 @@
           </div>
         </div>
 
-        <!-- Bloco MULTA (aparece só se marcar Multa) -->
+        <!-- Não conformidades (base da notificação e, se houver, da multa) -->
+        <div class="form-card" style="margin-bottom:16px">
+          <div class="fc-sec">Não conformidades constatadas</div>
+          <p style="font-size:.82rem;color:var(--text-mid);margin:-4px 0 12px">Marque os itens não conformes. As <b>exigências</b> (o que corrigir) são geradas automaticamente abaixo. Se a ação incluir <b>multa</b>, os mesmos itens entram no cálculo.</p>
+          <div class="fis-busca">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="fis_busca" type="text" placeholder="Pesquisar (ex.: extintor, hidrante, saída, alarme…)" oninput="filtrarInfracoes()"/>
+            <button type="button" id="fis_buscaX" title="Limpar busca" onclick="document.getElementById('fis_busca').value='';filtrarInfracoes();" style="display:none">×</button>
+          </div>
+          <div id="fis_busca_vazio" style="display:none;padding:10px 2px;color:var(--text-light);font-size:.86rem">Nenhum item encontrado para esse termo.</div>
+          <div id="fis_grupos"></div>
+          <div id="fis_resumoNC" style="margin-top:12px"></div>
+        </div>
+
+        <!-- Bloco MULTA (parâmetros; aparece só se marcar Multa) -->
         <div id="fis_blocoMulta" style="display:none">
           <div class="form-card" style="margin-bottom:16px">
             <div class="fc-sec">Multa — parâmetros (Anexo C da Lei 11.390/2020)</div>
@@ -343,19 +357,7 @@
               </div>
             </div>
           </div>
-
           <div id="fis_resultado"></div>
-
-          <div class="form-card" style="margin-bottom:16px">
-            <div class="fc-sec">Infrações constatadas (base da multa)</div>
-            <div class="fis-busca">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input id="fis_busca" type="text" placeholder="Pesquisar infração (ex.: extintor, hidrante, saída, alarme…)" oninput="filtrarInfracoes()"/>
-              <button type="button" id="fis_buscaX" title="Limpar busca" onclick="document.getElementById('fis_busca').value='';filtrarInfracoes();" style="display:none">×</button>
-            </div>
-            <div id="fis_busca_vazio" style="display:none;padding:10px 2px;color:var(--text-light);font-size:.86rem">Nenhuma infração encontrada para esse termo.</div>
-            <div id="fis_grupos"></div>
-          </div>
         </div>
 
         <!-- Bloco INTERDIÇÃO (aparece só se marcar Interdição) -->
@@ -371,8 +373,11 @@
         <!-- Exigências e prazo -->
         <div class="form-card" style="margin-bottom:16px">
           <div class="fc-sec">Exigências e prazo</div>
-          <div class="form-group"><label class="form-label">Exigências (o que deve ser cumprido)</label>
-            <textarea class="form-control" id="fis_exig" rows="6" placeholder="Descreva as exigências / irregularidades a serem sanadas…"></textarea>
+          <div class="form-group"><label class="form-label" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <span>Exigências (o que deve ser cumprido)</span>
+              <button type="button" class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="sincronizarExigencias()">↻ Gerar das não conformidades</button>
+            </label>
+            <textarea class="form-control" id="fis_exig" rows="7" placeholder="As exigências das não conformidades marcadas aparecem aqui. Edite, acrescente ou remova livremente."></textarea>
           </div>
           <div class="form-group" style="margin:0;max-width:320px"><label class="form-label">Prazo para cumprimento (dias)</label>
             <input class="form-control" id="fis_prazo" type="number" min="1" value="30" oninput="calcMulta()"/>
@@ -1276,7 +1281,7 @@
       cont.innerHTML = Object.keys(INFRACOES).map(g=>{
         const meta = GRUPO_META[g];
         const itens = INFRACOES[g].map((txt,idx)=>
-          `<label class="fis-item"><input type="checkbox" class="fis${g}" onchange="calcMulta()"/> <span>${idx+1}. ${txt}</span></label>`
+          `<label class="fis-item"><input type="checkbox" class="fis${g}" onchange="onInfracaoChange()"/> <span>${idx+1}. ${txt}</span></label>`
         ).join('');
         return `<div class="fis-grupo">
           <div class="fis-grupo-head" style="border-left:4px solid ${meta.cor}">
@@ -1367,6 +1372,75 @@
       </div>`;
     }
 
+    // ── Não conformidades → exigências (ação corretiva) ───────────
+    // Transforma o texto da infração na exigência correspondente.
+    function exigenciaDe(txt){
+      let t = txt.replace(/\.$/,'').trim();
+      const low = t.toLowerCase();
+      // casos específicos primeiro
+      if(/sem a devida licen|evento temporário sem/i.test(t)) return 'Obter a Licença do Corpo de Bombeiros Militar para a realização do evento.';
+      if(/sem certifica/i.test(t)) return 'Providenciar a Certificação do Corpo de Bombeiros Militar da edificação/área de risco.';
+      if(/certifica.*não afixada/i.test(t)) return 'Afixar a Certificação do Corpo de Bombeiros Militar em local visível ao público.';
+      if(/não credenciado/i.test(t)) return 'Credenciar o bombeiro civil junto ao Corpo de Bombeiros Militar.';
+      if(/reprovado na avalia/i.test(t)) return 'Reavaliar e aprovar a brigada de incêndio / bombeiro civil na avaliação de desempenho.';
+      if(/desprotegido contra a a..o do fogo/i.test(t)) return 'Proteger o sistema elétrico de alimentação dos equipamentos de segurança contra a ação do fogo.';
+      if(/lota..o acima do permitido/i.test(t)) return 'Reduzir a lotação ao limite permitido para o local.';
+      if(/saída de emergência insuficiente|obstruída ou trancada/i.test(t)) return 'Desobstruir, destravar e dimensionar as saídas de emergência conforme as Instruções Técnicas.';
+      if(/uso indevido de logomarca|brasão|insígnias/i.test(t)) return 'Cessar imediatamente o uso indevido de logomarca, brasão, insígnias, uniformes e símbolos do Corpo de Bombeiros Militar.';
+      if(/deixar de atualizar o projeto técnico/i.test(low)) return 'Atualizar o Projeto Técnico junto ao Corpo de Bombeiros Militar em razão das alterações da edificação.';
+      if(/explosivos em desconformidade/i.test(t)) return 'Regularizar o armazenamento, comércio ou manipulação de explosivos conforme a legislação.';
+      // padrões por "condição" ao final
+      if(/em desconformidade com a legisla/i.test(t)){ const base=t.replace(/\s*em desconformidade com a legisla.*/i,''); return `Adequar ${primeiraMinuscula(base)} à legislação vigente.`; }
+      if(/\bdeficiente$/i.test(t)){ const base=t.replace(/\s*deficiente$/i,''); return `Sanar as deficiências e regularizar ${primeiraMinuscula(base)} conforme as Instruções Técnicas aplicáveis.`; }
+      if(/\binoperante$/i.test(t)){ const base=t.replace(/\s*inoperante$/i,''); return `Reparar e colocar em pleno funcionamento ${primeiraMinuscula(base)}.`; }
+      if(/\binexistente$/i.test(t)){ const base=t.replace(/\s*inexistente$/i,''); return `Instalar ${primeiraMinuscula(base)} conforme as Instruções Técnicas aplicáveis.`; }
+      return `Regularizar: ${primeiraMinuscula(t)}, conforme a legislação e as Instruções Técnicas aplicáveis.`;
+    }
+    function primeiraMinuscula(s){ s=s.trim(); return s ? s.charAt(0).toLowerCase()+s.slice(1) : s; }
+
+    function itensMarcados(){
+      const r = [];
+      ['I','II','III','IV'].forEach(g=>{ document.querySelectorAll('.fis'+g).forEach((c,i)=>{ if(c.checked) r.push({ g, idx:i, txt:INFRACOES[g][i] }); }); });
+      return r;
+    }
+    const MARK_EXIG = '--- exigências adicionais (edite livremente) ---';
+    function sincronizarExigencias(){
+      const ta = document.getElementById('fis_exig'); if(!ta) return;
+      const cur = ta.value;
+      const pos = cur.indexOf(MARK_EXIG);
+      const manual = pos>=0 ? cur.slice(pos+MARK_EXIG.length).replace(/^\s*\n?/,'') : cur.trim(); // preserva texto manual
+      const auto = itensMarcados().map(m=>'• '+exigenciaDe(m.txt)).join('\n');
+      ta.value = (auto?auto+'\n\n':'') + MARK_EXIG + '\n' + (manual||'');
+    }
+
+    // Resumo das não conformidades marcadas, por gravidade, com a consequência.
+    function renderResumoNC(){
+      const box = document.getElementById('fis_resumoNC'); if(!box) return;
+      const marc = itensMarcados();
+      if(!marc.length){ box.innerHTML=''; return; }
+      const CONSEQ = {
+        I:'Leves — não sanadas no prazo: multa (Grupo I).',
+        II:'Médias — não sanadas no prazo: multa (Grupo II).',
+        III:'Graves — não sanadas no prazo: multa (Grupo III) e risco de interdição.',
+        IV:'Gravíssimas — multa (Grupo IV) e interdição/embargo imediato (art. 37, §1º da Lei 11.390/2020).',
+      };
+      let html = '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">';
+      ['I','II','III','IV'].forEach(g=>{
+        const doG = marc.filter(m=>m.g===g); if(!doG.length) return;
+        const meta = GRUPO_META[g];
+        html += `<div style="padding:9px 12px;background:color-mix(in srgb,${meta.cor} 8%,#fff);border-top:1px solid var(--border)">
+          <div style="font-weight:700;font-size:.82rem;color:${meta.cor}">${meta.nome} · ${doG.length} item(ns)</div>
+          <div style="font-size:.76rem;color:var(--text-mid);margin:2px 0 4px">⟶ ${CONSEQ[g]}</div>
+          <ul style="margin:0;padding-left:18px;font-size:.78rem;color:var(--text)">${doG.map(m=>`<li>${escFis(m.txt)}</li>`).join('')}</ul>
+        </div>`;
+      });
+      html += '</div><div style="font-size:.74rem;color:var(--text-light);margin-top:6px">A multa não paga é inscrita em dívida ativa (cobrança pela PGE/SEFAZ). A multa não exime a adequação (art. 35).</div>';
+      box.innerHTML = html;
+    }
+
+    // chamado ao marcar/desmarcar uma não conformidade
+    function onInfracaoChange(){ calcMulta(); renderResumoNC(); sincronizarExigencias(); }
+
     function limparFiscaliza(){
       // texto/selects/checkboxes do formulário
       ['fis_req','fis_ca','fis_cap','fis_razao','fis_cpf','fis_ddd','fis_fone','fis_ated','fis_log','fis_numend','fis_bairro','fis_atividade','fis_classif','fis_sistOutros','fis_artigos','fis_exig','fis_area','fis_busca']
@@ -1381,7 +1455,7 @@
       _gps = null; atualizarGpsInfo();
       _atividadeSel = null;
       const ai = document.getElementById('fis_atividadeInfo'); if(ai) ai.textContent='Selecione a atividade para puxar a classificação e o fator de risco.';
-      toggleAcoes(); toggleSistOutros(); filtrarInfracoes(); calcMulta();
+      toggleAcoes(); toggleSistOutros(); filtrarInfracoes(); calcMulta(); renderResumoNC();
     }
 
     // Sistemas existentes (ordem do formulário oficial)
@@ -1562,7 +1636,9 @@
       // sistemas existentes marcados (índices 1..18)
       const sistemas = [];
       document.querySelectorAll('.fis-sist').forEach(c=>{ if(c.checked) sistemas.push(parseInt(c.dataset.n,10)); });
-      const razao = val('fis_razao'), exig = val('fis_exig');
+      const razao = val('fis_razao');
+      // remove o marcador interno e junta auto + manual numa lista limpa
+      const exig = (document.getElementById('fis_exig').value||'').split(MARK_EXIG).join('\n').replace(/\n{3,}/g,'\n\n').trim();
       const totalInfr = infr.I.length+infr.II.length+infr.III.length+infr.IV.length;
       // precisa de pelo menos: razão social OU exigências OU (multa com infrações)
       if(!razao && !exig && !(acoes.multa && totalInfr>0) && !sistemas.length) return null;
