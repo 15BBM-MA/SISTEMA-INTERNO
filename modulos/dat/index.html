@@ -102,16 +102,36 @@
             <div class="form-group"><label class="form-label">Nº</label><input class="form-control" id="e_num" placeholder="SN"/></div>
             <div class="form-group"><label class="form-label">Bairro</label><input class="form-control" id="e_bairro"/></div>
             <div class="form-group"><label class="form-label">Complemento</label><input class="form-control" id="e_compl"/></div>
-            <div class="form-group"><label class="form-label">Município</label><input class="form-control" id="e_mun" value="Chapadinha - MA"/></div>
+            <div class="form-group"><label class="form-label">Município</label>
+              <select class="form-control" id="e_mun">
+                <option>Afonso Cunha - MA</option>
+                <option>Anapurus - MA</option>
+                <option>Belágua - MA</option>
+                <option>Brejo - MA</option>
+                <option>Buriti - MA</option>
+                <option selected>Chapadinha - MA</option>
+                <option>Magalhães de Almeida - MA</option>
+                <option>Mata Roma - MA</option>
+                <option>Milagres do Maranhão - MA</option>
+                <option>Santa Quitéria do Maranhão - MA</option>
+                <option>São Benedito do Rio Preto - MA</option>
+                <option>São Bernardo - MA</option>
+                <option>Urbano Santos - MA</option>
+              </select>
+            </div>
             <div class="form-group"><label class="form-label">CEP</label><input class="form-control" id="e_cep" value="65500-000"/></div>
             <div class="form-group"><label class="form-label">UF</label><input class="form-control" id="e_uf" value="MARANHÃO"/></div>
           </div>
-          <div class="fc-sec">Responsável</div>
+          <div class="fc-sec">Responsável / Solicitante</div>
           <div class="grid2">
-            <div class="form-group"><label class="form-label">Responsável pelo evento *</label><input class="form-control" id="e_resp"/></div>
-            <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="e_cpf"/></div>
-            <div class="form-group"><label class="form-label">Telefone</label><input class="form-control" id="e_fone"/></div>
+            <div class="form-group"><label class="form-label">Responsável pelo evento *</label>
+              <input class="form-control" id="e_resp" list="solicList" autocomplete="off" placeholder="Digite para pesquisar solicitantes já cadastrados" oninput="aplicarSolicitante()"/>
+              <datalist id="solicList"></datalist>
+            </div>
+            <div class="form-group"><label class="form-label">CPF</label><input class="form-control" id="e_cpf" inputmode="numeric" placeholder="000.000.000-00" oninput="mascaraCPF(this)"/></div>
+            <div class="form-group"><label class="form-label">Telefone</label><input class="form-control" id="e_fone" placeholder="(98) 00000-0000"/></div>
           </div>
+          <div id="eventoSolicHist" style="display:none;margin-top:4px"></div>
           <div class="fc-sec">Dados do Evento</div>
           <div class="grid2">
             <div class="form-group"><label class="form-label">Início do evento *</label><input class="form-control" id="e_dataIni" type="date"/></div>
@@ -731,6 +751,7 @@
 
     function limparEvento(){
       ['e_estab','e_logr','e_num','e_bairro','e_compl','e_resp','e_cpf','e_fone','e_dataIni','e_dataFim'].forEach(k=>document.getElementById(k).value='');
+      const h=document.getElementById('eventoSolicHist'); if(h){ h.style.display='none'; h.innerHTML=''; }
     }
     // Próxima numeração lida automaticamente do histórico: maior nº emitido no ano + 1
     function proximoNumero(){
@@ -948,6 +969,52 @@
     function coletarEvento(){ const o={}; ['e_estab','e_numlic','e_logr','e_num','e_bairro','e_compl','e_mun','e_cep','e_uf','e_resp','e_cpf','e_fone','e_dataIni','e_dataFim','e_publico','e_area','e_emissao'].forEach(k=>o[k]=val(k)); return o; }
     function coletarBaixo(){ const o={}; ['b_logr','b_num','b_cep','b_bairro','b_mun','b_compl','b_uf','b_prop','b_propdoc','b_resp','b_respcpf','b_email','b_fone','b_razao','b_cnpj','b_cnae','b_fantasia','b_class','b_estrut','b_cobert','b_vedac','b_area','b_lot','b_pav','b_liq','b_subsolo','b_glp'].forEach(k=>o[k]=val(k)); ['m_acab','m_ilum','m_saidas','m_sinal','m_gerenc','m_extint','m_brigada'].forEach(k=>o[k]=chk(k)); return o; }
 
+    // ── Histórico de solicitantes (a partir dos documentos já emitidos) ──
+    function dadosSolicDoc(rec){
+      const d = rec.docs || {};
+      const ev = (d.licenca && d.licenca.dados) || (d.requerimento && d.requerimento.dados);
+      if(ev) return { nome: ev.e_resp||rec.responsavel||'', cpf: ev.e_cpf||'', fone: ev.e_fone||'', estab: ev.e_estab||rec.identificacao||'', dataEvento: ev.e_dataIni||'', numero: rec.numero||'', em: rec.data||'' };
+      const bx = d.baixo && d.baixo.dados;
+      if(bx) return { nome: bx.b_resp||rec.responsavel||'', cpf: bx.b_respcpf||'', fone: bx.b_fone||'', estab: bx.b_razao||bx.b_fantasia||rec.identificacao||'', dataEvento:'', numero: rec.numero||'', em: rec.data||'' };
+      return { nome: rec.responsavel||'', cpf:'', fone:'', estab: rec.identificacao||'', dataEvento:'', numero: rec.numero||'', em: rec.data||'' };
+    }
+    function solicitantesAgg(){
+      const map = new Map();
+      (emitidos||[]).forEach(rec=>{
+        const s = dadosSolicDoc(rec);
+        if(!s.nome) return;
+        const key = (s.cpf && s.cpf.replace(/\D/g,'')) || _normFis(s.nome);
+        if(!map.has(key)) map.set(key, { nome:s.nome, cpf:s.cpf, fone:s.fone, eventos:[] });
+        const o = map.get(key);
+        if(!o.cpf && s.cpf) o.cpf = s.cpf;
+        if(!o.fone && s.fone) o.fone = s.fone;
+        o.eventos.push({ estab:s.estab, dataEvento:s.dataEvento, numero:s.numero, em:s.em });
+      });
+      return [...map.values()].sort((a,b)=>a.nome.localeCompare(b.nome));
+    }
+    function popularSolicitantes(){
+      const dl = document.getElementById('solicList'); if(!dl) return;
+      dl.innerHTML = solicitantesAgg().map(s=>`<option value="${escFis(s.nome)}">${s.cpf?escFis(fmtCPF(s.cpf)):''}${s.fone?' · '+escFis(s.fone):''}</option>`).join('');
+    }
+    function aplicarSolicitante(){
+      const nome = val('e_resp');
+      const panel = document.getElementById('eventoSolicHist');
+      const lista = solicitantesAgg();
+      const s = lista.find(x=>x.nome===nome) || lista.find(x=>_normFis(x.nome)===_normFis(nome) && _normFis(nome).length>2);
+      if(!s){ panel.style.display='none'; panel.innerHTML=''; return; }
+      if(s.cpf) document.getElementById('e_cpf').value = fmtCPF(s.cpf);
+      if(s.fone) document.getElementById('e_fone').value = s.fone;
+      const evs = [...s.eventos].sort((a,b)=>(b.em||'').localeCompare(a.em||''));
+      panel.innerHTML = `<div style="border:1px solid var(--blue);background:var(--blue-light);border-radius:10px;padding:10px 12px">
+        <div style="font-size:.84rem;color:var(--text)"><b>${escFis(s.nome)}</b> — já solicitou <b>${evs.length}</b> evento(s)${s.cpf?' · CPF '+escFis(fmtCPF(s.cpf)):''}${s.fone?' · '+escFis(s.fone):''}</div>
+        <ul style="margin:6px 0 0;padding-left:18px;font-size:.8rem;color:var(--text-mid)">
+          ${evs.map(e=>`<li>${escFis(e.estab)||'—'}${e.dataEvento?' · evento em '+brData(e.dataEvento):''}${(e.numero&&e.numero!=='—')?' · nº '+escFis(e.numero):''}${e.em?' <span style="color:var(--text-light)">(emitido '+escFis(e.em)+')</span>':''}</li>`).join('')}
+        </ul>
+        <div style="font-size:.7rem;color:var(--text-light);margin-top:4px">Consulta interna — não é impressa no documento.</div>
+      </div>`;
+      panel.style.display = '';
+    }
+
     // Um registro (processo) por numeração: Licença e Requerimento de mesmo nº ficam na mesma linha.
     function salvar(tipo, numero, identificacao, responsavel, dados){
       const u = BBM.currentUser();
@@ -966,6 +1033,7 @@
         if(responsavel) proc.responsavel = responsavel;
       }
       BBM.save('dat_emitidos', emitidos);
+      popularSolicitantes();
       BBM.toast('Documento gerado e salvo no histórico.');
     }
 
@@ -1043,6 +1111,7 @@
       if(mig) BBM.save('dat_emitidos', emitidos);
       numeroAtual = proximoNumero();   // fixa a numeração da sessão a partir do histórico
       setNumeroField();
+      popularSolicitantes();
     });
 
     // ===================== APOIO AO ANALISTA =====================
