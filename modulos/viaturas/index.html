@@ -345,7 +345,7 @@
         <!-- Data e KM -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
           <div class="form-group" style="margin:0"><label class="form-label">Data</label><input class="form-control" id="clData" type="date"/></div>
-          <div class="form-group" style="margin:0"><label class="form-label">KM no Momento</label><input class="form-control" id="clKm" type="number" placeholder="0"/></div>
+          <div class="form-group" style="margin:0"><label class="form-label">KM no Momento *</label><input class="form-control" id="clKm" type="number" placeholder="0"/></div>
         </div>
 
         <!-- Guarnição -->
@@ -419,7 +419,7 @@
 
         <!-- Motorista -->
         <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">Motorista Responsável</label>
+          <label class="form-label">Motorista Responsável *</label>
           <select class="form-control" id="clMotorista">
             <option value="">— Selecione o motorista —</option>
             <option value="2º Sgt Ribeiro">2º Sgt Ribeiro</option>
@@ -1351,17 +1351,43 @@
       renderHistorico(); renderCards();
     }
 
+    // Todo item marcado como RUIM exige observação. Marca em vermelho os que faltam
+    // e devolve os nomes, para avisar o usuário antes de assinar.
+    function validarRuimObs() {
+      const faltando = [];
+      let primeiro = null;
+      document.querySelectorAll('#clBody .obs-mini').forEach(i => i.style.borderColor = '');
+      document.querySelectorAll('#clBody .sbtn.ruim.sel').forEach(btn => {
+        const key = btn.dataset.key;
+        const obs = document.querySelector(`#clBody .obs-mini[data-key="${key}"]`);
+        if (!obs || !obs.value.trim()) {
+          const nome = btn.closest('tr')?.querySelector('td')?.textContent?.trim() || key;
+          faltando.push(nome);
+          if (obs) { obs.style.borderColor = '#dc2626'; if (!primeiro) primeiro = obs; }
+        }
+      });
+      if (primeiro) { primeiro.scrollIntoView({ behavior:'smooth', block:'center' }); primeiro.focus(); }
+      return faltando;
+    }
+
     // ── Assinar (motorista) ───────────────────────────────────────
     function pedirSenhaESalvar() {
       if (!viaturaAtual) return;
       const data      = document.getElementById('clData').value;
       const guarnicao = document.getElementById('clGuarnicao').value.trim();
       const motorista = document.getElementById('clMotorista').value;
+      const km        = document.getElementById('clKm').value;
       if (!data || !guarnicao) { BBM.toast('Preencha data e guarnição.', 'error'); return; }
+      if (!km || Number(km) <= 0) { BBM.toast('Informe o KM no momento.', 'error'); document.getElementById('clKm').focus(); return; }
       if (!motorista)  { BBM.toast('Selecione o motorista responsável.', 'error'); return; }
       const itens = coletarItens();
       if (!Object.keys(itens).filter(k=>!k.startsWith('obs_')).length) {
         BBM.toast('Preencha pelo menos um item do checklist.', 'error'); return;
+      }
+      const semObs = validarRuimObs();
+      if (semObs.length) {
+        BBM.toast('Item(ns) marcados como RUIM exigem observação: ' + semObs.join(', '), 'error');
+        return;
       }
       _dadosPendentes = {
         id: _rascunhoId || BBM.generateId(),
