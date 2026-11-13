@@ -102,7 +102,7 @@
             <thead>
               <tr>
                 <th>Item</th><th>Ambiente</th><th>Categoria</th><th>Unidade</th>
-                <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Situação</th><th>Últ. alteração</th><th>Ações</th>
+                <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Situação</th><th>Estado</th><th>Últ. alteração</th><th>Ações</th>
               </tr>
             </thead>
             <tbody id="tabelaItens"></tbody>
@@ -196,11 +196,31 @@
         <div style="font-size:.78rem;color:var(--text-light);margin-bottom:14px" id="cfRegistrado"></div>
         <div class="form-group">
           <label class="form-label">Quantidade contada fisicamente</label>
-          <input class="form-control" id="cfQtd" type="number" min="0" oninput="cfToggleMotivo()" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
+          <input class="form-control" id="cfQtd" type="number" min="0" oninput="cfToggleMotivo();cfReconciliar('bom')" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
         </div>
         <div class="form-group" id="cfMotivoWrap" style="display:none">
           <label class="form-label">Motivo da divergência *</label>
           <input class="form-control" id="cfMotivo" placeholder="Ex.: quebra, consumo não lançado, erro de cadastro…"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado do material (divide a quantidade contada)</label>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1">
+              <div style="font-size:.72rem;font-weight:700;color:#166534;margin-bottom:3px">BOM</div>
+              <input class="form-control" id="cfBom" type="number" min="0" oninput="cfOnBom()"
+                     style="background:#dcfce7;color:#166534;font-weight:700;text-align:center"/>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.72rem;font-weight:700;color:#b91c1c;margin-bottom:3px">RUIM</div>
+              <input class="form-control" id="cfRuim" type="number" min="0" oninput="cfOnRuim()"
+                     style="background:#fee2e2;color:#b91c1c;font-weight:700;text-align:center"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #bbf7d0;color:#166534" onclick="cfTodos('bom')">Todos bons</button>
+            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #fecaca;color:#b91c1c" onclick="cfTodos('ruim')">Todos ruins</button>
+          </div>
+          <div id="cfSplitAviso" style="display:none;font-size:.72rem;color:#b45309;margin-top:5px"></div>
         </div>
         <div class="form-group" style="margin:0">
           <label class="form-label">Ambiente (onde o item está)</label>
@@ -727,9 +747,27 @@
       document.getElementById('lblInventario').scrollIntoView({ behavior:'smooth', block:'start' });
     }
 
+    // Divisão da quantidade por estado de conservação (Bom/Ruim).
+    // Itens antigos sem divisão: assume tudo Bom.
+    function splitEstado(i) {
+      const total = Number(i.qtd) || 0;
+      const bom  = (i.qtdBom  != null) ? Number(i.qtdBom)  : total;
+      const ruim = (i.qtdRuim != null) ? Number(i.qtdRuim) : Math.max(0, total - bom);
+      return { total, bom, ruim };
+    }
+    function estadoBadge(i) {
+      const { total, bom, ruim } = splitEstado(i);
+      if (total <= 0) return '—';
+      const b = `<span class="badge" style="background:#dcfce7;color:#166534">${bom} bom</span>`;
+      const r = `<span class="badge" style="background:#fee2e2;color:#b91c1c">${ruim} ruim</span>`;
+      if (ruim <= 0) return b;
+      if (bom  <= 0) return r;
+      return b + ' ' + r;
+    }
+
     function renderItens(lista = itensFiltrados()) {
       const tbody = document.getElementById('tabelaItens');
-      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><p>Nenhum item neste filtro.</p></div></td></tr>`; return; }
+      if (!lista.length) { tbody.innerHTML=`<tr><td colspan="11"><div class="empty-state"><p>Nenhum item neste filtro.</p></div></td></tr>`; return; }
       tbody.innerHTML = lista.map(i => {
         const [sit,cls] = situacao(i);
         return `<tr>
@@ -741,6 +779,7 @@
           <td>${i.min}</td>
           <td>${i.local || '—'}</td>
           <td><span class="badge ${cls}">${sit}</span></td>
+          <td>${estadoBadge(i)}</td>
           <td style="font-size:.76rem;color:var(--text-light);white-space:nowrap">${i.ultimaAlteracao?`${fmtQuando(i.ultimaAlteracao)}<br><span style="font-size:.7rem">${i.alteradoPor||''}</span>`:'—'}</td>
           <td style="display:flex;gap:6px">
             <button class="action-btn" title="Movimentar (entrada/saída)" onclick="abrirMovimento('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
@@ -824,6 +863,9 @@
         // quantidade de item existente NÃO muda pela edição — só via Movimentar (com aprovação)
         qtd: anterior ? anterior.qtd : (Number(document.getElementById('iQtd').value) || 0),
         min: Number(document.getElementById('iMin').value) || 0,
+        // Novo item entra como todo "Bom"; a divisão Bom/Ruim é definida na conferência.
+        qtdBom:  anterior ? (anterior.qtdBom  != null ? anterior.qtdBom  : anterior.qtd) : (Number(document.getElementById('iQtd').value) || 0),
+        qtdRuim: anterior ? (anterior.qtdRuim != null ? anterior.qtdRuim : 0) : 0,
         local: document.getElementById('iLocal').value.trim(),
         obs:   document.getElementById('iObs').value.trim(),
       };
@@ -989,7 +1031,7 @@
               <div class="conf-row-nome">${i.nome}</div>
               <div class="conf-row-sub">${ok?`✓ contado por ${i.alteradoPor||'—'} • ${fmtQuando(i.ultimaAlteracao)}`:`pendente • ${i.unidade}`}</div>
             </div>
-            <div class="conf-row-qtd">${i.qtd}</div>
+            <div class="conf-row-qtd">${i.qtd}<div style="margin-top:2px">${estadoBadge(i)}</div></div>
             ${ok?'<span class="conf-badge ok">Conferido</span>':`<button class="btn btn-primary" style="padding:6px 12px;font-size:.78rem" onclick="abrirContagem('${i.id}')">Contar</button>`}
           </div>`;
         }
@@ -998,17 +1040,23 @@
     }
 
     let _cfRegistrado = 0; // quantidade que constava antes da contagem (para detectar divergência)
+    let _cfBom = 0, _cfRuim = 0; // divisão bom/ruim que constava antes (para detectar mudança)
     function abrirContagem(id) {
       const i = itens.find(x=>x.id===id); if(!i) return;
+      const s = splitEstado(i);
       _cfRegistrado = i.qtd;
+      _cfBom = s.bom; _cfRuim = s.ruim;
       document.getElementById('cfId').value = i.id;
       document.getElementById('cfNome').textContent = i.nome;
-      document.getElementById('cfRegistrado').textContent = `Registrado: ${i.qtd} ${i.unidade} — ${i.categoria}`;
+      document.getElementById('cfRegistrado').textContent = `Registrado: ${i.qtd} ${i.unidade} — ${i.categoria} — ${s.bom} bom / ${s.ruim} ruim`;
       document.getElementById('cfQtd').value = i.qtd;
+      document.getElementById('cfBom').value = s.bom;   // traz o último preenchimento; pode manter ou alterar
+      document.getElementById('cfRuim').value = s.ruim;
       document.getElementById('cfMotivo').value = '';
       const selAmb = document.getElementById('cfAmbiente');
       selAmb.innerHTML = AMBIENTES.map(a=>`<option${a===i.ambiente?' selected':''}>${a}</option>`).join('');
       cfToggleMotivo();
+      cfReconciliar('bom'); // ajusta a divisão ao total contado
       BBM.openModal('modalContagem');
       setTimeout(()=>{ const el=document.getElementById('cfQtd'); el.focus(); el.select(); }, 200);
     }
@@ -1016,6 +1064,28 @@
     function cfToggleMotivo() {
       const v = Number(document.getElementById('cfQtd').value);
       document.getElementById('cfMotivoWrap').style.display = (v !== _cfRegistrado) ? 'block' : 'none';
+    }
+    // Divisão dinâmica Bom/Ruim: um campo sempre complementa o outro até o total contado.
+    function cfTotal() { return Math.max(0, Number(document.getElementById('cfQtd').value) || 0); }
+    // 'fixar' = qual lado o usuário acabou de digitar e deve ser preservado; o outro é recalculado.
+    function cfReconciliar(fixar) {
+      const total = cfTotal();
+      const elB = document.getElementById('cfBom'), elR = document.getElementById('cfRuim');
+      let bom = Math.max(0, Number(elB.value) || 0);
+      let ruim = Math.max(0, Number(elR.value) || 0);
+      if (fixar === 'ruim') { if (ruim > total) ruim = total; bom = total - ruim; }
+      else                  { if (bom  > total) bom  = total; ruim = total - bom; }
+      elB.value = bom; elR.value = ruim;
+      document.getElementById('cfBom').max = total;
+      document.getElementById('cfRuim').max = total;
+    }
+    function cfOnBom()  { cfReconciliar('bom'); }
+    function cfOnRuim() { cfReconciliar('ruim'); }
+    function cfTodos(tipo) {
+      const total = cfTotal();
+      document.getElementById('cfBom').value  = tipo === 'bom'  ? total : 0;
+      document.getElementById('cfRuim').value = tipo === 'ruim' ? total : 0;
+      cfReconciliar(tipo);
     }
 
     async function confirmarContagem() {
@@ -1027,15 +1097,21 @@
       const divergiu = v !== de;
       const motivo = document.getElementById('cfMotivo').value.trim();
       if (divergiu && !motivo) { BBM.toast('A quantidade diverge do registrado — informe o motivo.','error'); return; }
+      cfReconciliar('bom');
+      let bom = Math.max(0, Number(document.getElementById('cfBom').value) || 0);
+      if (bom > v) bom = v;
+      const ruim = v - bom;
+      const mudouEstado = (bom !== _cfBom) || (ruim !== _cfRuim);
       const novoAmb = document.getElementById('cfAmbiente').value;
       const trocou = novoAmb && novoAmb !== i.ambiente;
       i.qtd = v;
+      i.qtdBom = bom; i.qtdRuim = ruim;
       if (trocou) i.ambiente = novoAmb;
       carimbar(i);
-      // registra a alteração no relatório da conferência (só quando diverge)
-      if (divergiu) {
+      // registra a alteração no relatório da conferência (quando a qtd diverge ou a divisão bom/ruim muda)
+      if (divergiu || mudouEstado) {
         conferencia.alteracoes = (conferencia.alteracoes || []).filter(a => a.itemId !== i.id);
-        conferencia.alteracoes.push({ itemId:i.id, nome:i.nome, ambiente:i.ambiente, unidade:i.unidade, de, para:v, motivo, por:(euC()?.nome)||'—', em:new Date().toISOString() });
+        conferencia.alteracoes.push({ itemId:i.id, nome:i.nome, ambiente:i.ambiente, unidade:i.unidade, de, para:v, bomDe:_cfBom, ruimDe:_cfRuim, bomPara:bom, ruimPara:ruim, motivo, por:(euC()?.nome)||'—', em:new Date().toISOString() });
       }
       BBM.closeModal('modalContagem');
       renderConferencia(); renderAmbientes(); atualizarCards();
@@ -1248,15 +1324,21 @@
     }
     function docRelatorio(r){
       const ambTxt = (r.ambientes && r.ambientes.length) ? r.ambientes.join(', ') : 'todo o estoque';
+      const estadoCel = a => {
+        if (a.bomPara == null) return '—';
+        const dep = `${a.bomPara}/${a.ruimPara}`;
+        const antes = (a.bomDe != null) ? `${a.bomDe}/${a.ruimDe}` : null;
+        return (antes && antes !== dep) ? `${antes} → ${dep}` : dep;
+      };
       const linhas = (r.alteracoes||[]).length
-        ? r.alteracoes.map((a,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${escC(a.nome)}</td><td style="text-align:center">${escC(a.ambiente||'')}</td><td style="text-align:center">${a.de}</td><td style="text-align:center">${a.para}</td><td>${escC(a.motivo||'')}</td></tr>`).join('')
-        : '<tr><td colspan="6" style="text-align:center">Nenhuma alteração — o estoque conferido estava de acordo com o registrado.</td></tr>';
+        ? r.alteracoes.map((a,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${escC(a.nome)}</td><td style="text-align:center">${escC(a.ambiente||'')}</td><td style="text-align:center">${a.de}</td><td style="text-align:center">${a.para}</td><td style="text-align:center">${estadoCel(a)}</td><td>${escC(a.motivo||'')}</td></tr>`).join('')
+        : '<tr><td colspan="7" style="text-align:center">Nenhuma alteração — o estoque conferido estava de acordo com o registrado.</td></tr>';
       const assLinha=(nome,papel,ass)=>`<div class="assin-linha"><div class="ln">${escC(nome)||'&nbsp;'}<br>${papel}${ass?`<div class="st2">✓ ${ass.nome===nome?'Assinado':'Ciente'} em ${new Date(ass.em).toLocaleString('pt-BR')}</div>`:''}</div></div>`;
       return cabecalhoCt()
         + `<div class="doc-titulo">Relatório de Conferência de Estoque</div>`
         + `<div style="text-align:center;font-size:10pt;margin:-2px 0 10px">Nº ${escC(r.numero||'—')}</div>`
-        + `<p>Relatório da conferência de estoque (${escC(ambTxt)}), realizada e assinada por <span class="b">${escC(r.por)||'—'}</span> em <span class="b">${fmtQuando(r.em)}</span>, encaminhado ao Chefe de Socorro <span class="b">${escC(r.chefeNome)||'—'}</span>. Constam abaixo apenas os itens que tiveram alteração de quantidade, com o respectivo motivo.</p>`
-        + `<table class="ct-tab"><thead><tr><th style="width:6%">#</th><th>Item</th><th style="width:16%">Ambiente</th><th style="width:10%">Registrado</th><th style="width:10%">Contado</th><th style="width:28%">Motivo</th></tr></thead><tbody>${linhas}</tbody></table>`
+        + `<p>Relatório da conferência de estoque (${escC(ambTxt)}), realizada e assinada por <span class="b">${escC(r.por)||'—'}</span> em <span class="b">${fmtQuando(r.em)}</span>, encaminhado ao Chefe de Socorro <span class="b">${escC(r.chefeNome)||'—'}</span>. Constam abaixo apenas os itens que tiveram alteração de quantidade ou de estado, com o respectivo motivo.</p>`
+        + `<table class="ct-tab"><thead><tr><th style="width:6%">#</th><th>Item</th><th style="width:15%">Ambiente</th><th style="width:9%">Registrado</th><th style="width:9%">Contado</th><th style="width:14%">Bom/Ruim</th><th style="width:23%">Motivo</th></tr></thead><tbody>${linhas}</tbody></table>`
         + `<div class="assinaturas">`
         + assLinha(r.assPraca?r.assPraca.nome:r.por, 'MILITAR QUE CONFERIU — 15º BBM', r.assPraca)
         + assLinha(r.chefeNome, 'CHEFE DE SOCORRO DA 15º BBM', r.assChefe)
