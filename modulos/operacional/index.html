@@ -230,6 +230,15 @@
     function _norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\bbm\b/g,'').replace(/\s+/g,' ').trim(); }
     function ehMesma(a,b){ const x=_norm(a),y=_norm(b); return !!x&&!!y&&(x===y||x.includes(y)||y.includes(x)); }
     function canonMilitar(nome){ const m=militares.find(x=>ehMesma(x.nome,nome)); return m?m.nome:(nome||''); }
+    // Exibe o nome com posto e quadro padronizados (ex.: "3º SGT QPBM Ribeiro"); mantém o cru se não achar.
+    function fmtMil(nome){
+      if(!nome) return '';
+      const m = militares.find(x=>ehMesma(x.nomeRaw||x.nome, nome));
+      if(m) return m.nomeMilitar || (BBM.nomeMilitar?BBM.nomeMilitar(m):m.nome);
+      const o = oficiais.find(x=>ehMesma(x.nome, nome));
+      if(o) return BBM.nomeMilitar?BBM.nomeMilitar({posto:o.posto,nome:o.nome,categoria:'Oficial'}):o.nome;
+      return nome;
+    }
     function diaSemana(iso){ if(!iso) return ''; return new Date(iso+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long'}); }
     function brData(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
     function extenso(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); const ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return d+' de '+ms[+m-1]+' de '+y; }
@@ -516,10 +525,10 @@
       const p=partes.find(x=>x.id===id); if(!p) return;
       const cmt = (p.guarnicao||[]).find(g=>/comand/i.test(g.funcao));
       const mot = (p.guarnicao||[]).find(g=>/motorista/i.test(g.funcao));
-      const guarLista = (p.guarnicao||[]).map(g=>`${esc(g.funcao)}: ${esc(g.militar)||'—'}`).join('<br/>');
+      const guarLista = (p.guarnicao||[]).map(g=>`${esc(g.funcao)}: ${esc(fmtMil(g.militar))||'—'}`).join('<br/>');
       const bloco = t => `<div class="texto">${nl(t)||'&nbsp;'}</div>`;
       const permHtml = (p.permutas&&p.permutas.length)
-        ? p.permutas.map(x=>`${esc(x.saiu)||'—'} permutou com ${esc(x.entrou)||'—'}`).join('<br/>')
+        ? p.permutas.map(x=>`${esc(fmtMil(x.saiu))||'—'} permutou com ${esc(fmtMil(x.entrou))||'—'}`).join('<br/>')
         : '&nbsp;';
       const statusTag = p.status==='assinado' ? ''
         : `<div class="status-tag">${p.status==='aguardando_chefe'?'AGUARDANDO ASSINATURA DO CHEFE DE SOCORRO':'RASCUNHO — NÃO ASSINADO'}</div>`;
@@ -533,10 +542,10 @@
         para o dia <span class="b">${brData(p.dataProx)}</span>${p.dataProx?' ('+diaSemana(p.dataProx)+')':''}.</p>
 
         <h3>I — Serviço Interno</h3>
-        <p><span class="b">Chefe de Socorro:</span> ${esc(p.chefeNome)||'—'}</p>
-        <p><span class="b">Cmt de Guarnição:</span> ${esc(cmt?cmt.militar:'')||'—'}</p>
+        <p><span class="b">Chefe de Socorro:</span> ${esc(fmtMil(p.chefeNome))||'—'}</p>
+        <p><span class="b">Cmt de Guarnição:</span> ${esc(fmtMil(cmt?cmt.militar:''))||'—'}</p>
         <p><span class="b">Guarnição:</span><br/>${guarLista||'&nbsp;'}</p>
-        <p><span class="b">Motorista:</span> ${esc(mot?mot.militar:'')||'—'}</p>
+        <p><span class="b">Motorista:</span> ${esc(fmtMil(mot?mot.militar:''))||'—'}</p>
 
         <h3>II — Jornada Extra Operacional / Serviço Externo</h3>${bloco(p.jornada)}
 
@@ -554,8 +563,8 @@
         <p style="margin-top:22px">Quartel em Chapadinha/MA, ${p.data?esc(extenso(p.data)):'______ de ____________ de ______'}.</p>
 
         <div class="assinaturas">
-          ${assLinha(p.assCmt?p.assCmt.nome:(cmt?cmt.militar:''),'CMT DE GUARNIÇÃO DA 15º BBM', p.assCmt)}
-          ${assLinha(p.chefeNome,'CHEFE DE SOCORRO DA 15º BBM', p.assChefe)}
+          ${assLinha(fmtMil(p.assCmt?p.assCmt.nome:(cmt?cmt.militar:'')),'CMT DE GUARNIÇÃO DA 15º BBM', p.assCmt)}
+          ${assLinha(fmtMil(p.chefeNome),'CHEFE DE SOCORRO DA 15º BBM', p.assChefe)}
         </div>`;
       document.getElementById('docView').innerHTML='<div class="doc">'+html+'</div>';
       document.getElementById('docOverlay').classList.add('open');
