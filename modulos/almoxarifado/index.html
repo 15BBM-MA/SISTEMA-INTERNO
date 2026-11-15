@@ -222,9 +222,13 @@
           </div>
           <div id="cfSplitAviso" style="display:none;font-size:.72rem;color:#b45309;margin-top:5px"></div>
         </div>
-        <div class="form-group" style="margin:0">
+        <div class="form-group">
           <label class="form-label">Ambiente (onde o item está)</label>
           <select class="form-control" id="cfAmbiente"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Categoria do item</label>
+          <select class="form-control" id="cfCategoria"></select>
         </div>
       </div>
       <div class="modal-footer">
@@ -1055,6 +1059,8 @@
       document.getElementById('cfMotivo').value = '';
       const selAmb = document.getElementById('cfAmbiente');
       selAmb.innerHTML = AMBIENTES.map(a=>`<option${a===i.ambiente?' selected':''}>${a}</option>`).join('');
+      const selCat = document.getElementById('cfCategoria');
+      selCat.innerHTML = CATEGORIAS.map(c=>`<option${c===i.categoria?' selected':''}>${c}</option>`).join('');
       cfToggleMotivo();
       cfReconciliar('bom'); // ajusta a divisão ao total contado
       BBM.openModal('modalContagem');
@@ -1104,19 +1110,26 @@
       const mudouEstado = (bom !== _cfBom) || (ruim !== _cfRuim);
       const novoAmb = document.getElementById('cfAmbiente').value;
       const trocou = novoAmb && novoAmb !== i.ambiente;
+      const catDe = i.categoria;
+      const novaCat = document.getElementById('cfCategoria').value;
+      const trocouCat = novaCat && novaCat !== catDe;
       i.qtd = v;
       i.qtdBom = bom; i.qtdRuim = ruim;
       if (trocou) i.ambiente = novoAmb;
+      if (trocouCat) i.categoria = novaCat;
       carimbar(i);
-      // registra a alteração no relatório da conferência (quando a qtd diverge ou a divisão bom/ruim muda)
-      if (divergiu || mudouEstado) {
+      // registra a alteração no relatório da conferência (quando a qtd diverge, a divisão bom/ruim muda ou a categoria muda)
+      if (divergiu || mudouEstado || trocouCat) {
         conferencia.alteracoes = (conferencia.alteracoes || []).filter(a => a.itemId !== i.id);
-        conferencia.alteracoes.push({ itemId:i.id, nome:i.nome, ambiente:i.ambiente, unidade:i.unidade, de, para:v, bomDe:_cfBom, ruimDe:_cfRuim, bomPara:bom, ruimPara:ruim, motivo, por:(euC()?.nome)||'—', em:new Date().toISOString() });
+        conferencia.alteracoes.push({ itemId:i.id, nome:i.nome, ambiente:i.ambiente, unidade:i.unidade, de, para:v, bomDe:_cfBom, ruimDe:_cfRuim, bomPara:bom, ruimPara:ruim, catDe:(trocouCat?catDe:null), catPara:(trocouCat?novaCat:null), motivo, por:(euC()?.nome)||'—', em:new Date().toISOString() });
       }
       BBM.closeModal('modalContagem');
       renderConferencia(); renderAmbientes(); atualizarCards();
       const okI = await salvar(KEY_I, itens);
-      await salvar(KEY_C, [conferencia], { sucesso: okI ? (trocou ? `Contagem registrada e item movido para ${novoAmb}.` : 'Contagem registrada.') : null });
+      const msgs = [];
+      if (trocou) msgs.push(`movido para ${novoAmb}`);
+      if (trocouCat) msgs.push(`recategorizado para ${novaCat}`);
+      await salvar(KEY_C, [conferencia], { sucesso: okI ? ('Contagem registrada' + (msgs.length?` e item ${msgs.join(' e ')}.`:'.')) : null });
     }
 
     let _atualizando = false;
@@ -1330,15 +1343,16 @@
         const antes = (a.bomDe != null) ? `${a.bomDe}/${a.ruimDe}` : null;
         return (antes && antes !== dep) ? `${antes} → ${dep}` : dep;
       };
+      const catCel = a => (a.catPara && a.catDe && a.catPara !== a.catDe) ? `${escC(a.catDe)} → ${escC(a.catPara)}` : '—';
       const linhas = (r.alteracoes||[]).length
-        ? r.alteracoes.map((a,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${escC(a.nome)}</td><td style="text-align:center">${escC(a.ambiente||'')}</td><td style="text-align:center">${a.de}</td><td style="text-align:center">${a.para}</td><td style="text-align:center">${estadoCel(a)}</td><td>${escC(a.motivo||'')}</td></tr>`).join('')
-        : '<tr><td colspan="7" style="text-align:center">Nenhuma alteração — o estoque conferido estava de acordo com o registrado.</td></tr>';
+        ? r.alteracoes.map((a,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${escC(a.nome)}</td><td style="text-align:center">${escC(a.ambiente||'')}</td><td style="text-align:center">${a.de}</td><td style="text-align:center">${a.para}</td><td style="text-align:center">${estadoCel(a)}</td><td style="text-align:center">${catCel(a)}</td><td>${escC(a.motivo||'')}</td></tr>`).join('')
+        : '<tr><td colspan="8" style="text-align:center">Nenhuma alteração — o estoque conferido estava de acordo com o registrado.</td></tr>';
       const assLinha=(nome,papel,ass)=>`<div class="assin-linha"><div class="ln">${escC(nome)||'&nbsp;'}<br>${papel}${ass?`<div class="st2">✓ ${ass.nome===nome?'Assinado':'Ciente'} em ${new Date(ass.em).toLocaleString('pt-BR')}</div>`:''}</div></div>`;
       return cabecalhoCt()
         + `<div class="doc-titulo">Relatório de Conferência de Estoque</div>`
         + `<div style="text-align:center;font-size:10pt;margin:-2px 0 10px">Nº ${escC(r.numero||'—')}</div>`
-        + `<p>Relatório da conferência de estoque (${escC(ambTxt)}), realizada e assinada por <span class="b">${escC(r.por)||'—'}</span> em <span class="b">${fmtQuando(r.em)}</span>, encaminhado ao Chefe de Socorro <span class="b">${escC(r.chefeNome)||'—'}</span>. Constam abaixo apenas os itens que tiveram alteração de quantidade ou de estado, com o respectivo motivo.</p>`
-        + `<table class="ct-tab"><thead><tr><th style="width:6%">#</th><th>Item</th><th style="width:15%">Ambiente</th><th style="width:9%">Registrado</th><th style="width:9%">Contado</th><th style="width:14%">Bom/Ruim</th><th style="width:23%">Motivo</th></tr></thead><tbody>${linhas}</tbody></table>`
+        + `<p>Relatório da conferência de estoque (${escC(ambTxt)}), realizada e assinada por <span class="b">${escC(r.por)||'—'}</span> em <span class="b">${fmtQuando(r.em)}</span>, encaminhado ao Chefe de Socorro <span class="b">${escC(r.chefeNome)||'—'}</span>. Constam abaixo apenas os itens que tiveram alteração de quantidade, de estado ou de categoria, com o respectivo motivo.</p>`
+        + `<table class="ct-tab"><thead><tr><th style="width:5%">#</th><th>Item</th><th style="width:13%">Ambiente</th><th style="width:8%">Registrado</th><th style="width:8%">Contado</th><th style="width:12%">Bom/Ruim</th><th style="width:16%">Categoria</th><th style="width:20%">Motivo</th></tr></thead><tbody>${linhas}</tbody></table>`
         + `<div class="assinaturas">`
         + assLinha(r.assPraca?r.assPraca.nome:r.por, 'MILITAR QUE CONFERIU — 15º BBM', r.assPraca)
         + assLinha(r.chefeNome, 'CHEFE DE SOCORRO DA 15º BBM', r.assChefe)
