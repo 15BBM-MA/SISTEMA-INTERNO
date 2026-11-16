@@ -283,7 +283,9 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Categoria</label>
+            <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">Categoria
+              <button type="button" onclick="abrirNovaCategoria()" style="background:none;border:none;color:var(--blue,#2563eb);font-size:.76rem;font-weight:700;cursor:pointer;padding:0">+ nova categoria</button>
+            </label>
             <select class="form-control" id="iCategoria"></select>
           </div>
           <div class="form-group"><label class="form-label">Unidade</label>
@@ -291,8 +293,27 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Qtd. Atual</label><input class="form-control" id="iQtd" type="number" placeholder="0" min="0"/></div>
+          <div class="form-group"><label class="form-label">Qtd. Atual</label><input class="form-control" id="iQtd" type="number" placeholder="0" min="0" oninput="itReconciliar('bom')"/></div>
           <div class="form-group"><label class="form-label">Qtd. Mínima</label><input class="form-control" id="iMin" type="number" placeholder="0" min="0"/></div>
+        </div>
+        <div class="form-group" id="iEstadoWrap">
+          <label class="form-label">Estado do material (divide a quantidade)</label>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1">
+              <div style="font-size:.72rem;font-weight:700;color:#166534;margin-bottom:3px">BOM</div>
+              <input class="form-control" id="iBom" type="number" min="0" oninput="itOnBom()"
+                     style="background:#dcfce7;color:#166534;font-weight:700;text-align:center"/>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.72rem;font-weight:700;color:#b91c1c;margin-bottom:3px">RUIM</div>
+              <input class="form-control" id="iRuim" type="number" min="0" oninput="itOnRuim()"
+                     style="background:#fee2e2;color:#b91c1c;font-weight:700;text-align:center"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #bbf7d0;color:#166534" onclick="itTodos('bom')">Todos bons</button>
+            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #fecaca;color:#b91c1c" onclick="itTodos('ruim')">Todos ruins</button>
+          </div>
         </div>
         <div class="form-group"><label class="form-label">Localização (dentro do ambiente)</label><input class="form-control" id="iLocal" placeholder="Ex: Prateleira A2, armário 3"/></div>
         <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="iObs" rows="2"></textarea></div>
@@ -300,6 +321,27 @@
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="BBM.closeModal('modalItem')">Cancelar</button>
         <button class="btn btn-primary" id="btnSalvarItem" onclick="salvarItem()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NOVA CATEGORIA -->
+  <div class="modal-overlay" id="modalCategoria">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-header">
+        <span class="modal-title">Nova categoria</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalCategoria')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Nome da categoria *</label>
+          <input class="form-control" id="novaCatNome" placeholder="Ex: Salvamento em Espaço Confinado" onkeydown="if(event.key==='Enter')salvarNovaCategoria()"/>
+          <div id="novaCatErro" style="display:none;font-size:.78rem;color:#b91c1c;margin-top:6px"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalCategoria')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarNovaCategoria()">Criar categoria</button>
       </div>
     </div>
   </div>
@@ -596,13 +638,28 @@
     const KEY_CT = 'almoxarifado_cautelas';   // cautelas de materiais (documentos)
     const KEY_PEND = 'almoxarifado_pendencias';     // alterações de estoque aguardando aprovação do Chefe
     const KEY_REL  = 'almoxarifado_conf_relatorios'; // relatórios de conferência assinados
+    const KEY_CAT  = 'almoxarifado_categorias';      // categorias criadas manualmente (compartilhadas)
 
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
       'Almoxarifado', 'Administrativo', 'Oficina/Em Operação', 'Sala do Comando',
       'Cozinha', 'Alojamento dos Praças', 'Alojamento dos Oficiais', 'Alojamento Feminino',
     ];
-    const CATEGORIAS = ['Incêndio Urbano','Incêndio Florestal','Salvamento Aquático','Salvamento Terrestre','Salvamento em Altura','Salvamento Veicular','APH','Mergulho','Captura de Animal','Ferramentas','EPI','Material de Escritório','Mobiliário','Eletrodoméstico','Cama/Enxoval','Limpeza','Combustível','Outros'];
+    const CATEGORIAS_BASE = ['Incêndio Urbano','Incêndio Florestal','Salvamento Aquático','Salvamento Terrestre','Salvamento em Altura','Salvamento Veicular','APH','Mergulho','Captura de Animal','Ferramentas','EPI','Material de Escritório','Mobiliário','Eletrodoméstico','Cama/Enxoval','Limpeza','Combustível','Outros'];
+    let categoriasCustom = [];                 // criadas manualmente (vêm da nuvem)
+    let CATEGORIAS = [...CATEGORIAS_BASE];      // base + personalizadas ("Outros" fica por último)
+    function recomputarCategorias(){
+      const extras = categoriasCustom.filter(c => !CATEGORIAS_BASE.some(b => b.toLowerCase() === String(c).toLowerCase()));
+      const semOutros = CATEGORIAS_BASE.filter(c => c !== 'Outros');
+      CATEGORIAS = [...semOutros, ...extras, 'Outros'];
+    }
+    // repovoa os selects de categoria preservando o valor atual
+    function refreshCategoriaSelects(){
+      const selI = document.getElementById('iCategoria');
+      const selF = document.getElementById('filterCat');
+      if (selI){ const v = selI.value; selI.innerHTML = CATEGORIAS.map(c=>`<option>${c}</option>`).join(''); if (CATEGORIAS.includes(v)) selI.value = v; }
+      if (selF){ const v = selF.value; selF.innerHTML = '<option value="">Todas as categorias</option>' + CATEGORIAS.map(c=>`<option>${c}</option>`).join(''); selF.value = v; }
+    }
 
     let itens = [], movimentos = [];
     let cautelas = [], oficiais = [], militaresList = [];
@@ -644,12 +701,15 @@
     })();
 
     // ── Carga inicial (nuvem, compartilhada entre todos) ──────────
-    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT, KEY_PEND, KEY_REL], async () => {
+    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT, KEY_PEND, KEY_REL, KEY_CAT], async () => {
       itens = (BBM.load(KEY_I) || []).map(normAmbiente);
       movimentos = BBM.load(KEY_M) || [];
       cautelas = BBM.load(KEY_CT) || [];
       pendencias = BBM.load(KEY_PEND) || [];
       confRelatorios = BBM.load(KEY_REL) || [];
+      categoriasCustom = BBM.load(KEY_CAT) || [];
+      recomputarCategorias();
+      refreshCategoriaSelects();
       const c = (BBM.load(KEY_C) || [])[0];
       if (c) conferencia = c;
       renderAmbientes();
@@ -839,6 +899,49 @@
       return ok;
     }
 
+    // ── Nova categoria (manual, compartilhada) ────────────────────
+    function abrirNovaCategoria(){
+      document.getElementById('novaCatNome').value = '';
+      document.getElementById('novaCatErro').style.display = 'none';
+      BBM.openModal('modalCategoria');
+      setTimeout(()=>document.getElementById('novaCatNome').focus(), 150);
+    }
+    async function salvarNovaCategoria(){
+      const err = document.getElementById('novaCatErro');
+      const nome = document.getElementById('novaCatNome').value.trim().replace(/\s+/g,' ');
+      if (!nome) { err.textContent='Informe o nome da categoria.'; err.style.display='block'; return; }
+      if (CATEGORIAS.some(c => c.toLowerCase() === nome.toLowerCase())) {
+        err.textContent='Já existe uma categoria com esse nome.'; err.style.display='block'; return;
+      }
+      categoriasCustom = [...categoriasCustom, nome];
+      recomputarCategorias();
+      refreshCategoriaSelects();
+      const sel = document.getElementById('iCategoria'); if (sel) sel.value = nome; // já seleciona no cadastro
+      BBM.closeModal('modalCategoria');
+      await salvar(KEY_CAT, categoriasCustom, { sucesso:`Categoria "${nome}" criada.` });
+    }
+
+    // ── Estado Bom/Ruim no cadastro de item (divisão dinâmica) ─────
+    function itTotal(){ return Math.max(0, Number(document.getElementById('iQtd').value) || 0); }
+    function itReconciliar(fixar){
+      const total = itTotal();
+      const elB = document.getElementById('iBom'), elR = document.getElementById('iRuim');
+      if (!elB || !elR) return;
+      let bom = Math.max(0, Number(elB.value) || 0);
+      let ruim = Math.max(0, Number(elR.value) || 0);
+      if (fixar === 'ruim') { if (ruim > total) ruim = total; bom = total - ruim; }
+      else                  { if (bom  > total) bom  = total; ruim = total - bom; }
+      elB.value = bom; elR.value = ruim; elB.max = total; elR.max = total;
+    }
+    function itOnBom(){ itReconciliar('bom'); }
+    function itOnRuim(){ itReconciliar('ruim'); }
+    function itTodos(tipo){
+      const total = itTotal();
+      document.getElementById('iBom').value  = tipo === 'bom'  ? total : 0;
+      document.getElementById('iRuim').value = tipo === 'ruim' ? total : 0;
+      itReconciliar(tipo);
+    }
+
     function novoItem() {
       document.getElementById('itemId').value='';
       document.getElementById('iNome').value='';
@@ -849,6 +952,8 @@
       document.getElementById('iMin').value='';
       document.getElementById('iLocal').value='';
       document.getElementById('iObs').value='';
+      document.getElementById('iBom').value='0'; document.getElementById('iRuim').value='0';
+      document.getElementById('iEstadoWrap').style.display=''; // estado só no cadastro de novo item
       document.getElementById('modalItemTitle').textContent = 'Novo Item';
       BBM.openModal('modalItem');
     }
@@ -858,6 +963,10 @@
       const nome = document.getElementById('iNome').value.trim();
       if (!nome) { BBM.toast('Informe o nome do item.','error'); return; }
       const anterior = id ? itens.find(i=>i.id===id) : null;
+      // estado Bom/Ruim só vale para item novo (reconciliado com a quantidade)
+      const novoTot = Number(document.getElementById('iQtd').value) || 0;
+      let novoBom = Math.min(novoTot, Math.max(0, Number(document.getElementById('iBom').value) || 0));
+      let novoRuim = novoTot - novoBom;
       const obj = {
         id: id || BBM.generateId(),
         nome,
@@ -867,9 +976,9 @@
         // quantidade de item existente NÃO muda pela edição — só via Movimentar (com aprovação)
         qtd: anterior ? anterior.qtd : (Number(document.getElementById('iQtd').value) || 0),
         min: Number(document.getElementById('iMin').value) || 0,
-        // Novo item entra como todo "Bom"; a divisão Bom/Ruim é definida na conferência.
-        qtdBom:  anterior ? (anterior.qtdBom  != null ? anterior.qtdBom  : anterior.qtd) : (Number(document.getElementById('iQtd').value) || 0),
-        qtdRuim: anterior ? (anterior.qtdRuim != null ? anterior.qtdRuim : 0) : 0,
+        // Novo item: estado Bom/Ruim informado no cadastro (igual ao checklist). Item existente mantém a divisão.
+        qtdBom:  anterior ? (anterior.qtdBom  != null ? anterior.qtdBom  : anterior.qtd) : novoBom,
+        qtdRuim: anterior ? (anterior.qtdRuim != null ? anterior.qtdRuim : 0) : novoRuim,
         local: document.getElementById('iLocal').value.trim(),
         obs:   document.getElementById('iObs').value.trim(),
       };
@@ -894,6 +1003,8 @@
       document.getElementById('iMin').value       = i.min;
       document.getElementById('iLocal').value     = i.local || '';
       document.getElementById('iObs').value       = i.obs || '';
+      // a divisão Bom/Ruim de item existente é definida na conferência, não aqui
+      document.getElementById('iEstadoWrap').style.display = 'none';
       document.getElementById('modalItemTitle').textContent = 'Editar Item';
       BBM.openModal('modalItem');
     }
