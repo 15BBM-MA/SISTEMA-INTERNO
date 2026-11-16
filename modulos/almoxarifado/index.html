@@ -998,8 +998,12 @@
       const nome = document.getElementById('iNome').value.trim();
       if (!nome) { BBM.toast('Informe o nome do item.','error'); return; }
       const anterior = id ? itens.find(i=>i.id===id) : null;
-      // estado Bom/Ruim reconciliado com a quantidade (novo item usa a Qtd digitada; edição usa a Qtd atual travada)
-      const totEstado = anterior ? (anterior.qtd || 0) : (Number(document.getElementById('iQtd').value) || 0);
+      const admin = ehAdmin();
+      // Quantidade: item novo usa a Qtd digitada; na edição só muda se for admin (senão via Movimentar).
+      const qtdCampo = Number(document.getElementById('iQtd').value) || 0;
+      const qtdFinal = anterior ? (admin ? qtdCampo : anterior.qtd) : qtdCampo;
+      // estado Bom/Ruim reconciliado com a quantidade final
+      const totEstado = qtdFinal;
       let novoBom = Math.min(totEstado, Math.max(0, Number(document.getElementById('iBom').value) || 0));
       let novoRuim = totEstado - novoBom;
       const obj = {
@@ -1008,8 +1012,8 @@
         ambiente:  document.getElementById('iAmbiente').value,
         categoria: document.getElementById('iCategoria').value,
         unidade:   document.getElementById('iUnidade').value,
-        // quantidade de item existente NÃO muda pela edição — só via Movimentar (com aprovação)
-        qtd: anterior ? anterior.qtd : (Number(document.getElementById('iQtd').value) || 0),
+        // admin edita a quantidade livremente; demais usuários só via Movimentar (com aprovação)
+        qtd: qtdFinal,
         min: Number(document.getElementById('iMin').value) || 0,
         // Estado Bom/Ruim informado no cadastro/edição (igual ao checklist), reconciliado com a quantidade.
         qtdBom:  novoBom,
@@ -1033,8 +1037,13 @@
       document.getElementById('iCategoria').value = i.categoria;
       document.getElementById('iUnidade').value   = i.unidade;
       const q = document.getElementById('iQtd');
-      q.value = i.qtd; q.readOnly = true; q.style.background = '#f3f4f6';
-      q.title = 'A quantidade só muda por Movimentar (com aprovação do Chefe de Socorro).';
+      q.value = i.qtd;
+      if (ehAdmin()) {               // admin edita tudo, inclusive a quantidade
+        q.readOnly = false; q.style.background = ''; q.title = 'Admin: edição livre da quantidade.';
+      } else {
+        q.readOnly = true; q.style.background = '#f3f4f6';
+        q.title = 'A quantidade só muda por Movimentar (com aprovação do Chefe de Socorro).';
+      }
       document.getElementById('iMin').value       = i.min;
       document.getElementById('iLocal').value     = i.local || '';
       document.getElementById('iObs').value       = i.obs || '';
@@ -1595,6 +1604,7 @@
     const MESES_CT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
     const escC = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
     function euC(){ return BBM.currentUser && BBM.currentUser(); }
+    function ehAdmin(){ return (euC()?.role) === 'admin'; }
     function _normC(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\bbm\b/g,'').replace(/\s+/g,' ').trim(); }
     function ehMesmaC(a,b){ const x=_normC(a),y=_normC(b); return !!x&&!!y&&(x===y||x.includes(y)||y.includes(x)); }
     function brDataC(iso){ if(!iso) return '____/____/______'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
