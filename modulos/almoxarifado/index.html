@@ -722,6 +722,7 @@
     const KEY_PEND = 'almoxarifado_pendencias';     // alterações de estoque aguardando aprovação do Chefe
     const KEY_REL  = 'almoxarifado_conf_relatorios'; // relatórios de conferência assinados
     const KEY_CAT  = 'almoxarifado_categorias';      // categorias criadas manualmente (compartilhadas)
+    const KEY_LOG  = 'almoxarifado_historico';        // log de cadastro/edição de itens (auditoria)
 
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
@@ -747,7 +748,7 @@
 
     let itens = [], movimentos = [];
     let cautelas = [], oficiais = [], militaresList = [];
-    let pendencias = [], confRelatorios = [];
+    let pendencias = [], confRelatorios = [], historico = [];
     let ctSel = {}; // seleção atual do modal de cautela: { itemId: qtd }
     let conferencia = { id:'atual', inicio:null, por:'', em:null }; // sessão de contagem
     let ambienteAtivo = ''; // '' = todos
@@ -787,12 +788,13 @@
     })();
 
     // ── Carga inicial (nuvem, compartilhada entre todos) ──────────
-    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT, KEY_PEND, KEY_REL, KEY_CAT], async () => {
+    BBM.ready([KEY_I, KEY_M, KEY_C, KEY_CT, KEY_PEND, KEY_REL, KEY_CAT, KEY_LOG], async () => {
       itens = (BBM.load(KEY_I) || []).map(normAmbiente);
       movimentos = BBM.load(KEY_M) || [];
       cautelas = BBM.load(KEY_CT) || [];
       pendencias = BBM.load(KEY_PEND) || [];
       confRelatorios = BBM.load(KEY_REL) || [];
+      historico = BBM.load(KEY_LOG) || [];
       categoriasCustom = BBM.load(KEY_CAT) || [];
       recomputarCategorias();
       refreshCategoriaSelects();
@@ -1074,11 +1076,32 @@
         obs:   document.getElementById('iObs').value.trim(),
       };
       carimbar(obj);
+      // ── Log de auditoria (cadastro / edição) ──
+      const quem = euC()?.nome || '—';
+      const emIso = new Date().toISOString();
+      const bomAnt = anterior ? splitEstado(anterior) : null;
+      if (!anterior) {
+        historico.push({ id:BBM.generateId(), itemId:obj.id, em:emIso, por:quem, acao:'cadastro',
+          det:`Item cadastrado: ${obj.qtd} ${obj.unidade} (${novoBom} bom / ${novoRuim} ruim) · ${obj.ambiente} · ${obj.categoria}` });
+      } else {
+        const mud = [];
+        if (obj.nome !== anterior.nome) mud.push(`Nome "${anterior.nome}" → "${obj.nome}"`);
+        if (obj.qtd !== anterior.qtd) mud.push(`Quantidade ${anterior.qtd} → ${obj.qtd}`);
+        if (novoBom !== bomAnt.bom || novoRuim !== bomAnt.ruim) mud.push(`Estado bom/ruim ${bomAnt.bom}/${bomAnt.ruim} → ${novoBom}/${novoRuim}`);
+        if (obj.categoria !== anterior.categoria) mud.push(`Categoria ${anterior.categoria} → ${obj.categoria}`);
+        if (obj.ambiente !== anterior.ambiente) mud.push(`Ambiente ${anterior.ambiente} → ${obj.ambiente}`);
+        if (obj.unidade !== anterior.unidade) mud.push(`Unidade ${anterior.unidade} → ${obj.unidade}`);
+        if ((obj.min||0) !== (anterior.min||0)) mud.push(`Qtd. mínima ${anterior.min||0} → ${obj.min||0}`);
+        if ((obj.local||'') !== (anterior.local||'')) mud.push(`Localização "${anterior.local||'—'}" → "${obj.local||'—'}"`);
+        if (mud.length) historico.push({ id:BBM.generateId(), itemId:obj.id, em:emIso, por:quem,
+          acao: admin ? 'edicao-admin' : 'edicao', det: mud.join(' · ') });
+      }
       if (id) { const idx = itens.findIndex(i=>i.id===id); if(idx>=0) itens[idx]=obj; }
       else itens = [...itens, obj];
       BBM.closeModal('modalItem');
       renderAmbientes(); renderItens(); atualizarCards();
-      await salvar(KEY_I, itens, { sucesso: id ? 'Item atualizado.' : 'Item cadastrado.' });
+      const okI = await salvar(KEY_I, itens, { sucesso: id ? 'Item atualizado.' : 'Item cadastrado.' });
+      if (okI) await salvar(KEY_LOG, historico);
     }
 
     function editarItem(id) {
@@ -1175,6 +1198,13 @@
     }
     function buildHistoricoItem(id){
       const ev = [];
+      // cadastro / edições do item (auditoria)
+      (historico||[]).filter(h=>h.itemId===id).forEach(h=>{
+        const titulo = h.acao==='cadastro' ? 'Cadastro do item'
+                     : h.acao==='edicao-admin' ? 'Edição (admin)' : 'Edição do item';
+        ev.push({ ts: h.em?new Date(h.em).getTime():0, cls:'cad', titulo, det:h.det||'',
+          meta:`por ${h.por||'—'} · ${fmtQuando(h.em)}` });
+      });
       // movimentações (entradas/saídas já autorizadas)
       (movimentos||[]).filter(m=>m.itemId===id).forEach(m=>{
         ev.push({ ts:_tsBr(m.data), cls:'mov', titulo:`${m.tipo} de ${m.qtd} ${m.unidade||''}`.trim(),
