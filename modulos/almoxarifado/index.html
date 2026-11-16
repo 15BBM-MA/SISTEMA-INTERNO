@@ -207,19 +207,16 @@
           <div style="display:flex;gap:8px">
             <div style="flex:1">
               <div style="font-size:.72rem;font-weight:700;color:#166534;margin-bottom:3px">BOM</div>
-              <input class="form-control" id="cfBom" type="number" min="0" oninput="cfOnBom()"
-                     style="background:#dcfce7;color:#166534;font-weight:700;text-align:center"/>
+              <input class="form-control" id="cfBom" type="number" min="0" oninput="cfOnBom()" onclick="cfTodos('bom')" title="Clique para marcar toda a quantidade como BOM"
+                     style="background:#dcfce7;color:#166534;font-weight:700;text-align:center;cursor:pointer"/>
             </div>
             <div style="flex:1">
               <div style="font-size:.72rem;font-weight:700;color:#b91c1c;margin-bottom:3px">RUIM</div>
-              <input class="form-control" id="cfRuim" type="number" min="0" oninput="cfOnRuim()"
-                     style="background:#fee2e2;color:#b91c1c;font-weight:700;text-align:center"/>
+              <input class="form-control" id="cfRuim" type="number" min="0" oninput="cfOnRuim()" onclick="cfTodos('ruim')" title="Clique para marcar toda a quantidade como RUIM"
+                     style="background:#fee2e2;color:#b91c1c;font-weight:700;text-align:center;cursor:pointer"/>
             </div>
           </div>
-          <div style="display:flex;gap:8px;margin-top:6px">
-            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #bbf7d0;color:#166534" onclick="cfTodos('bom')">Todos bons</button>
-            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #fecaca;color:#b91c1c" onclick="cfTodos('ruim')">Todos ruins</button>
-          </div>
+          <div style="font-size:.72rem;color:var(--text-light);margin-top:5px">Clique no balão <b style="color:#166534">BOM</b> ou <b style="color:#b91c1c">RUIM</b> para marcar tudo, ou digite a quantidade de cada.</div>
           <div id="cfSplitAviso" style="display:none;font-size:.72rem;color:#b45309;margin-top:5px"></div>
         </div>
         <div class="form-group">
@@ -283,10 +280,11 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">Categoria
-              <button type="button" onclick="abrirNovaCategoria()" style="background:none;border:none;color:var(--blue,#2563eb);font-size:.76rem;font-weight:700;cursor:pointer;padding:0">+ nova categoria</button>
-            </label>
+            <label class="form-label">Categoria</label>
             <select class="form-control" id="iCategoria"></select>
+            <button type="button" onclick="abrirNovaCategoria()" style="margin-top:6px;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#eff6ff;border:1px dashed #2563eb;color:#1d4ed8;font-size:.82rem;font-weight:700;cursor:pointer;padding:8px 10px;border-radius:8px">
+              <span style="font-size:1.05rem;line-height:1">＋</span> Nova categoria
+            </button>
           </div>
           <div class="form-group"><label class="form-label">Unidade</label>
             <select class="form-control" id="iUnidade"><option>unidade</option><option>par</option><option>litro</option><option>kg</option><option>metro</option><option>caixa</option><option>conjunto</option></select>
@@ -301,19 +299,16 @@
           <div style="display:flex;gap:8px">
             <div style="flex:1">
               <div style="font-size:.72rem;font-weight:700;color:#166534;margin-bottom:3px">BOM</div>
-              <input class="form-control" id="iBom" type="number" min="0" oninput="itOnBom()"
-                     style="background:#dcfce7;color:#166534;font-weight:700;text-align:center"/>
+              <input class="form-control" id="iBom" type="number" min="0" oninput="itOnBom()" onclick="itTodos('bom')" title="Clique para marcar toda a quantidade como BOM"
+                     style="background:#dcfce7;color:#166534;font-weight:700;text-align:center;cursor:pointer"/>
             </div>
             <div style="flex:1">
               <div style="font-size:.72rem;font-weight:700;color:#b91c1c;margin-bottom:3px">RUIM</div>
-              <input class="form-control" id="iRuim" type="number" min="0" oninput="itOnRuim()"
-                     style="background:#fee2e2;color:#b91c1c;font-weight:700;text-align:center"/>
+              <input class="form-control" id="iRuim" type="number" min="0" oninput="itOnRuim()" onclick="itTodos('ruim')" title="Clique para marcar toda a quantidade como RUIM"
+                     style="background:#fee2e2;color:#b91c1c;font-weight:700;text-align:center;cursor:pointer"/>
             </div>
           </div>
-          <div style="display:flex;gap:8px;margin-top:6px">
-            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #bbf7d0;color:#166534" onclick="itTodos('bom')">Todos bons</button>
-            <button type="button" class="btn btn-ghost" style="flex:1;padding:5px;font-size:.74rem;border:1px solid #fecaca;color:#b91c1c" onclick="itTodos('ruim')">Todos ruins</button>
-          </div>
+          <div style="font-size:.72rem;color:var(--text-light);margin-top:5px">Clique no balão <b style="color:#166534">BOM</b> ou <b style="color:#b91c1c">RUIM</b> para marcar tudo, ou digite a quantidade de cada.</div>
         </div>
         <div class="form-group"><label class="form-label">Localização (dentro do ambiente)</label><input class="form-control" id="iLocal" placeholder="Ex: Prateleira A2, armário 3"/></div>
         <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="iObs" rows="2"></textarea></div>
@@ -963,10 +958,10 @@
       const nome = document.getElementById('iNome').value.trim();
       if (!nome) { BBM.toast('Informe o nome do item.','error'); return; }
       const anterior = id ? itens.find(i=>i.id===id) : null;
-      // estado Bom/Ruim só vale para item novo (reconciliado com a quantidade)
-      const novoTot = Number(document.getElementById('iQtd').value) || 0;
-      let novoBom = Math.min(novoTot, Math.max(0, Number(document.getElementById('iBom').value) || 0));
-      let novoRuim = novoTot - novoBom;
+      // estado Bom/Ruim reconciliado com a quantidade (novo item usa a Qtd digitada; edição usa a Qtd atual travada)
+      const totEstado = anterior ? (anterior.qtd || 0) : (Number(document.getElementById('iQtd').value) || 0);
+      let novoBom = Math.min(totEstado, Math.max(0, Number(document.getElementById('iBom').value) || 0));
+      let novoRuim = totEstado - novoBom;
       const obj = {
         id: id || BBM.generateId(),
         nome,
@@ -976,9 +971,9 @@
         // quantidade de item existente NÃO muda pela edição — só via Movimentar (com aprovação)
         qtd: anterior ? anterior.qtd : (Number(document.getElementById('iQtd').value) || 0),
         min: Number(document.getElementById('iMin').value) || 0,
-        // Novo item: estado Bom/Ruim informado no cadastro (igual ao checklist). Item existente mantém a divisão.
-        qtdBom:  anterior ? (anterior.qtdBom  != null ? anterior.qtdBom  : anterior.qtd) : novoBom,
-        qtdRuim: anterior ? (anterior.qtdRuim != null ? anterior.qtdRuim : 0) : novoRuim,
+        // Estado Bom/Ruim informado no cadastro/edição (igual ao checklist), reconciliado com a quantidade.
+        qtdBom:  novoBom,
+        qtdRuim: novoRuim,
         local: document.getElementById('iLocal').value.trim(),
         obs:   document.getElementById('iObs').value.trim(),
       };
@@ -1003,8 +998,12 @@
       document.getElementById('iMin').value       = i.min;
       document.getElementById('iLocal').value     = i.local || '';
       document.getElementById('iObs').value       = i.obs || '';
-      // a divisão Bom/Ruim de item existente é definida na conferência, não aqui
-      document.getElementById('iEstadoWrap').style.display = 'none';
+      // estado Bom/Ruim também pode ser ajustado aqui (divide a quantidade atual do item)
+      const s = splitEstado(i);
+      document.getElementById('iBom').value  = s.bom;
+      document.getElementById('iRuim').value = s.ruim;
+      document.getElementById('iEstadoWrap').style.display = '';
+      itReconciliar('bom');
       document.getElementById('modalItemTitle').textContent = 'Editar Item';
       BBM.openModal('modalItem');
     }
