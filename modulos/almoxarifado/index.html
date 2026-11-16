@@ -193,7 +193,11 @@
       <div class="modal-body">
         <input type="hidden" id="cfId"/>
         <div style="font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:2px" id="cfNome"></div>
-        <div style="font-size:.78rem;color:var(--text-light);margin-bottom:14px" id="cfRegistrado"></div>
+        <div style="font-size:.78rem;color:var(--text-light);margin-bottom:10px" id="cfRegistrado"></div>
+        <details class="cf-hist" id="cfHistWrap" style="margin-bottom:14px">
+          <summary class="cf-hist-head">Histórico deste item <span id="cfHistCount" class="cf-hist-count"></span></summary>
+          <div id="cfHistLista" style="margin-top:8px;max-height:220px;overflow:auto"></div>
+        </details>
         <div class="form-group">
           <label class="form-label">Quantidade contada fisicamente</label>
           <input class="form-control" id="cfQtd" type="number" min="0" oninput="cfToggleMotivo();cfReconciliar('bom')" onkeydown="if(event.key==='Enter')confirmarContagem()"/>
@@ -711,6 +715,12 @@
     .hi-det { font-size:.82rem; color:var(--text); margin-top:2px; }
     .hi-meta { font-size:.72rem; color:var(--text-light); margin-top:3px; }
     .hi-vazio { font-size:.86rem; color:var(--text-light); text-align:center; padding:20px 0; }
+    .cf-hist { border:1px solid var(--border); border-radius:9px; background:#fafafa; padding:8px 12px; }
+    .cf-hist-head { cursor:pointer; font-size:.82rem; font-weight:700; color:var(--navy); list-style:none; display:flex; align-items:center; gap:8px; }
+    .cf-hist-head::-webkit-details-marker { display:none; }
+    .cf-hist-head::before { content:'▸'; color:#b45309; font-size:.8rem; }
+    .cf-hist[open] .cf-hist-head::before { content:'▾'; }
+    .cf-hist-count { font-size:.7rem; font-weight:800; color:#fff; background:#64748b; border-radius:20px; padding:1px 8px; }
   </style>
 
   <script src="../../assets/js/main.js"></script>
@@ -1423,6 +1433,16 @@
       document.getElementById('cfId').value = i.id;
       document.getElementById('cfNome').textContent = i.nome;
       document.getElementById('cfRegistrado').textContent = `Registrado: ${i.qtd} ${i.unidade} — ${i.categoria} — ${s.bom} bom / ${s.ruim} ruim`;
+      // histórico do item, para o conferente saber o que aconteceu com ele
+      const ev = buildHistoricoItem(i.id);
+      document.getElementById('cfHistCount').textContent = ev.length;
+      document.getElementById('cfHistWrap').open = false;
+      document.getElementById('cfHistLista').innerHTML = ev.length
+        ? ev.map(e=>`<div class="hi-ev"><span class="hi-dot ${e.cls}"></span><div class="hi-main">
+            <div class="hi-tit">${escC(e.titulo)}</div>
+            ${e.det?`<div class="hi-det">${escC(e.det)}</div>`:''}
+            <div class="hi-meta">${escC(e.meta)}</div></div></div>`).join('')
+        : '<div class="hi-vazio">Sem registros anteriores para este item.</div>';
       document.getElementById('cfQtd').value = i.qtd;
       document.getElementById('cfBom').value = s.bom;   // traz o último preenchimento; pode manter ou alterar
       document.getElementById('cfRuim').value = s.ruim;
