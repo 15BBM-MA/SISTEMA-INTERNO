@@ -675,7 +675,8 @@
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
       'Almoxarifado', 'Administrativo', 'Oficina/Em Operação', 'Sala do Comando',
-      'Cozinha', 'Alojamento dos Praças', 'Alojamento dos Oficiais', 'Alojamento Feminino',
+      'Cozinha', "Alojamento de CB's e SD's", "Alojamento de SGT's e ST",
+      'Alojamento dos Oficiais', 'Alojamento Feminino',
     ];
     const CATEGORIAS_BASE = ['Incêndio Urbano','Incêndio Florestal','Salvamento Aquático','Salvamento Terrestre','Salvamento em Altura','Salvamento Veicular','APH','Mergulho','Captura de Animal','Ferramentas','EPI','Material de Escritório','Mobiliário','Eletrodoméstico','Cama/Enxoval','Limpeza','Combustível','Outros'];
     let categoriasCustom = [];                 // criadas manualmente (vêm da nuvem)
@@ -705,6 +706,8 @@
     function normAmbiente(i){
       let amb = i.ambiente || 'Almoxarifado';
       if (amb === 'Em Operação') amb = 'Oficina/Em Operação'; // renome
+      // "Alojamento dos Praças" foi dividido; itens antigos caem no de CB's/SD's (reclassificar pelo item se necessário)
+      if (amb === 'Alojamento dos Praças') amb = "Alojamento de CB's e SD's";
       return { ...i, ambiente: amb };
     }
 
