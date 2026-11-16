@@ -363,6 +363,7 @@
     .nt-ico.check { background:#dbeafe; color:#2563eb; }
     .nt-ico.perm { background:#e0e7ff; color:#4f46e5; }
     .nt-ico.livro { background:#fee2e2; color:#dc2626; }
+    .nt-ico.patr { background:#dcfce7; color:#15803d; }
     .nt-txt { flex:1; min-width:0; }
     .nt-tipo { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#92400e; }
     .nt-desc { font-size:.86rem; color:var(--text); margin-top:1px; }
@@ -462,6 +463,16 @@
             href:'modulos/operacional/index.html', label:'Corrigir' });
       });
 
+      // 4) Patrimônio — autorizações de estoque aguardando o Chefe de Socorro
+      (BBM.load('almoxarifado_pendencias') || []).forEach(p => {
+        if (p.status==='pendente' && ((p.chefeId && p.chefeId===user.id) || _ehMeu(p.chefeNome, user.nome))) {
+          const desc = p.tipo==='exclusao'
+            ? `Exclusão de <b>${p.itemNome}</b> (${p.ambiente}) aguarda sua autorização. Justificativa: ${p.obs||'—'}.`
+            : `${p.movTipo||'Alteração'} de <b>${p.qtd} ${p.unidade||''}</b> — ${p.itemNome} aguarda sua autorização.`;
+          nt.push({ cls:'patr', tipo:'Patrimônio', desc, href:'modulos/almoxarifado/index.html', label:'Autorizar' });
+        }
+      });
+
       if (!nt.length){
         box.innerHTML = `<div class="nt-box">
           <div class="nt-head"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="nt-title">Notificações</span></div>
@@ -528,7 +539,7 @@
       if (ok) document.getElementById('pushBar').style.display = 'none';
     });
 
-    BBM.ready(['escala_registros','permutas_solicitacoes','operacional_partes'], () => {
+    BBM.ready(['escala_registros','permutas_solicitacoes','operacional_partes','almoxarifado_pendencias'], () => {
       const user = BBM.currentUser && BBM.currentUser();
       renderNotificacoes(user);
       renderPushBar();
