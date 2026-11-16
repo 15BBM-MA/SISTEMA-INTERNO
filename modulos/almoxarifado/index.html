@@ -389,12 +389,35 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Tipo *</label>
-            <select class="form-control" id="mTipo"><option value="Entrada">Entrada</option><option value="Saída">Saída</option></select>
+            <select class="form-control" id="mTipo" onchange="mToggleTipo()"><option value="Entrada">Entrada</option><option value="Saída">Saída</option></select>
           </div>
           <div class="form-group"><label class="form-label">Quantidade *</label><input class="form-control" id="mQtd" type="number" min="1" placeholder="0"/></div>
         </div>
-        <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="mResp" placeholder="Nome do militar"/></div>
-        <div class="form-group"><label class="form-label">Motivo / Observação *</label><input class="form-control" id="mObs" placeholder="Finalidade, destino ou motivo da alteração…"/></div>
+        <div class="form-group" id="mMotivoWrap" style="display:none">
+          <label class="form-label">Motivo da saída *</label>
+          <select class="form-control" id="mMotivoSaida">
+            <option value="">— selecione —</option>
+            <option>Cautelado para uso próprio</option>
+            <option>Emprestado</option>
+            <option>Doado</option>
+            <option>Instrução</option>
+            <option>Utilizado em Ocorrência</option>
+            <option>Descontinuado</option>
+            <option>Avariado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="form-label" style="margin:0">Responsável</label>
+            <button type="button" id="mRespToggle" onclick="mToggleRespExterno()" style="background:none;border:none;color:#1d4ed8;font-size:.76rem;font-weight:700;cursor:pointer;padding:0">Responsável não é da unidade</button>
+          </div>
+          <select class="form-control" id="mRespSel" style="margin-top:6px"></select>
+          <div id="mRespExterno" style="display:none;margin-top:6px">
+            <input class="form-control" id="mRespNome" placeholder="Nome completo"/>
+            <input class="form-control" id="mRespGuerra" placeholder="Nome de guerra" style="margin-top:8px"/>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Observação *</label><input class="form-control" id="mObs" placeholder="Finalidade, destino ou detalhe da movimentação…"/></div>
         <div class="form-group" style="margin:0"><label class="form-label">Chefe de Socorro (aprovação) *</label>
           <select class="form-control" id="mChefe"></select>
         </div>
@@ -1113,10 +1136,31 @@
         : '<option value="">Nenhum item cadastrado</option>';
       if (itemId) sel.value = itemId;
       document.getElementById('mQtd').value='';
-      document.getElementById('mResp').value='';
       document.getElementById('mObs').value='';
       document.getElementById('mChefe').innerHTML = optsOficiais('');
+      // responsável: lista de militares do sistema + opção externa
+      document.getElementById('mRespSel').innerHTML = '<option value="">— selecione o militar —</option>'
+        + militaresList.map(m=>`<option value="${escC(m.nome)}">${escC(m.nomeMilitar||m.nome)}</option>`).join('');
+      document.getElementById('mRespNome').value='';
+      document.getElementById('mRespGuerra').value='';
+      _mRespExterno = false; _aplicarRespExterno();
+      document.getElementById('mTipo').value = 'Saída';
+      document.getElementById('mMotivoSaida').value = '';
+      mToggleTipo();
       BBM.openModal('modalMovimento');
+    }
+    // mostra as categorias de saída apenas quando o tipo é Saída
+    function mToggleTipo(){
+      const saida = document.getElementById('mTipo').value === 'Saída';
+      document.getElementById('mMotivoWrap').style.display = saida ? '' : 'none';
+    }
+    // alterna entre militar da unidade (lista) e responsável externo (nome completo + de guerra)
+    let _mRespExterno = false;
+    function mToggleRespExterno(){ _mRespExterno = !_mRespExterno; _aplicarRespExterno(); }
+    function _aplicarRespExterno(){
+      document.getElementById('mRespSel').style.display = _mRespExterno ? 'none' : '';
+      document.getElementById('mRespExterno').style.display = _mRespExterno ? '' : 'none';
+      document.getElementById('mRespToggle').textContent = _mRespExterno ? '↩ É militar da unidade' : 'Responsável não é da unidade';
     }
 
     // Movimentação vira uma SOLICITAÇÃO pendente de aprovação do Chefe de Socorro.
@@ -1126,18 +1170,30 @@
       const tipo   = document.getElementById('mTipo').value;
       const obs    = document.getElementById('mObs').value.trim();
       const chefeId= document.getElementById('mChefe').value;
+      const motivoSaida = tipo==='Saída' ? document.getElementById('mMotivoSaida').value : '';
+      // responsável: militar da lista ou externo (nome completo + de guerra)
+      let resp = '';
+      if (_mRespExterno) {
+        const nc = document.getElementById('mRespNome').value.trim();
+        const ng = document.getElementById('mRespGuerra').value.trim();
+        resp = ng ? `${nc} (${ng})` : nc;
+      } else {
+        resp = document.getElementById('mRespSel').value;
+      }
       if (!itemId || qtd <= 0) { BBM.toast('Selecione o item e informe a quantidade.','error'); return; }
       const item = itens.find(i=>i.id===itemId);
       if (!item) return;
       if (tipo==='Saída' && qtd > item.qtd) { BBM.toast('Quantidade insuficiente em estoque.','error'); return; }
-      if (!obs) { BBM.toast('Descreva o motivo/observação da alteração.','error'); return; }
+      if (tipo==='Saída' && !motivoSaida) { BBM.toast('Selecione o motivo da saída.','error'); return; }
+      if (_mRespExterno && !document.getElementById('mRespNome').value.trim()) { BBM.toast('Informe o nome completo do responsável externo.','error'); return; }
+      if (!obs) { BBM.toast('Descreva a observação da movimentação.','error'); return; }
       if (!chefeId) { BBM.toast('Selecione o Chefe de Socorro para aprovar.','error'); return; }
       const u = euC(); const of = oficiais.find(o=>o.id===chefeId);
       const pend = {
         id: BBM.generateId(), tipo:'movimento', movTipo:tipo,
         itemId, itemNome:item.nome, ambiente:item.ambiente, unidade:item.unidade,
         qtd, qtdDe:item.qtd, qtdPara: tipo==='Entrada' ? item.qtd+qtd : item.qtd-qtd,
-        resp: document.getElementById('mResp').value.trim(), obs,
+        resp, respExterno: _mRespExterno, motivoSaida, obs,
         chefeId, chefeNome: of?of.nome:'', chefeLogin: of?of.login:'',
         solicitadoPor: u?.nome||'', solicitadoPorId: u?.id||'', solicitadoEm: new Date().toISOString(),
         status:'pendente',
@@ -1401,7 +1457,7 @@
 
     // ═══════════════ AUTORIZAÇÕES (aprovação do Chefe) ═══════════════
     function descrPend(p){
-      if (p.tipo==='movimento') return `${p.movTipo} de <b>${p.qtd} ${escC(p.unidade)}</b> — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
+      if (p.tipo==='movimento') return `${p.movTipo} de <b>${p.qtd} ${escC(p.unidade)}</b> — ${escC(p.itemNome)}${p.motivoSaida?` · <span style="color:#b45309">${escC(p.motivoSaida)}</span>`:''} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
       if (p.tipo==='exclusao') return `<span style="color:#b91c1c">Exclusão de item</span> — <b>${escC(p.itemNome)}</b> <span style="color:var(--text-light)">(${escC(p.ambiente)}, ${p.qtdDe} ${escC(p.unidade)})</span>`;
       return `Ajuste — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
     }
@@ -1424,7 +1480,7 @@
           return `<div class="pz-item${p.status==='pendente'?' pendente':''}">
             <div style="min-width:0">
               <div class="pz-tit">${descrPend(p)} ${pzBadge(p.status)}</div>
-              <div class="pz-meta">Motivo: ${escC(p.obs)||'—'} · solicitado por ${escC(p.solicitadoPor)||'—'} · Chefe: ${escC(p.chefeNome)||'—'} · ${fmtQuando(p.solicitadoEm)}</div>
+              <div class="pz-meta">Motivo: ${escC(p.obs)||'—'}${p.resp?` · Responsável: ${escC(p.resp)}`:''} · solicitado por ${escC(p.solicitadoPor)||'—'} · Chefe: ${escC(p.chefeNome)||'—'} · ${fmtQuando(p.solicitadoEm)}</div>
               ${nota}
             </div>
             <div class="pz-acoes">${acoes}</div>
@@ -1482,7 +1538,7 @@
           id: BBM.generateId(), data: new Date().toLocaleString('pt-BR'),
           itemNome:item.nome, itemId:item.id, ambiente:item.ambiente,
           tipo:p.movTipo, qtd:p.qtd, resp:p.resp||p.solicitadoPor,
-          obs:`${p.obs} — autorizado por ${u.nome}`,
+          obs:`${p.motivoSaida?('['+p.motivoSaida+'] '):''}${p.obs} — autorizado por ${u.nome}`,
         }];
         p.status='aprovado'; p.decididoPor=u.nome; p.decididoEm=agora;
       }
