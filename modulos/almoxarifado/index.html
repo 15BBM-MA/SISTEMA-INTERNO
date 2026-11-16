@@ -320,6 +320,24 @@
     </div>
   </div>
 
+  <!-- MODAL HISTÓRICO DO ITEM -->
+  <div class="modal-overlay" id="modalHistorico">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <span class="modal-title">Histórico do item</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalHistorico')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="hiCabecalho" style="font-size:.92rem;font-weight:700;margin-bottom:4px"></div>
+        <div id="hiSub" style="font-size:.78rem;color:var(--text-light);margin-bottom:14px"></div>
+        <div id="hiLista" style="display:flex;flex-direction:column;gap:0"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalHistorico')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL NOVA CATEGORIA -->
   <div class="modal-overlay" id="modalCategoria">
     <div class="modal" style="max-width:360px">
@@ -683,6 +701,16 @@
     .ex-quick { font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer;background:#f3f4f6;border:1.5px solid #e5e7eb;color:#374151; }
     .ex-quick:hover { background:#e5e7eb; }
     .ex-quick.sel { background:#dc2626;border-color:#dc2626;color:#fff; }
+    /* Histórico do item (timeline) */
+    .hi-ev { display:flex; gap:12px; padding:10px 0; border-bottom:1px dashed var(--border); }
+    .hi-ev:last-child { border-bottom:none; }
+    .hi-dot { width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+    .hi-dot.mov { background:#2563eb; } .hi-dot.conf { background:#15803d; } .hi-dot.exc { background:#dc2626; } .hi-dot.cad { background:#92400e; }
+    .hi-main { flex:1; min-width:0; }
+    .hi-tit { font-size:.86rem; font-weight:700; color:var(--text); }
+    .hi-det { font-size:.82rem; color:var(--text); margin-top:2px; }
+    .hi-meta { font-size:.72rem; color:var(--text-light); margin-top:3px; }
+    .hi-vazio { font-size:.86rem; color:var(--text-light); text-align:center; padding:20px 0; }
   </style>
 
   <script src="../../assets/js/main.js"></script>
@@ -904,6 +932,7 @@
           <td>${estadoBadge(i)}</td>
           <td style="font-size:.76rem;color:var(--text-light);white-space:nowrap">${i.ultimaAlteracao?`${fmtQuando(i.ultimaAlteracao)}<br><span style="font-size:.7rem">${i.alteradoPor||''}</span>`:'—'}</td>
           <td style="display:flex;gap:6px">
+            <button class="action-btn" title="Histórico do item" onclick="abrirHistorico('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></button>
             <button class="action-btn" title="Movimentar (entrada/saída)" onclick="abrirMovimento('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
             <button class="action-btn" title="Editar" onclick="editarItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
             <button class="action-btn" onclick="excluirItem('${i.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
@@ -1124,6 +1153,63 @@
         body:`Exclusão — ${pend.itemNome}. Aprove no Patrimônio.`,
         url:'modulos/almoxarifado/index.html', tag:'pend-'+pend.id });
       if (document.getElementById('tabAutorizacoes').style.display!=='none') renderAutorizacoes();
+    }
+
+    // ── Histórico individual do item ──────────────────────────────
+    // converte "16/11/2026 14:30:00" (toLocaleString pt-BR) em timestamp p/ ordenar
+    function _tsBr(s){
+      const m = String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})[,\s]+(\d{2}):(\d{2})(?::(\d{2}))?/);
+      return m ? new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5], +(m[6]||0)).getTime() : 0;
+    }
+    // descreve o que mudou numa alteração de conferência
+    function _descAlteracao(a){
+      const partes = [];
+      if (a.de != null && a.para != null && a.de !== a.para) partes.push(`Quantidade ${a.de} → ${a.para}`);
+      if (a.bomPara != null) {
+        const antes = (a.bomDe!=null) ? `${a.bomDe}/${a.ruimDe}` : null;
+        const dep = `${a.bomPara}/${a.ruimPara}`;
+        if (!antes || antes !== dep) partes.push(`Estado bom/ruim ${antes?antes+' → ':''}${dep}`);
+      }
+      if (a.catPara && a.catDe && a.catPara !== a.catDe) partes.push(`Categoria ${a.catDe} → ${a.catPara}`);
+      return partes.length ? partes.join(' · ') : 'Conferido sem alteração';
+    }
+    function buildHistoricoItem(id){
+      const ev = [];
+      // movimentações (entradas/saídas já autorizadas)
+      (movimentos||[]).filter(m=>m.itemId===id).forEach(m=>{
+        ev.push({ ts:_tsBr(m.data), cls:'mov', titulo:`${m.tipo} de ${m.qtd} ${m.unidade||''}`.trim(),
+          det:m.obs||'', meta:`Responsável: ${m.resp||'—'} · ${m.data||''}` });
+      });
+      // conferências assinadas (relatórios)
+      (confRelatorios||[]).forEach(r=>{
+        (r.alteracoes||[]).filter(a=>a.itemId===id).forEach(a=>{
+          ev.push({ ts: a.em?new Date(a.em).getTime():0, cls:'conf',
+            titulo:`Conferência Nº ${r.numero||'—'}`, det:_descAlteracao(a),
+            meta:`${a.motivo?('Motivo: '+a.motivo+' · '):''}por ${a.por||r.por||'—'} · ${fmtQuando(a.em||r.em)}` });
+        });
+      });
+      // conferência em andamento (ainda não assinada)
+      (conferencia.alteracoes||[]).filter(a=>a.itemId===id).forEach(a=>{
+        ev.push({ ts: a.em?new Date(a.em).getTime():0, cls:'conf',
+          titulo:'Conferência em andamento', det:_descAlteracao(a),
+          meta:`${a.motivo?('Motivo: '+a.motivo+' · '):''}por ${a.por||'—'} · ${fmtQuando(a.em)}` });
+      });
+      return ev.sort((a,b)=> b.ts - a.ts);
+    }
+    function abrirHistorico(id){
+      const i = itens.find(x=>x.id===id); if(!i) return;
+      const s = splitEstado(i);
+      document.getElementById('hiCabecalho').textContent = i.nome;
+      document.getElementById('hiSub').textContent =
+        `${i.ambiente} · ${i.categoria} · atual: ${i.qtd} ${i.unidade} (${s.bom} bom / ${s.ruim} ruim)`;
+      const ev = buildHistoricoItem(i.id);
+      document.getElementById('hiLista').innerHTML = ev.length
+        ? ev.map(e=>`<div class="hi-ev"><span class="hi-dot ${e.cls}"></span><div class="hi-main">
+            <div class="hi-tit">${escC(e.titulo)}</div>
+            ${e.det?`<div class="hi-det">${escC(e.det)}</div>`:''}
+            <div class="hi-meta">${escC(e.meta)}</div></div></div>`).join('')
+        : '<div class="hi-vazio">Nenhuma movimentação ou conferência registrada para este item ainda.</div>';
+      BBM.openModal('modalHistorico');
     }
 
     // ── Movimentação ──────────────────────────────────────────────
