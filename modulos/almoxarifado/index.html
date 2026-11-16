@@ -341,6 +341,40 @@
     </div>
   </div>
 
+  <!-- MODAL EXCLUIR ITEM (envia ao Chefe de Socorro) -->
+  <div class="modal-overlay" id="modalExcluir">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <span class="modal-title">Solicitar exclusão de item</span>
+        <button class="modal-close" onclick="BBM.closeModal('modalExcluir')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="exId"/>
+        <div style="font-size:.84rem;background:#fef2f2;border:1px solid #fecaca;color:#7f1d1d;border-radius:8px;padding:10px 12px;margin-bottom:12px">
+          A exclusão precisa ser <b>autorizada pelo Chefe de Socorro</b>. O item só será removido após a aprovação, com a justificativa registrada.
+        </div>
+        <div id="exItemInfo" style="font-size:.9rem;font-weight:700;margin-bottom:12px"></div>
+        <div class="form-group">
+          <label class="form-label">Justificativa da exclusão *</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <button type="button" id="exBtnErro" class="ex-quick" onclick="exJust('Erro de registro')">Erro de registro</button>
+            <button type="button" id="exBtnDup" class="ex-quick" onclick="exJust('Duplicidade')">Duplicidade</button>
+          </div>
+          <textarea class="form-control" id="exMotivo" rows="2" placeholder="Descreva o motivo da exclusão" oninput="exMarcarQuick()"></textarea>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Chefe de Socorro (autoriza) *</label>
+          <select class="form-control" id="exChefe"></select>
+        </div>
+        <div id="exErro" style="display:none;font-size:.8rem;color:#b91c1c;margin-top:8px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="BBM.closeModal('modalExcluir')">Cancelar</button>
+        <button class="btn btn-primary" style="background:#dc2626;border-color:#dc2626" onclick="enviarExclusao()">Enviar ao Chefe</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL MOVIMENTO (solicitação de alteração de estoque) -->
   <div class="modal-overlay" id="modalMovimento">
     <div class="modal">
@@ -623,6 +657,9 @@
     .pz-st.pendente { background:#fef3c7;color:#92400e; }
     .pz-st.aprovado { background:#dcfce7;color:#15803d; }
     .pz-st.recusado { background:#fee2e2;color:#b91c1c; }
+    .ex-quick { font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer;background:#f3f4f6;border:1.5px solid #e5e7eb;color:#374151; }
+    .ex-quick:hover { background:#e5e7eb; }
+    .ex-quick.sel { background:#dc2626;border-color:#dc2626;color:#fff; }
   </style>
 
   <script src="../../assets/js/main.js"></script>
@@ -1008,11 +1045,50 @@
       BBM.openModal('modalItem');
     }
 
-    async function excluirItem(id) {
-      if (!confirm('Excluir este item?')) return;
-      itens = itens.filter(i=>i.id!==id);
-      renderAmbientes(); renderItens(); atualizarCards();
-      await salvar(KEY_I, itens, { sucesso: 'Item removido.' });
+    // Exclusão agora é uma SOLICITAÇÃO que vai ao Chefe de Socorro (com justificativa).
+    function excluirItem(id) {
+      const i = itens.find(x=>x.id===id); if(!i) return;
+      document.getElementById('exId').value = i.id;
+      document.getElementById('exItemInfo').textContent = `${i.nome} — ${i.ambiente} (${i.qtd} ${i.unidade})`;
+      document.getElementById('exMotivo').value = '';
+      document.getElementById('exChefe').innerHTML = optsOficiais('');
+      document.getElementById('exErro').style.display = 'none';
+      exMarcarQuick();
+      BBM.openModal('modalExcluir');
+    }
+    // botões de justificativa rápida
+    function exJust(txt){ document.getElementById('exMotivo').value = txt; exMarcarQuick(); }
+    function exMarcarQuick(){
+      const v = (document.getElementById('exMotivo').value||'').trim().toLowerCase();
+      document.getElementById('exBtnErro').classList.toggle('sel', v==='erro de registro');
+      document.getElementById('exBtnDup').classList.toggle('sel', v==='duplicidade');
+    }
+    async function enviarExclusao(){
+      const err = document.getElementById('exErro');
+      const id = document.getElementById('exId').value;
+      const item = itens.find(i=>i.id===id);
+      if (!item) { BBM.closeModal('modalExcluir'); return; }
+      const motivo = document.getElementById('exMotivo').value.trim();
+      const chefeId = document.getElementById('exChefe').value;
+      if (!motivo) { err.textContent='Informe a justificativa da exclusão.'; err.style.display='block'; return; }
+      if (!chefeId) { err.textContent='Selecione o Chefe de Socorro.'; err.style.display='block'; return; }
+      const u = euC(); const of = oficiais.find(o=>o.id===chefeId);
+      const pend = {
+        id: BBM.generateId(), tipo:'exclusao',
+        itemId:item.id, itemNome:item.nome, ambiente:item.ambiente, unidade:item.unidade, qtdDe:item.qtd,
+        obs:motivo, chefeId, chefeNome: of?of.nome:'', chefeLogin: of?of.login:'',
+        solicitadoPor: u?.nome||'', solicitadoPorId: u?.id||'', solicitadoEm: new Date().toISOString(),
+        status:'pendente',
+      };
+      pendencias = [pend, ...pendencias];
+      BBM.closeModal('modalExcluir');
+      atualizarBadgePend();
+      const ok = await salvar(KEY_PEND, pendencias, { sucesso:'Solicitação de exclusão enviada ao Chefe de Socorro.' });
+      if (ok && pend.chefeLogin) BBM.notificar({ login:pend.chefeLogin }, {
+        title:'Exclusão de item para aprovar',
+        body:`Exclusão — ${pend.itemNome}. Aprove no Patrimônio.`,
+        url:'modulos/almoxarifado/index.html', tag:'pend-'+pend.id });
+      if (document.getElementById('tabAutorizacoes').style.display!=='none') renderAutorizacoes();
     }
 
     // ── Movimentação ──────────────────────────────────────────────
@@ -1314,6 +1390,7 @@
     // ═══════════════ AUTORIZAÇÕES (aprovação do Chefe) ═══════════════
     function descrPend(p){
       if (p.tipo==='movimento') return `${p.movTipo} de <b>${p.qtd} ${escC(p.unidade)}</b> — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
+      if (p.tipo==='exclusao') return `<span style="color:#b91c1c">Exclusão de item</span> — <b>${escC(p.itemNome)}</b> <span style="color:var(--text-light)">(${escC(p.ambiente)}, ${p.qtdDe} ${escC(p.unidade)})</span>`;
       return `Ajuste — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
     }
     function pzBadge(s){ const t={pendente:'Pendente',aprovado:'Aprovado',recusado:'Recusado'}; return `<span class="pz-st ${s}">${t[s]||s}</span>`; }
@@ -1346,7 +1423,9 @@
       const p = pendencias.find(x=>x.id===id); if(!p) return;
       document.getElementById('apId').value=id; document.getElementById('apAcao').value='aprovar';
       document.getElementById('apTitulo').textContent='Aprovar alteração';
-      document.getElementById('apResumo').innerHTML = `${descrPend(p)}<br>Ao aprovar, o estoque é atualizado e o movimento é registrado.`;
+      document.getElementById('apResumo').innerHTML = `${descrPend(p)}<br>` + (p.tipo==='exclusao'
+        ? `<span style="color:#b91c1c">Ao aprovar, o item será <b>excluído definitivamente</b> do Patrimônio.</span> Justificativa: <b>${escC(p.obs)||'—'}</b>.`
+        : 'Ao aprovar, o estoque é atualizado e o movimento é registrado.');
       document.getElementById('apMotivoWrap').style.display='none';
       document.getElementById('apSenha').value=''; document.getElementById('apErro').style.display='none';
       document.getElementById('apBtn').textContent='Aprovar';
@@ -1378,6 +1457,9 @@
       const agora = new Date().toISOString();
       if (acao==='recusar') {
         p.status='recusado'; p.motivoRecusa=motivo; p.decididoPor=u.nome; p.decididoEm=agora;
+      } else if (p.tipo==='exclusao') {
+        itens = itens.filter(i=>i.id!==p.itemId);
+        p.status='aprovado'; p.decididoPor=u.nome; p.decididoEm=agora;
       } else {
         const item = itens.find(i=>i.id===p.itemId);
         if (!item) { btn.disabled=false; btn.textContent=rot; err.textContent='Item não encontrado (pode ter sido excluído).'; err.style.display='block'; return; }
@@ -1396,11 +1478,17 @@
       atualizarBadgePend();
       const okI = acao==='aprovar' ? await salvar(KEY_I, itens) : true;
       if (acao==='aprovar') await salvar(KEY_M, movimentos);
-      const okP = await salvar(KEY_PEND, pendencias, { sucesso: acao==='aprovar' ? 'Alteração aprovada e estoque atualizado.' : 'Solicitação recusada.' });
+      const sucessoTxt = acao==='recusar' ? 'Solicitação recusada.'
+        : (p.tipo==='exclusao' ? 'Exclusão aprovada e item removido.' : 'Alteração aprovada e estoque atualizado.');
+      const okP = await salvar(KEY_PEND, pendencias, { sucesso: sucessoTxt });
       renderAmbientes(); renderItens(); atualizarCards(); renderAutorizacoes();
       if (okP && p.solicitadoPorId) BBM.notificar({ id:p.solicitadoPorId }, {
-        title: acao==='aprovar' ? 'Alteração de estoque aprovada' : 'Alteração de estoque recusada',
-        body: `${p.movTipo} de ${p.qtd} ${p.unidade} — ${p.itemNome}${acao==='recusar'?': '+motivo:''}.`,
+        title: p.tipo==='exclusao'
+          ? (acao==='aprovar' ? 'Exclusão de item aprovada' : 'Exclusão de item recusada')
+          : (acao==='aprovar' ? 'Alteração de estoque aprovada' : 'Alteração de estoque recusada'),
+        body: p.tipo==='exclusao'
+          ? `Exclusão de ${p.itemNome} ${acao==='aprovar'?'aprovada':'recusada'}${acao==='recusar'?': '+motivo:''}.`
+          : `${p.movTipo} de ${p.qtd} ${p.unidade} — ${p.itemNome}${acao==='recusar'?': '+motivo:''}.`,
         url:'modulos/almoxarifado/index.html', tag:'penddec-'+p.id });
     }
     async function cancelarPend(id){
