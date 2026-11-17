@@ -127,7 +127,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Data</th><th>Item</th><th>Ambiente</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Observação</th></tr>
+              <tr><th>Data</th><th>Item</th><th>Ambiente</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Observação</th><th>Retorno</th></tr>
             </thead>
             <tbody id="tabelaMovimentos"></tbody>
           </table>
@@ -991,17 +991,26 @@
 
     function renderMovimentos() {
       const tbody = document.getElementById('tabelaMovimentos');
-      if (!movimentos.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><p>Nenhuma movimentação registrada.</p></div></td></tr>`; return; }
-      tbody.innerHTML = [...movimentos].reverse().map(m => `
+      if (!movimentos.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><p>Nenhuma movimentação registrada.</p></div></td></tr>`; return; }
+      tbody.innerHTML = [...movimentos].reverse().map(m => {
+        let acao = '—';
+        if (m.tipo==='Saída' && TIPOS_RETORNAVEIS.includes(m.motivoSaida)) {
+          const { restante } = _restanteSaida(m.id);
+          acao = restante>0
+            ? `<button class="btn btn-ghost" style="font-size:.74rem;padding:5px 11px;border:1px solid #bfdbfe;color:#1d4ed8;white-space:nowrap" onclick="abrirRetorno('${m.id}','mov')">↩ Retorno (resta ${restante})</button>`
+            : '<span style="font-size:.74rem;color:var(--green)">✓ retornado</span>';
+        }
+        return `
         <tr>
           <td>${m.data}</td>
           <td>${m.itemNome}</td>
           <td>${m.ambiente || '—'}</td>
-          <td><span class="badge ${m.tipo==='Entrada'?'badge-ok':'badge-info'}">${m.tipo}</span></td>
+          <td><span class="badge ${m.retornoDe?'badge-info':(m.tipo==='Entrada'?'badge-ok':'badge-info')}">${m.retornoDe?'Retorno':m.tipo}</span></td>
           <td>${m.qtd}</td>
           <td>${m.resp || '—'}</td>
           <td>${m.obs || '—'}</td>
-        </tr>`).join('');
+          <td>${acao}</td>
+        </tr>`; }).join('');
     }
 
     function atualizarCards() {
@@ -1306,7 +1315,7 @@
     }
 
     // ── Retorno de item (baixa de saída: uso próprio / emprestado / instrução) ──
-    let _rtItemId = null;
+    let _rtItemId = null, _rtOrigem = 'historico';
     function _restanteSaida(saidaId){
       const s = movimentos.find(m=>m.id===saidaId); if(!s) return { s:null, restante:0 };
       const ret = movimentos.filter(m=>m.retornoDe===saidaId).reduce((a,m)=>a+(Number(m.qtd)||0),0);
@@ -1320,22 +1329,22 @@
                   return { s, restante:(Number(s.qtd)||0) - ret }; })
         .filter(x=>x.restante>0);
     }
-    function abrirRetorno(saidaId){
+    function abrirRetorno(saidaId, origem){
       const { s, restante } = _restanteSaida(saidaId);
       if (!s || restante<=0) { BBM.toast('Esta saída já foi totalmente retornada.','error'); return; }
-      _rtItemId = s.itemId;
+      _rtItemId = s.itemId; _rtOrigem = origem || 'historico';
       document.getElementById('rtSaidaId').value = saidaId;
       document.getElementById('rtInfo').innerHTML =
         `<b>${escC(s.itemNome)}</b><br>Saída: ${s.qtd} · ${escC(s.motivoSaida||'')}<br>Responsável: ${escC(s.resp||'—')} · ${escC(s.data||'')}<br>Pendente de retorno: <b>${restante}</b>`;
       const q = document.getElementById('rtQtd'); q.value = restante; q.max = restante;
       document.getElementById('rtErro').style.display='none';
-      BBM.closeModal('modalHistorico');
+      if (_rtOrigem==='historico') BBM.closeModal('modalHistorico');
       BBM.openModal('modalRetorno');
       setTimeout(()=>{ q.focus(); q.select(); }, 150);
     }
     function fecharRetorno(){
       BBM.closeModal('modalRetorno');
-      if (_rtItemId) abrirHistorico(_rtItemId); // volta ao histórico do item
+      if (_rtOrigem==='historico' && _rtItemId) abrirHistorico(_rtItemId); // volta ao histórico do item
     }
     async function confirmarRetorno(){
       const err = document.getElementById('rtErro');
@@ -1361,10 +1370,10 @@
         obs:`Retorno de saída (${s.motivoSaida||'—'}) — registrado por ${u?.nome||'—'}`,
       }];
       BBM.closeModal('modalRetorno');
-      renderAmbientes(); renderItens(); atualizarCards();
+      renderAmbientes(); renderItens(); atualizarCards(); renderMovimentos();
       const okI = await salvar(KEY_I, itens);
       await salvar(KEY_M, movimentos, { sucesso: okI ? `Retorno de ${q} registrado.` : null });
-      if (_rtItemId) abrirHistorico(_rtItemId);
+      if (_rtOrigem==='historico' && _rtItemId) abrirHistorico(_rtItemId);
     }
 
     // ── Movimentação ──────────────────────────────────────────────
