@@ -430,13 +430,18 @@
       <div class="modal-body">
         <p style="font-size:.8rem;color:var(--text-light);margin:-2px 0 12px">Toda alteração de estoque passa pela aprovação do Chefe de Socorro. Ao enviar, a solicitação fica pendente até ele assinar.</p>
         <div class="form-group"><label class="form-label">Item *</label>
-          <select class="form-control" id="mItem"></select>
+          <select class="form-control" id="mItem" onchange="mAtualizarRetorno()"></select>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Tipo *</label>
             <select class="form-control" id="mTipo" onchange="mToggleTipo()"><option value="Entrada">Entrada</option><option value="Saída">Saída</option></select>
           </div>
           <div class="form-group"><label class="form-label">Quantidade *</label><input class="form-control" id="mQtd" type="number" min="1" placeholder="0"/></div>
+        </div>
+        <div class="form-group" id="mRetornoWrap" style="display:none">
+          <label class="form-label">Esta entrada é um retorno de saída?</label>
+          <select class="form-control" id="mRetornoSaida"></select>
+          <div style="font-size:.72rem;color:var(--text-light);margin-top:4px">Vincule à saída para dar baixa no pendente, ou deixe como entrada normal.</div>
         </div>
         <div class="form-group" id="mMotivoWrap" style="display:none">
           <label class="form-label">Motivo da saída *</label>
@@ -1251,7 +1256,7 @@
       const retPorSaida = {}; // soma de retornos por saída de origem
       movs.forEach(m=>{ if(m.retornoDe) retPorSaida[m.retornoDe] = (retPorSaida[m.retornoDe]||0) + (Number(m.qtd)||0); });
       movs.forEach(m=>{
-        if (m.tipo==='Retorno') {
+        if (m.tipo==='Retorno' || m.retornoDe) {
           ev.push({ ts:_tsBr(m.data), cls:'mov', titulo:`Retorno de ${m.qtd}`,
             det:m.obs||'', meta:`Responsável: ${m.resp||'—'} · ${m.data||''}` });
           return;
@@ -1306,6 +1311,14 @@
       const s = movimentos.find(m=>m.id===saidaId); if(!s) return { s:null, restante:0 };
       const ret = movimentos.filter(m=>m.retornoDe===saidaId).reduce((a,m)=>a+(Number(m.qtd)||0),0);
       return { s, restante:(Number(s.qtd)||0) - ret };
+    }
+    // saídas retornáveis de um item que ainda têm quantidade pendente de retorno
+    function saidasPendentes(itemId){
+      return (movimentos||[])
+        .filter(m=>m.itemId===itemId && m.tipo==='Saída' && TIPOS_RETORNAVEIS.includes(m.motivoSaida))
+        .map(s=>{ const ret = movimentos.filter(m=>m.retornoDe===s.id).reduce((a,m)=>a+(Number(m.qtd)||0),0);
+                  return { s, restante:(Number(s.qtd)||0) - ret }; })
+        .filter(x=>x.restante>0);
     }
     function abrirRetorno(saidaId){
       const { s, restante } = _restanteSaida(saidaId);
@@ -1385,10 +1398,23 @@
       mToggleTipo();
       BBM.openModal('modalMovimento');
     }
-    // mostra as categorias de saída apenas quando o tipo é Saída
+    // mostra as categorias de saída (Saída) ou o vínculo de retorno (Entrada)
     function mToggleTipo(){
       const saida = document.getElementById('mTipo').value === 'Saída';
       document.getElementById('mMotivoWrap').style.display = saida ? '' : 'none';
+      mAtualizarRetorno();
+    }
+    // Entrada: oferece vincular a uma saída pendente (retorno). Alinha entrada normal e retorno.
+    function mAtualizarRetorno(){
+      const wrap = document.getElementById('mRetornoWrap');
+      const sel  = document.getElementById('mRetornoSaida');
+      const entrada = document.getElementById('mTipo').value === 'Entrada';
+      const itemId = document.getElementById('mItem').value;
+      const pend = entrada ? saidasPendentes(itemId) : [];
+      if (!entrada || !pend.length) { wrap.style.display='none'; sel.innerHTML=''; return; }
+      sel.innerHTML = '<option value="">— Entrada normal (não é retorno) —</option>'
+        + pend.map(x=>`<option value="${x.s.id}">Retorno: ${escC(x.s.motivoSaida)} · pendente ${x.restante} · ${escC(x.s.resp||'—')} · ${escC(x.s.data||'')}</option>`).join('');
+      wrap.style.display = '';
     }
     // alterna entre militar da unidade (lista) e responsável externo (nome completo + de guerra)
     let _mRespExterno = false;
@@ -1407,6 +1433,7 @@
       const obs    = document.getElementById('mObs').value.trim();
       const chefeId= document.getElementById('mChefe').value;
       const motivoSaida = tipo==='Saída' ? document.getElementById('mMotivoSaida').value : '';
+      const retornoDe = tipo==='Entrada' ? document.getElementById('mRetornoSaida').value : '';
       // responsável: militar da lista ou externo (nome completo + de guerra)
       let resp = '';
       if (_mRespExterno) {
@@ -1421,6 +1448,7 @@
       if (!item) return;
       if (tipo==='Saída' && qtd > item.qtd) { BBM.toast('Quantidade insuficiente em estoque.','error'); return; }
       if (tipo==='Saída' && !motivoSaida) { BBM.toast('Selecione o motivo da saída.','error'); return; }
+      if (retornoDe) { const r=_restanteSaida(retornoDe); if (qtd > r.restante) { BBM.toast(`Retorno maior que o pendente da saída (${r.restante}).`,'error'); return; } }
       if (_mRespExterno && !document.getElementById('mRespNome').value.trim()) { BBM.toast('Informe o nome completo do responsável externo.','error'); return; }
       if (!obs) { BBM.toast('Descreva a observação da movimentação.','error'); return; }
       if (!chefeId) { BBM.toast('Selecione o Chefe de Socorro para aprovar.','error'); return; }
@@ -1429,7 +1457,7 @@
         id: BBM.generateId(), tipo:'movimento', movTipo:tipo,
         itemId, itemNome:item.nome, ambiente:item.ambiente, unidade:item.unidade,
         qtd, qtdDe:item.qtd, qtdPara: tipo==='Entrada' ? item.qtd+qtd : item.qtd-qtd,
-        resp, respExterno: _mRespExterno, motivoSaida, obs,
+        resp, respExterno: _mRespExterno, motivoSaida, retornoDe: retornoDe||null, obs,
         chefeId, chefeNome: of?of.nome:'', chefeLogin: of?of.login:'',
         solicitadoPor: u?.nome||'', solicitadoPorId: u?.id||'', solicitadoEm: new Date().toISOString(),
         status:'pendente',
@@ -1703,7 +1731,7 @@
 
     // ═══════════════ AUTORIZAÇÕES (aprovação do Chefe) ═══════════════
     function descrPend(p){
-      if (p.tipo==='movimento') return `${p.movTipo} de <b>${p.qtd} ${escC(p.unidade)}</b> — ${escC(p.itemNome)}${p.motivoSaida?` · <span style="color:#b45309">${escC(p.motivoSaida)}</span>`:''} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
+      if (p.tipo==='movimento') return `${p.movTipo} de <b>${p.qtd} ${escC(p.unidade)}</b> — ${escC(p.itemNome)}${p.retornoDe?` · <span style="color:#1d4ed8">retorno</span>`:''}${p.motivoSaida?` · <span style="color:#b45309">${escC(p.motivoSaida)}</span>`:''} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
       if (p.tipo==='exclusao') return `<span style="color:#b91c1c">Exclusão de item</span> — <b>${escC(p.itemNome)}</b> <span style="color:var(--text-light)">(${escC(p.ambiente)}, ${p.qtdDe} ${escC(p.unidade)})</span>`;
       return `Ajuste — ${escC(p.itemNome)} <span style="color:var(--text-light)">(${p.qtdDe} → ${p.qtdPara})</span>`;
     }
@@ -1783,8 +1811,8 @@
         movimentos = [...movimentos, {
           id: BBM.generateId(), data: new Date().toLocaleString('pt-BR'),
           itemNome:item.nome, itemId:item.id, ambiente:item.ambiente,
-          tipo:p.movTipo, qtd:p.qtd, resp:p.resp||p.solicitadoPor, motivoSaida:p.motivoSaida||'',
-          obs:`${p.motivoSaida?('['+p.motivoSaida+'] '):''}${p.obs} — autorizado por ${u.nome}`,
+          tipo:p.movTipo, qtd:p.qtd, resp:p.resp||p.solicitadoPor, motivoSaida:p.motivoSaida||'', retornoDe:p.retornoDe||null,
+          obs:`${p.retornoDe?'[Retorno] ':(p.motivoSaida?('['+p.motivoSaida+'] '):'')}${p.obs} — autorizado por ${u.nome}`,
         }];
         p.status='aprovado'; p.decididoPor=u.nome; p.decididoEm=agora;
       }
