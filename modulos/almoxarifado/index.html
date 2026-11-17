@@ -440,8 +440,9 @@
           </div>
         </div>
         <div class="form-group"><label class="form-label">Observação *</label><input class="form-control" id="mObs" placeholder="Finalidade, destino ou detalhe da movimentação…"/></div>
-        <div class="form-group" style="margin:0"><label class="form-label">Chefe de Socorro (aprovação) *</label>
-          <select class="form-control" id="mChefe"></select>
+        <div class="form-group" style="margin:0"><label class="form-label">Chefe de Socorro (aprovação) — fixo</label>
+          <select class="form-control" id="mChefe" style="background:#f3f4f6"></select>
+          <div style="font-size:.72rem;color:var(--text-light);margin-top:4px">A autorização de entradas e saídas é sempre do TEN Felipe Souza.</div>
         </div>
       </div>
       <div class="modal-footer">
@@ -823,6 +824,11 @@
     function optsOficiais(selId){
       return '<option value="">— selecione o Chefe de Socorro —</option>' +
         oficiais.map(o=>`<option value="${o.id}"${o.id===selId?' selected':''}>${escC(BBM.nomeMilitar({posto:o.posto,nome:o.nome,categoria:'Oficial'}))}</option>`).join('');
+    }
+    // Autorizador fixo das movimentações de estoque: TEN Felipe Souza.
+    function chefeMovFixo(){
+      const want = ['felipe','souza'];
+      return oficiais.find(o => { const n = _normC(o.nome); return want.every(t => n.includes(t)); });
     }
     function atualizarBadgePend(){
       const n = pendencias.filter(p=>p.status==='pendente').length;
@@ -1263,7 +1269,15 @@
       if (itemId) sel.value = itemId;
       document.getElementById('mQtd').value='';
       document.getElementById('mObs').value='';
-      document.getElementById('mChefe').innerHTML = optsOficiais('');
+      // Autorização fixa no TEN Felipe Souza
+      const cf = chefeMovFixo();
+      const selC = document.getElementById('mChefe');
+      if (cf) {
+        selC.innerHTML = `<option value="${cf.id}">${escC(BBM.nomeMilitar({posto:cf.posto,nome:cf.nome,categoria:'Oficial'}))}</option>`;
+        selC.value = cf.id; selC.disabled = true;
+      } else {
+        selC.innerHTML = optsOficiais(''); selC.disabled = false; // fallback se a lista ainda não carregou
+      }
       // responsável: lista de militares do sistema + opção externa
       document.getElementById('mRespSel').innerHTML = '<option value="">— selecione o militar —</option>'
         + militaresList.map(m=>`<option value="${escC(m.nome)}">${escC(m.nomeMilitar||m.nome)}</option>`).join('');
