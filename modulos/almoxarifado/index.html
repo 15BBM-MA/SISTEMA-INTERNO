@@ -342,6 +342,29 @@
     </div>
   </div>
 
+  <!-- MODAL REGISTRAR RETORNO -->
+  <div class="modal-overlay" id="modalRetorno">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <span class="modal-title">Registrar retorno</span>
+        <button class="modal-close" onclick="fecharRetorno()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rtSaidaId"/>
+        <div style="font-size:.84rem;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a5f;border-radius:8px;padding:10px 12px;margin-bottom:12px" id="rtInfo"></div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Quantidade que retornou *</label>
+          <input class="form-control" id="rtQtd" type="number" min="1" placeholder="0"/>
+          <div id="rtErro" style="display:none;font-size:.8rem;color:#b91c1c;margin-top:6px"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="fecharRetorno()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarRetorno()">Confirmar retorno</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL NOVA CATEGORIA -->
   <div class="modal-overlay" id="modalCategoria">
     <div class="modal" style="max-width:360px">
@@ -734,6 +757,8 @@
     const KEY_REL  = 'almoxarifado_conf_relatorios'; // relatórios de conferência assinados
     const KEY_CAT  = 'almoxarifado_categorias';      // categorias criadas manualmente (compartilhadas)
     const KEY_LOG  = 'almoxarifado_historico';        // log de cadastro/edição de itens (auditoria)
+    // Saídas que podem ter retorno registrado (o material volta ao estoque)
+    const TIPOS_RETORNAVEIS = ['Cautelado para uso próprio','Emprestado','Instrução'];
 
     // Ambientes do quartel. O almoxarifado é apenas um deles.
     const AMBIENTES = [
@@ -1221,10 +1246,25 @@
         ev.push({ ts: h.em?new Date(h.em).getTime():0, cls:'cad', titulo, det:h.det||'',
           meta:`por ${h.por||'—'} · ${fmtQuando(h.em)}` });
       });
-      // movimentações (entradas/saídas já autorizadas)
-      (movimentos||[]).filter(m=>m.itemId===id).forEach(m=>{
-        ev.push({ ts:_tsBr(m.data), cls:'mov', titulo:`${m.tipo} de ${m.qtd} ${m.unidade||''}`.trim(),
-          det:m.obs||'', meta:`Responsável: ${m.resp||'—'} · ${m.data||''}` });
+      // movimentações (entradas/saídas/retornos já registrados)
+      const movs = (movimentos||[]).filter(m=>m.itemId===id);
+      const retPorSaida = {}; // soma de retornos por saída de origem
+      movs.forEach(m=>{ if(m.retornoDe) retPorSaida[m.retornoDe] = (retPorSaida[m.retornoDe]||0) + (Number(m.qtd)||0); });
+      movs.forEach(m=>{
+        if (m.tipo==='Retorno') {
+          ev.push({ ts:_tsBr(m.data), cls:'mov', titulo:`Retorno de ${m.qtd}`,
+            det:m.obs||'', meta:`Responsável: ${m.resp||'—'} · ${m.data||''}` });
+          return;
+        }
+        const e = { ts:_tsBr(m.data), cls:'mov', titulo:`${m.tipo} de ${m.qtd}`,
+          det:m.obs||'', meta:`Responsável: ${m.resp||'—'} · ${m.data||''}` };
+        // saída retornável → anexa dados para o botão "Registrar retorno"
+        if (m.tipo==='Saída' && TIPOS_RETORNAVEIS.includes(m.motivoSaida)) {
+          const restante = (Number(m.qtd)||0) - (retPorSaida[m.id]||0);
+          e.retorno = { saidaId:m.id, restante, motivo:m.motivoSaida, resp:m.resp||'', total:Number(m.qtd)||0 };
+          if (restante <= 0) e.titulo = `${m.tipo} de ${m.qtd} · retornado`;
+        }
+        ev.push(e);
       });
       // conferências assinadas (relatórios)
       (confRelatorios||[]).forEach(r=>{
@@ -1253,9 +1293,65 @@
         ? ev.map(e=>`<div class="hi-ev"><span class="hi-dot ${e.cls}"></span><div class="hi-main">
             <div class="hi-tit">${escC(e.titulo)}</div>
             ${e.det?`<div class="hi-det">${escC(e.det)}</div>`:''}
-            <div class="hi-meta">${escC(e.meta)}</div></div></div>`).join('')
+            <div class="hi-meta">${escC(e.meta)}</div>
+            ${(e.retorno && e.retorno.restante>0)?`<button class="btn btn-ghost" style="margin-top:7px;font-size:.74rem;padding:5px 11px;border:1px solid #bfdbfe;color:#1d4ed8" onclick="abrirRetorno('${e.retorno.saidaId}')">↩ Registrar retorno (resta ${e.retorno.restante})</button>`:''}
+            </div></div>`).join('')
         : '<div class="hi-vazio">Nenhuma movimentação ou conferência registrada para este item ainda.</div>';
       BBM.openModal('modalHistorico');
+    }
+
+    // ── Retorno de item (baixa de saída: uso próprio / emprestado / instrução) ──
+    let _rtItemId = null;
+    function _restanteSaida(saidaId){
+      const s = movimentos.find(m=>m.id===saidaId); if(!s) return { s:null, restante:0 };
+      const ret = movimentos.filter(m=>m.retornoDe===saidaId).reduce((a,m)=>a+(Number(m.qtd)||0),0);
+      return { s, restante:(Number(s.qtd)||0) - ret };
+    }
+    function abrirRetorno(saidaId){
+      const { s, restante } = _restanteSaida(saidaId);
+      if (!s || restante<=0) { BBM.toast('Esta saída já foi totalmente retornada.','error'); return; }
+      _rtItemId = s.itemId;
+      document.getElementById('rtSaidaId').value = saidaId;
+      document.getElementById('rtInfo').innerHTML =
+        `<b>${escC(s.itemNome)}</b><br>Saída: ${s.qtd} · ${escC(s.motivoSaida||'')}<br>Responsável: ${escC(s.resp||'—')} · ${escC(s.data||'')}<br>Pendente de retorno: <b>${restante}</b>`;
+      const q = document.getElementById('rtQtd'); q.value = restante; q.max = restante;
+      document.getElementById('rtErro').style.display='none';
+      BBM.closeModal('modalHistorico');
+      BBM.openModal('modalRetorno');
+      setTimeout(()=>{ q.focus(); q.select(); }, 150);
+    }
+    function fecharRetorno(){
+      BBM.closeModal('modalRetorno');
+      if (_rtItemId) abrirHistorico(_rtItemId); // volta ao histórico do item
+    }
+    async function confirmarRetorno(){
+      const err = document.getElementById('rtErro');
+      const saidaId = document.getElementById('rtSaidaId').value;
+      const { s, restante } = _restanteSaida(saidaId);
+      if (!s) { fecharRetorno(); return; }
+      const q = Number(document.getElementById('rtQtd').value);
+      if (!(q>0)) { err.textContent='Informe a quantidade que retornou.'; err.style.display='block'; return; }
+      if (q>restante) { err.textContent=`Retorno maior que o pendente (${restante}).`; err.style.display='block'; return; }
+      const item = itens.find(i=>i.id===s.itemId);
+      if (!item) { err.textContent='Item não encontrado (pode ter sido excluído).'; err.style.display='block'; return; }
+      const u = euC();
+      // devolve ao estoque (entra como material Bom)
+      item.qtd = (Number(item.qtd)||0) + q;
+      const sp = splitEstado(item);
+      item.qtdBom = Math.min(item.qtd, sp.bom + q);
+      item.qtdRuim = item.qtd - item.qtdBom;
+      carimbar(item);
+      movimentos = [...movimentos, {
+        id: BBM.generateId(), data: new Date().toLocaleString('pt-BR'),
+        itemNome:item.nome, itemId:item.id, ambiente:item.ambiente,
+        tipo:'Retorno', qtd:q, resp:s.resp||'', retornoDe:saidaId, motivoSaida:s.motivoSaida||'',
+        obs:`Retorno de saída (${s.motivoSaida||'—'}) — registrado por ${u?.nome||'—'}`,
+      }];
+      BBM.closeModal('modalRetorno');
+      renderAmbientes(); renderItens(); atualizarCards();
+      const okI = await salvar(KEY_I, itens);
+      await salvar(KEY_M, movimentos, { sucesso: okI ? `Retorno de ${q} registrado.` : null });
+      if (_rtItemId) abrirHistorico(_rtItemId);
     }
 
     // ── Movimentação ──────────────────────────────────────────────
@@ -1687,7 +1783,7 @@
         movimentos = [...movimentos, {
           id: BBM.generateId(), data: new Date().toLocaleString('pt-BR'),
           itemNome:item.nome, itemId:item.id, ambiente:item.ambiente,
-          tipo:p.movTipo, qtd:p.qtd, resp:p.resp||p.solicitadoPor,
+          tipo:p.movTipo, qtd:p.qtd, resp:p.resp||p.solicitadoPor, motivoSaida:p.motivoSaida||'',
           obs:`${p.motivoSaida?('['+p.motivoSaida+'] '):''}${p.obs} — autorizado por ${u.nome}`,
         }];
         p.status='aprovado'; p.decididoPor=u.nome; p.decididoEm=agora;
